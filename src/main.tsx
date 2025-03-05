@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
+import "../index.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import LandingPage from "./routes/LandingPage.tsx";
 import RootLayout from "./routes/RootLayout.tsx";
@@ -14,6 +14,7 @@ import CalendarPage from "./routes/CalendarPage.tsx";
 import { AuthContextProvider } from "./context/AuthContext.tsx";
 import ProtectedLayout from "./routes/ProtectedLayout.tsx";
 import ProjectDetailPage from "./routes/ProjectDetailPage.tsx";
+import { ThemeProvider } from "./components/ThemeProvider.tsx";
 
 const router = createBrowserRouter([
   {
@@ -51,8 +52,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthContextProvider>
-      <RouterProvider router={router}></RouterProvider>
+    <AuthContextProvider>  
+      <ThemeProvider>
+        <RouterProvider router={router}></RouterProvider>
+      </ThemeProvider>
     </AuthContextProvider>
   </StrictMode>
 );
