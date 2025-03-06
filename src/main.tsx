@@ -11,7 +11,6 @@ import AuthLayout from './routes/AuthLayout.tsx';
 import DashboardPage from './routes/DashboardPage.tsx';
 import ProjectsPage from './routes/ProjectsPage.tsx';
 import CalendarPage from './routes/CalendarPage.tsx';
-import { AuthContextProvider } from './context/AuthContext.tsx';
 import ProtectedLayout from './routes/ProtectedLayout.tsx';
 import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
@@ -52,10 +51,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthContextProvider>
       <ThemeProvider>
         <RouterProvider router={router}></RouterProvider>
       </ThemeProvider>
-    </AuthContextProvider>
   </StrictMode>
 );
