@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 const Signup = () => {
   return <h2> SignUp component</h2>;
 };
