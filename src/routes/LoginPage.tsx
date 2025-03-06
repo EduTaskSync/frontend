@@ -1,5 +1,8 @@
 import { useLocation, useNavigate } from "react-router";
-import { LoginForm } from "../components/LoginForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input"
+
+
 const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -15,7 +18,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <LoginForm /> 
+      <LoginForm/>
     </div>
   );
 };
