@@ -14,6 +14,7 @@ import CalendarPage from './routes/CalendarPage.tsx';
 import ProtectedLayout from './routes/ProtectedLayout.tsx';
 import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
+import { Auth0Provider } from '@auth0/auth0-react';
 
 const router = createBrowserRouter([
   {
@@ -51,8 +52,14 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <Auth0Provider
+      domain="dev-rx1kd20h8khdwjq6.us.auth0.com"
+      clientId="qZI1at6kJz181qzdd0RzbPXqPsGAhKyS"
+      authorizationParams={{ redirect_uri: "http://localhost:5173/dashboard"}}
+    >
       <ThemeProvider>
         <RouterProvider router={router}></RouterProvider>
       </ThemeProvider>
+    </Auth0Provider>
   </StrictMode>
 );

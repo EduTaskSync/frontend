@@ -1,24 +1,34 @@
-import { useLocation, useNavigate } from 'react-router';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const LoginPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { loginWithRedirect, logout, user, isAuthenticated, isLoading } = useAuth0();
 
-  // handle login through redirects
-  const redirectTo = location.state?.from?.pathname;
-
-  const handleLogin = () => {
-    //TODO authenticate user backend
-    // successful login; navigate to attempted protected route and remove login route from the History API so that the user cannot go back to login page
-    navigate(redirectTo, { replace: true });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <LoginForm />
+      {!isAuthenticated ? (
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-6">Welcome to EduTaskSync</h1>
+          <Button size="lg" onClick={() => loginWithRedirect()}>
+            Log In
+          </Button>
+        </div>
+      ) : (
+        <div className="text-center">
+          <h2 className="text-2xl mb-4">Welcome, {user?.name}</h2>
+          <Button onClick={() => logout({ logoutParams: { returnTo: "http://localhost:5173/dashboard" } })}>Log out</Button>
+        </div>
+      )}
     </div>
   );
 };
+
 export default LoginPage;

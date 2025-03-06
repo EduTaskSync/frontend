@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router';
 
 const LandingPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
-      <Button variant="secondary" onClick={() => alert('Clicked!')}>
-        Hello
-      </Button>
+      <Link to='login'>Log In</Link>
     </div>
   );
 };
