@@ -53,9 +53,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Auth0Provider
-      domain="dev-rx1kd20h8khdwjq6.us.auth0.com"
-      clientId="qZI1at6kJz181qzdd0RzbPXqPsGAhKyS"
-      authorizationParams={{ redirect_uri: "http://localhost:5173/dashboard"}}
+      domain={import.meta.env.VITE_AUTH0_DOMAIN}
+      clientId= {import.meta.env.VITE_AUTH0_CLIENT_ID}
+      authorizationParams={{ redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI}}
     >
       <ThemeProvider>
         <RouterProvider router={router}></RouterProvider>

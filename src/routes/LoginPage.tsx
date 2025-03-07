@@ -24,7 +24,9 @@ const LoginPage = () => {
       ) : (
         <div className="text-center">
           <h2 className="text-2xl mb-4">Welcome, {user?.name}</h2>
-          <Button onClick={() => logout({ logoutParams: { returnTo: "http://localhost:5173/dashboard" } })}>Log out</Button>
+          <Button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+            Log out
+          </Button>
         </div>
       )}
     </div>
