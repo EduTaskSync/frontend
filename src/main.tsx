@@ -15,6 +15,7 @@ import ProtectedLayout from './routes/ProtectedLayout.tsx';
 import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { Auth0Provider } from '@auth0/auth0-react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const router = createBrowserRouter([
   {
@@ -49,17 +50,30 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Auth0Provider
-      domain={import.meta.env.VITE_AUTH0_DOMAIN}
-      clientId= {import.meta.env.VITE_AUTH0_CLIENT_ID}
-      authorizationParams={{ redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI}}
-    >
-      <ThemeProvider>
-        <RouterProvider router={router}></RouterProvider>
-      </ThemeProvider>
-    </Auth0Provider>
+    {' '}
+    <QueryClientProvider client={queryClient}>
+      <Auth0Provider
+        domain={import.meta.env.VITE_AUTH0_DOMAIN}
+        clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+        authorizationParams={{
+          redirect_uri: window.location.origin,
+          audience: `${import.meta.env.VITE_AUTH0_DOMAIN}/api/v2/`,
+        }}
+      >
+        <ThemeProvider>
+          <RouterProvider router={router}></RouterProvider>
+        </ThemeProvider>
+      </Auth0Provider>
+    </QueryClientProvider>
   </StrictMode>
 );
