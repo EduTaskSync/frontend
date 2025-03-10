@@ -29,7 +29,7 @@ const router = createBrowserRouter([
   },
   // Protection layer
   {
-    path: '/',
+    path: '/app',
     element: <ProtectedLayout />,
     children: [
       {
@@ -54,11 +54,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Auth0Provider
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
-      clientId= {import.meta.env.VITE_AUTH0_CLIENT_ID}
-      authorizationParams={{ redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI,
+      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+      authorizationParams={{
+        redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI,
         // this points to the API identifier
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-        scope: 
       }}
     >
       <ThemeProvider>
