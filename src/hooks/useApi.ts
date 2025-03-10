@@ -50,7 +50,9 @@ export const useApiMutation = <TData = unknown, TVariables = unknown, TError = A
             'Server validation failed',
             Object.entries(serverErrors).map(([field, message]) => ({
               path: [field],
-              message,
+              message: String(message),
+              code: 'custom',
+              params: { field },
             }))
           );
         }
