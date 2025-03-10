@@ -9,7 +9,7 @@ import LoginPage from './routes/LoginPage.tsx';
 import ErrorPage from './routes/ErrorPage.tsx';
 import AuthLayout from './routes/AuthLayout.tsx';
 import DashboardPage from './routes/DashboardPage.tsx';
-import ProjectsPage from './routes/ProjectsPage.tsx';
+import GroupsPage from './routes/ProjectsPage.tsx';
 import CalendarPage from './routes/CalendarPage.tsx';
 import ProtectedLayout from './routes/ProtectedLayout.tsx';
 import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
@@ -40,9 +40,9 @@ const router = createBrowserRouter([
         children: [
           { path: 'dashboard', element: <DashboardPage /> },
           {
-            path: 'projects',
-            element: <ProjectsPage />,
-            children: [{ path: ':projectId', element: <ProjectDetailPage /> }],
+            path: 'groups',
+            element: <GroupsPage />,
+            children: [{ path: ':groupId', element: <ProjectDetailPage /> }],
           },
           { path: 'calendar', element: <CalendarPage /> },
         ],
