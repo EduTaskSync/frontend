@@ -4,7 +4,7 @@ import { Home, Calendar, Folder } from 'lucide-react';
 export const Dock = () => {
   const items = [
     { title: 'Home', icon: <Home className="w-full h-full text-primary" />, href: '/app/dashboard' },
-    { title: 'Projects', icon: <Folder className="w-full h-full text-primary" />, href: '/app/projects' },
+    { title: 'Groups', icon: <Folder className="w-full h-full text-primary" />, href: '/app/groups' },
     { title: 'Calendar', icon: <Calendar className="w-full h-full text-primary" />, href: '/app/calendar' },
   ];
 

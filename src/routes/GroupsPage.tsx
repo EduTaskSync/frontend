@@ -1,6 +1,6 @@
 import { Dock } from '@/components/Dock';
 
-const ProjectsPage = () => {
+const GroupsPage = () => {
   return (
     <>
       <h2 className="flex justify-center text-2xl font-semibold p-4">Projects Page</h2>
@@ -10,4 +10,4 @@ const ProjectsPage = () => {
   );
 };
 
-export default ProjectsPage;
+export default GroupsPage;
