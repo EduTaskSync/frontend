@@ -2,7 +2,6 @@
 @custom-variant dark (&:is(.dark *));
 @plugin "tailwindcss-animate";
 
-
 @layer base {
   :root {
     --background: hsl(0 0% 100%);
@@ -30,6 +29,16 @@
     --chart-3: hsl(197 37% 24%);
     --chart-4: hsl(43 74% 66%);
     --chart-5: hsl(27 87% 67%);
+
+    /* aurora bg color scheme */
+    --white: #ffffff;
+    --black: #000000;
+    --transparent: transparent;
+    --blue-300: #93c5fd;
+    --blue-400: #60a5fa;
+    --blue-500: #3b82f6;
+    --indigo-300: #a5b4fc;
+    --violet-200: #ddd6fe;
   }
 
   .dark {
@@ -98,8 +107,32 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* aurora bg color scheme */
+  --white: #ffffff;
+  --black: #000000;
+  --transparent: transparent;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --indigo-300: #a5b4fc;
+  --violet-200: #ddd6fe;
+
   --font-sans: 'Lato', system-ui, sans-serif;
   --font-heading: 'Montserrat', system-ui, sans-serif;
+}
+
+/* Define the aurora animation */
+@keyframes aurora {
+  from {
+    background-position:
+      50% 50%,
+      50% 50%;
+  }
+  to {
+    background-position:
+      350% 50%,
+      350% 50%;
+  }
 }
 
 @layer base {
@@ -115,8 +148,12 @@
   .font-heading {
     font-family: var(--font-heading);
   }
-  
+
   .font-body {
     font-family: var(--font-sans);
+  }
+
+  .animation-aurora {
+    animation: aurora 60s linear infinite;
   }
 }

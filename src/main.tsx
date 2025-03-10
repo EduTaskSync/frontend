@@ -60,18 +60,19 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Auth0Provider
-      domain={import.meta.env.VITE_AUTH0_DOMAIN}
-      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
-      authorizationParams={{
-        redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI,
-        // this points to the API identifier
-        audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-      }}
-    >
-      <ThemeProvider>
-        <RouterProvider router={router}></RouterProvider>
-      </ThemeProvider>
-    </Auth0Provider>
+    <QueryClientProvider client={queryClient}>
+      <Auth0Provider
+        domain={import.meta.env.VITE_AUTH0_DOMAIN}
+        clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+        authorizationParams={{
+          redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI,
+          audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        }}
+      >
+        <ThemeProvider>
+          <RouterProvider router={router}></RouterProvider>
+        </ThemeProvider>
+      </Auth0Provider>
+    </QueryClientProvider>
   </StrictMode>
 );
