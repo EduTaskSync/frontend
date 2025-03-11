@@ -1,10 +1,10 @@
 import { FloatingDock } from '@/components/ui/floating-dock';
-import { Home, Calendar, Folder } from 'lucide-react';
+import { Home, Calendar, Users } from 'lucide-react';
 
 export const Dock = () => {
   const items = [
     { title: 'Home', icon: <Home className="w-full h-full text-primary" />, href: '/app/dashboard' },
-    { title: 'Groups', icon: <Folder className="w-full h-full text-primary" />, href: '/app/groups' },
+    { title: 'Groups', icon: <Users className="w-full h-full text-primary" />, href: '/app/groups' },
     { title: 'Calendar', icon: <Calendar className="w-full h-full text-primary" />, href: '/app/calendar' },
   ];
 

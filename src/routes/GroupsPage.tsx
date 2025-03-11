@@ -1,11 +1,12 @@
-import { Dock } from '@/components/Dock';
+import { AuthHeader } from '@/components/AuthHeader';
 
 const GroupsPage = () => {
   return (
     <>
-      <h2 className="flex justify-center text-2xl font-semibold p-4">Projects Page</h2>
-      <div className="flex items-center justify-center">{/* Content goes here */}</div>
-      <Dock />
+      <AuthHeader tabName="Groups" />
+      <main claassName="flex flex-col  items-center justify-center h-screen bg-gray-100">
+        <h1 className="text-2xl font-bold">Groups Page</h1>
+      </main>
     </>
   );
 };
