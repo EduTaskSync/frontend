@@ -22,7 +22,7 @@ export const useApiQuery = <TData = unknown, TError = AxiosError>(
   });
 };
 
-// Generic POST request hook with validatio
+// Generic POST request hook with validation
 
 export const useApiMutation = <TData = unknown, TVariables = unknown, TError = AxiosError>(
   endpoint: string,
