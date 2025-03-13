@@ -46,6 +46,8 @@ const GroupsPage = () => {
     setOpen(false);
     // react-hook-form reset() sets field values to defaults, removes validation errors and clears form submit state
     form.reset();
+
+    //todo data fetching to backend
   };
 
   return (

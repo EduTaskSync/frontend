@@ -1,7 +1,7 @@
 import { useAuth0, User } from '@auth0/auth0-react';
 import { useMutation } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import backendServer from '@/api/client';
+import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
 interface UseAuthResult {
@@ -13,7 +13,7 @@ interface UseAuthResult {
   user?: User;
 }
 
-export function useAuth(): UseAuthResult {
+export const useAuth = (): UseAuthResult => {
   const [error, setError] = useState<Error | null>(null);
   const {
     isAuthenticated,
@@ -24,10 +24,10 @@ export function useAuth(): UseAuthResult {
     user,
   } = useAuth0();
 
-  // Define mutation for exchanging token
-  const { mutate: exchangeToken, isPending: isExchanging } = useMutation({
+  // Define mutation config obj for exchanging access token with server
+  const { mutate, isPending: isExchanging } = useMutation({
     mutationFn: async (token: string) => {
-      return backendServer.post(ApiEndPoints.AUTH_SESSION, {}, { headers: { Authorization: `Bearer ${token}` } });
+      return axiosConfig.post(ApiEndPoints.AUTH_SESSION, {}, { headers: { Authorization: `Bearer ${token}` } });
     },
     onError: (err) => {
       setError(new Error('Failed to authenticate with the server'));
@@ -40,11 +40,10 @@ export function useAuth(): UseAuthResult {
     const setupSession = async () => {
       if (isAuthenticated) {
         try {
-          const token = await getAccessTokenSilently({
-            authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
-          });
+          // audience is identical to the default config audience
+          const token = await getAccessTokenSilently();
           console.log('Got access token:', token);
-          exchangeToken(token);
+          mutate(token);
         } catch (err) {
           setError(err instanceof Error ? err : new Error('Authentication failed'));
           console.error('Failed to get access token:', err);
@@ -53,16 +52,16 @@ export function useAuth(): UseAuthResult {
     };
 
     setupSession();
-  }, [isAuthenticated, getAccessTokenSilently, exchangeToken]);
+  }, [isAuthenticated, getAccessTokenSilently, mutate]);
 
   const login = () => {
     loginWithRedirect();
   };
 
   const logout = async () => {
-    // Clear the HTTP-only cookie by calling your backend endpoint
+    // Clear the HTTP-only cookie by calling backend endpoint
     try {
-      await backendServer.post(ApiEndPoints.LOGOUT);
+      await axiosConfig.post(ApiEndPoints.LOGOUT);
     } catch (err) {
       console.error('Error during logout:', err);
     }
@@ -81,4 +80,4 @@ export function useAuth(): UseAuthResult {
     logout,
     user,
   };
-}
+};

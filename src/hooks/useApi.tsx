@@ -2,7 +2,7 @@ import { useMutation, useQuery, UseQueryOptions, UseMutationOptions } from '@tan
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { ZodSchema } from 'zod';
 import { validateData, ValidationError } from '../utils/validation';
-import backendServer from '@/api/client';
+import axiosConfig from '@/api/axiosConfig';
 // Generic GET request hook with validation
 export const useApiQuery = <TData = unknown, TError = AxiosError>(
   endpoint: string,
@@ -14,7 +14,7 @@ export const useApiQuery = <TData = unknown, TError = AxiosError>(
   return useQuery<TData, TError>({
     queryKey,
     queryFn: async () => {
-      const response = await backendServer.get(endpoint, config);
+      const response = await axiosConfig.get(endpoint, config);
       // If schema provided, validate response
       return schema ? validateData<TData>(schema, response.data) : response.data;
     },
@@ -37,7 +37,7 @@ export const useApiMutation = <TData = unknown, TVariables = unknown, TError = A
       try {
         // Validate request data if schema provided
         const validatedData = requestSchema ? validateData(requestSchema, variables) : variables;
-        const response = await backendServer.post(endpoint, validatedData, config);
+        const response = await axiosConfig.post(endpoint, validatedData, config);
 
         // Validate response if schema provided
         return responseSchema ? validateData<TData>(responseSchema, response.data) : response.data;

@@ -25,6 +25,7 @@ const ProtectedLayout = () => {
     }
   }, [userData]);
   console.log('isAuthenticated', isAuthenticated);
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
