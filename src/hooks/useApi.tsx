@@ -18,6 +18,7 @@ export const useApiQuery = <TData = unknown, TError = AxiosError>(
       // If schema provided, validate response
       return schema ? validateData<TData>(schema, response.data) : response.data;
     },
+
     ...options,
   });
 };

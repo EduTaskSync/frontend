@@ -1,25 +1,37 @@
 import { Outlet, Navigate } from 'react-router';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
+import { User } from '@/interfaces/user.interface';
 
 const ProtectedLayout = () => {
-  const { isAuthenticated, isLoading } = useAuth0();
-
-  // mask auth0 SDK setup interval with loading state on UI
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spinner size="large" />
-      </div>
-    );
+  const { isAuthenticated, isLoading } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const { useGetUser } = useUser();
+  const { data: userData, isLoading: userLoading } = useGetUser({
+    enabled: isAuthenticated,
+    queryKey: ['user'],
+  });
+  if (isLoading || userLoading) {
+    <div className="flex items-center justify-center h-screen">
+      <Spinner size="large" />
+    </div>;
   }
 
-  // restrict access to protected routes: redirect to login page if not authenticated
+  useEffect(() => {
+    if (userData) {
+      setUser(userData);
+    }
+  }, [userData]);
+  console.log('isAuthenticated', isAuthenticated);
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
-  // user has been authenticated successfully, show user's dashboard
+  if (isAuthenticated && !user) {
+    return <Navigate to="/signup" />;
+  }
   return <Outlet />;
 };
 
