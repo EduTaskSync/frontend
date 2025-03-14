@@ -3,6 +3,9 @@ import { useMutation } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
+import { useErrorBoundary } from '@/hooks/useErrorBoundary';
+import axios from 'axios';
+import { AuthError } from '@/utils/AuthError';
 
 interface UseAuthResult {
   isAuthenticated: boolean;
@@ -15,6 +18,10 @@ interface UseAuthResult {
 
 export const useAuth = (): UseAuthResult => {
   const [error, setError] = useState<Error | null>(null);
+
+  // whenever there is an error in http communication below, user will be redirected to the error page gracefully
+  useErrorBoundary(error);
+
   const {
     isAuthenticated,
     isLoading: auth0Loading,
@@ -30,7 +37,9 @@ export const useAuth = (): UseAuthResult => {
       return axiosConfig.post(ApiEndPoints.AUTH_SESSION, {}, { headers: { Authorization: `Bearer ${token}` } });
     },
     onError: (err) => {
-      setError(new Error('Failed to authenticate with the server'));
+      // If the error is from axios, get the status code
+      const statusCode = axios.isAxiosError(err) && err.response ? err.response.status : 500;
+      setError(new AuthError('Failed to authenticate with the server', statusCode));
       console.error('Token exchange failed:', err);
     },
   });
