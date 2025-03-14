@@ -14,8 +14,6 @@ export function ProgressiveSignup() {
   const { user: auth0User, isLoading: auth0Loading } = useAuth();
   const { useCreateUser, useGetUser } = useUser();
   const navigate = useNavigate();
-
-  console.log('auth0User:', auth0User);
   // Check if user exists in backend
   const {
     data: backendUser,
@@ -51,7 +49,18 @@ export function ProgressiveSignup() {
       auth0Id: auth0User?.sub || '',
     },
   });
-
+  // Update form values when Auth0 user data is loaded
+  useEffect(() => {
+    if (!auth0Loading && auth0User) {
+      // Now we can safely use auth0User properties
+      reset({
+        email: auth0User.email || '',
+        firstName: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+        lastName: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
+        auth0Id: auth0User.sub || '',
+      });
+    }
+  }, [auth0Loading, auth0User, reset]);
   // Redirect to dashboard if user exists or was just created
   useEffect(() => {
     if (backendUser || isSuccess) {
