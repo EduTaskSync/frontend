@@ -4,7 +4,6 @@ import '../index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import LandingPage from './routes/LandingPage.tsx';
 import RootLayout from './routes/RootLayout.tsx';
-import Signup from './routes/SignupPage.tsx';
 import LoginPage from './routes/LoginPage.tsx';
 import ErrorPage from './routes/ErrorPage.tsx';
 import AuthLayout from './routes/AuthLayout.tsx';
@@ -16,17 +15,14 @@ import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ProgressiveSignup } from './routes/SignupPage.tsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
-    children: [
-      { index: true, element: <LandingPage /> },
-      { path: 'signup', element: <Signup /> },
-      { path: 'login', element: <LoginPage /> },
-    ],
+    children: [{ index: true, element: <LandingPage /> }],
   },
   // Protection layer
   {
@@ -38,6 +34,8 @@ const router = createBrowserRouter([
         element: <AuthLayout />,
         errorElement: <ErrorPage />,
         children: [
+          { path: 'login', element: <LoginPage /> },
+          { path: 'signup', element: <ProgressiveSignup /> },
           { path: 'profile', element: <div>Profile</div> },
           { path: 'dashboard', element: <DashboardPage /> },
           {
