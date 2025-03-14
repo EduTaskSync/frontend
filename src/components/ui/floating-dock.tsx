@@ -1,8 +1,13 @@
 import { cn } from '@/lib/utils';
-import { IconLayoutNavbarCollapse } from '@tabler/icons-react';
+// Replace the existing import with this lazy-loaded version
+import { Suspense, lazy, useRef, useState } from 'react';
 import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { Link } from 'react-router';
-import { useRef, useState } from 'react';
+
+// Lazy load the icon to reduce initial bundle size
+const IconLayoutNavbarCollapse = lazy(() =>
+  import('@tabler/icons-react').then((module) => ({ default: module.IconLayoutNavbarCollapse }))
+);
 
 export const FloatingDock = ({
   items,
@@ -78,7 +83,9 @@ const FloatingDockMobile = ({
         onClick={() => setOpen(!open)}
         className="h-10 w-10 rounded-full bg-background border border-border flex items-center justify-center"
       >
-        <IconLayoutNavbarCollapse className="h-5 w-5 text-primary" />
+        <Suspense fallback={<div className="h-5 w-5 animate-pulse bg-primary/20 rounded-full" />}>
+          <IconLayoutNavbarCollapse className="h-5 w-5 text-primary" />
+        </Suspense>
       </button>
     </div>
   );
