@@ -22,7 +22,7 @@ export const useErrorDetails = (): ErrorObj => {
     };
   }
 
-  // handle JS Error() objects thrown by components or dependacies such as axios or tanstack query
+  // handle JS Error() objects thrown by components or dependacies such as axios or tanstack query and include the stacktrace
   if (error instanceof Error) {
     return {
       message: error.message || 'An unknown error occurred',
@@ -37,11 +37,11 @@ export const useErrorDetails = (): ErrorObj => {
   };
 };
 
-// customm hook to handle programmatic errors by redirecting to the error page
+// custom hook to handle programmatic errors that react router cannot catch by redirecting to the error page
 export const useErrorBoundary = (error: Error | null) => {
   const navigate = useNavigate();
 
-  // wrap navigation logic in useEffect so that
+  // useEffect so tha error handling function will be run whenever a new error is thrown and redirect the user to the error page
   useEffect(() => {
     if (error) {
       navigate('/error', {

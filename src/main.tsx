@@ -32,7 +32,6 @@ const router = createBrowserRouter([
       {
         // UI rendering routes
         element: <AuthLayout />,
-        errorElement: <ErrorPage />,
         children: [
           { path: 'login', element: <LoginPage /> },
           { path: 'signup', element: <ProgressiveSignup /> },
