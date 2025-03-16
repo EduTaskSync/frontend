@@ -12,6 +12,7 @@ export class ValidationError extends Error {
 
 export const validateData = <T>(schema: ZodSchema, data: unknown): T => {
   const result = schema.safeParse(data);
+
   if (!result.success) {
     throw new ValidationError('Validation failed', result.error.errors);
   }

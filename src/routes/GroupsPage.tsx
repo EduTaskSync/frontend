@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Dock } from '@/components/Dock';
 
 // zod schema for add new group form
 const formSchema = z.object({
@@ -153,6 +154,7 @@ const GroupsPage = () => {
         </div>
         <GroupGrid />
       </MainContent>
+      <Dock />
     </>
   );
 };
