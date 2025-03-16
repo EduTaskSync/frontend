@@ -8,20 +8,14 @@ import { Spinner } from '@/components/ui/spinner';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '@/constants/routes';
+import { useUserContext } from '@/contexts/UserContext';
 
 export function ProgressiveSignup() {
-  // Put ALL hook calls at the top level
-  const { user: auth0User, isLoading: auth0Loading, isSessionEstablished } = useAuth();
-  const { useCreateUser, useGetUser } = useUser();
+  console.log('ProgressiveSignup');
+  const { user: backendUser, isLoading: backendUserLoading, exists: userExists } = useUserContext();
+  const { user: auth0User, isLoading: auth0Loading } = useAuth();
+  const { useCreateUser } = useUser();
   const navigate = useNavigate();
-  // Check if user exists in backend
-  const { data: userCheckResult, isLoading: backendUserLoading } = useGetUser({
-    queryKey: ['user-check'],
-    enabled: !auth0Loading && !!auth0User?.sub && isSessionEstablished,
-  });
-  const userExists = userCheckResult?.exists;
-  const backendUser = userCheckResult?.user || null;
-
   // Redirect if user exists
   useEffect(() => {
     if (userExists) {

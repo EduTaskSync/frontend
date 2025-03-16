@@ -1,12 +1,11 @@
-import { User } from 'lucide-react';
 import { z } from 'zod';
-
 export const UserSchema = z.object({
   userId: z.string().uuid().optional(),
   auth0Id: z.string(),
   email: z.string().email(),
   firstName: z.string(),
   lastName: z.string(),
+  picture: z.string().url().optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;
