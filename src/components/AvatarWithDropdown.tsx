@@ -20,7 +20,7 @@ export default function DropdownMenuWithAvatar({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="w-20 sm:w-1/3 min-w-[50px] flex justify-end">
+        <div className="cursor-pointer w-20 sm:w-1/3 min-w-[50px] flex justify-end">
           <motion.div
             whileHover={{
               scale: 1.1,
