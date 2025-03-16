@@ -4,10 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 const LandingPage = () => {
   const { login } = useAuth();
   return (
-    <div className="flex h-screen items-center justify-center">
-      <h2 className="text-2xl">Landing Page</h2>
-
-      <Button onClick={() => login()}>Log In</Button>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-6">Welcome to EduTaskSync</h1>
+        <Button size="lg" onClick={() => login()}>
+          Log In
+        </Button>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { AuthHeader } from '@/components/AuthHeader';
 import { GroupGrid } from '@/components/GroupGrid';
 import { MainContent } from '@/components/MainContent';
 import { Loader2 } from 'lucide-react';
@@ -53,7 +52,6 @@ const GroupsPage = () => {
 
   return (
     <>
-      <AuthHeader tabName="Groups" />
       <MainContent>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">My Groups</h1>
