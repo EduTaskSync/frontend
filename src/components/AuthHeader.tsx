@@ -1,18 +1,16 @@
-import ColourfulText from '@/components/ui/colourful-text';
+import { useAuth0 } from '@auth0/auth0-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ColourfulText from '@/components/ui/colourful-text.tsx';
 import { motion, AnimatePresence } from 'motion/react';
-import DropdownMenuWithAvatar from './AvatarWithDropdown';
-import { useUserContext } from '@/contexts/UserContext';
-import { Link } from 'react-router';
-import { routes } from '@/constants/routes';
+import { useLocation } from 'react-router';
 
 interface AuthHeaderProps {
   tabName: string;
 }
 
 export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
-  const { user } = useUserContext();
-
-  if (!user) return;
+  const { user } = useAuth0();
+  const location = useLocation();
 
   return (
     <div className="sticky top-1 sm:top-3 z-10 px-2 sm:px-4 flex justify-center pt-1">
@@ -25,14 +23,13 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
         >
+          {/* Logo Section */}
           <div className="w-20 sm:w-1/3 min-w-[70px]">
-            <Link to={routes.dashboard}>
-              <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
-                <span className="hidden sm:inline">EduTask</span>
-                <span className="sm:hidden">ET</span>
-                <ColourfulText text="Sync" />
-              </h1>
-            </Link>
+            <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
+              <span className="hidden sm:inline">EduTask</span>
+              <span className="sm:hidden">ET</span>
+              <ColourfulText text="Sync" />
+            </h1>
           </div>
 
           {/* Tab Name Section */}
@@ -42,7 +39,19 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
 
           {/* Avatar Section */}
           <div className="w-20 sm:w-1/3 min-w-[50px] flex justify-end">
-            <DropdownMenuWithAvatar user={user} />
+            <motion.div
+              whileHover={{
+                scale: 1.1,
+                transition: { duration: 0.2 },
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Avatar navigateTo="/app/profile" className="h-7 w-7 sm:h-10 sm:w-10 border border-primary sm:border-2">
+                user
+                <AvatarImage src={user?.picture} alt={user?.name} />
+                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </motion.div>
           </div>
         </motion.header>
       </AnimatePresence>
