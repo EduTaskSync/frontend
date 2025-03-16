@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss';
 @custom-variant dark (&:is(.dark *));
 @plugin "tailwindcss-animate";
-
 
 @layer base {
   :root {
@@ -12,7 +12,7 @@
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(224 71.4% 4.1%);
     --primary: hsl(262.1 83.3% 57.8%);
-    --primary-foreground: hsl(210 20% 98%);
+    --primary-foreground: hsl(0 0% 100%);
     --secondary: hsl(220 14.3% 95.9%);
     --secondary-foreground: hsl(220.9 39.3% 11%);
     --muted: hsl(220 14.3% 95.9%);
@@ -30,6 +30,16 @@
     --chart-3: hsl(197 37% 24%);
     --chart-4: hsl(43 74% 66%);
     --chart-5: hsl(27 87% 67%);
+
+    /* aurora bg color scheme */
+    --white: #ffffff;
+    --black: #000000;
+    --transparent: transparent;
+    --blue-300: #93c5fd;
+    --blue-400: #60a5fa;
+    --blue-500: #3b82f6;
+    --indigo-300: #a5b4fc;
+    --violet-200: #ddd6fe;
   }
 
   .dark {
@@ -40,7 +50,7 @@
     --popover: hsl(224 71.4% 4.1%);
     --popover-foreground: hsl(210 20% 98%);
     --primary: hsl(263.4 70% 50.4%);
-    --primary-foreground: hsl(210 20% 98%);
+    --primary-foreground: hsl(0 0% 100%);
     --secondary: hsl(215 27.9% 16.9%);
     --secondary-foreground: hsl(210 20% 98%);
     --muted: hsl(215 27.9% 16.9%);
@@ -98,8 +108,32 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* aurora bg color scheme */
+  --white: #ffffff;
+  --black: #000000;
+  --transparent: transparent;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --indigo-300: #a5b4fc;
+  --violet-200: #ddd6fe;
+
   --font-sans: 'Lato', system-ui, sans-serif;
   --font-heading: 'Montserrat', system-ui, sans-serif;
+}
+
+/* Define the aurora animation */
+@keyframes aurora {
+  from {
+    background-position:
+      50% 50%,
+      50% 50%;
+  }
+  to {
+    background-position:
+      350% 50%,
+      350% 50%;
+  }
 }
 
 @layer base {
@@ -115,8 +149,17 @@
   .font-heading {
     font-family: var(--font-heading);
   }
-  
+
   .font-body {
     font-family: var(--font-sans);
+  }
+
+  .animation-aurora {
+    animation: aurora 60s linear infinite;
+  }
+
+  .font-tab-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
   }
 }

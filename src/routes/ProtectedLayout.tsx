@@ -1,18 +1,28 @@
-import { Outlet } from 'react-router';
-import { useAuth0 } from '@auth0/auth0-react';
-import { useEffect } from 'react';
+import { Spinner } from '@/components/ui/spinner';
+import { routes } from '@/constants/routes';
+import { UserProvider } from '@/contexts/UserContext';
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate, Outlet } from 'react-router';
 
 const ProtectedLayout = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
+  const { isLoading, isAuthenticated } = useAuth();
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <Spinner size="large" />
+        <p className="mt-4">Authentication </p>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      loginWithRedirect();
-    }
-  }, [isAuthenticated, isLoading, loginWithRedirect]);
-
-
-  return isAuthenticated ? <Outlet /> : null;
+  if (!isAuthenticated) {
+    return <Navigate to={routes.landingPage} />;
+  }
+  return (
+    <UserProvider>
+      <Outlet />;
+    </UserProvider>
+  );
 };
 
 export default ProtectedLayout;
