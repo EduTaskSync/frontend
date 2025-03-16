@@ -11,25 +11,23 @@ import { routes } from '@/constants/routes';
 
 export function ProgressiveSignup() {
   // Put ALL hook calls at the top level
-  const { user: auth0User, isLoading: auth0Loading } = useAuth();
+  const { user: auth0User, isLoading: auth0Loading, isSessionEstablished } = useAuth();
   const { useCreateUser, useGetUser } = useUser();
   const navigate = useNavigate();
   // Check if user exists in backend
-  const {
-    data: backendUser,
-    isLoading: backendUserLoading,
-    error: userError,
-  } = useGetUser({
-    queryKey: ['user', auth0User?.sub],
-    enabled: !auth0Loading && !!auth0User?.sub,
-    // Only retry once to avoid infinite attempts if user doesn't exist
-    retry: (failureCount, error) => {
-      // Don't retry on 404s (user not found)
-      if (error.response?.status === 404) return false;
-      // Retry other errors once
-      return failureCount < 1;
-    },
+  const { data: userCheckResult, isLoading: backendUserLoading } = useGetUser({
+    queryKey: ['user-check'],
+    enabled: !auth0Loading && !!auth0User?.sub && isSessionEstablished,
   });
+  const userExists = userCheckResult?.exists;
+  const backendUser = userCheckResult?.user || null;
+
+  // Redirect if user exists
+  useEffect(() => {
+    if (userExists) {
+      navigate(routes.dashboard);
+    }
+  }, [userExists, navigate]);
 
   // For creating the user
   const { mutate: createUser, isPending, error: createError, isSuccess } = useCreateUser();
@@ -106,12 +104,9 @@ export function ProgressiveSignup() {
     <div className="w-full max-w-md mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold text-center">Complete Your Profile</h2>
 
-      {/* Show message if this is a new user */}
-      {userError?.response?.status === 404 && (
-        <div className="p-4 bg-blue-50 text-blue-800 rounded-md border border-blue-200">
-          Welcome! Please complete your profile to continue.
-        </div>
-      )}
+      <div className="p-4 bg-blue-50 text-blue-800 rounded-md border border-blue-200">
+        Welcome! Please complete your profile to continue.
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">

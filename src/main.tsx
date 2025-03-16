@@ -4,7 +4,6 @@ import '../index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import LandingPage from './routes/LandingPage.tsx';
 import RootLayout from './routes/RootLayout.tsx';
-import LoginPage from './routes/LoginPage.tsx';
 import ErrorPage from './routes/ErrorPage.tsx';
 import AuthLayout from './routes/AuthLayout.tsx';
 import DashboardPage from './routes/DashboardPage.tsx';
@@ -33,7 +32,6 @@ const router = createBrowserRouter([
         // UI rendering routes
         element: <AuthLayout />,
         children: [
-          { path: 'login', element: <LoginPage /> },
           { path: 'signup', element: <ProgressiveSignup /> },
           { path: 'profile', element: <div>Profile</div> },
           { path: 'dashboard', element: <DashboardPage /> },

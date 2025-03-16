@@ -14,5 +14,8 @@ export type User = z.infer<typeof UserSchema>;
 export const CreateUserSchema = UserSchema.omit({ userId: true });
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 
-export const GetUserDetailsSchema = UserSchema;
+export const GetUserDetailsSchema = z.object({
+  exists: z.boolean(),
+  user: UserSchema.nullable(),
+});
 export type GetUserDetailsDto = z.infer<typeof GetUserDetailsSchema>;

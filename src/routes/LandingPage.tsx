@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router';
-import { routes } from '@/constants/routes';
+import { useAuth } from '@/hooks/useAuth';
 
 const LandingPage = () => {
+  const { login } = useAuth();
   return (
     <div className="flex h-screen items-center justify-center">
-      <Link to={routes.login}>
-        <Button>Log In</Button>
-      </Link>
+      <h2 className="text-2xl">Landing Page</h2>
+
+      <Button onClick={() => login()}>Log In</Button>
     </div>
   );
 };

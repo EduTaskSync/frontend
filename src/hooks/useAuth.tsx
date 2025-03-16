@@ -1,5 +1,5 @@
 import { useAuth0, User } from '@auth0/auth0-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
@@ -14,11 +14,14 @@ interface UseAuthResult {
   login: () => void;
   logout: () => Promise<void>;
   user?: User;
+  isSessionEstablished: boolean;
 }
 
 export const useAuth = (): UseAuthResult => {
   const [error, setError] = useState<Error | null>(null);
 
+  const [isSessionEstablished, setSessionEstablished] = useState(false);
+  const queryClient = useQueryClient();
   // whenever there is an error in http communication below, user will be redirected to the error page gracefully
   useErrorBoundary(error);
 
@@ -35,6 +38,10 @@ export const useAuth = (): UseAuthResult => {
   const { mutate, isPending: isExchanging } = useMutation({
     mutationFn: async (token: string) => {
       return axiosConfig.post(ApiEndPoints.AUTH_SESSION, {}, { headers: { Authorization: `Bearer ${token}` } });
+    },
+    onSuccess: () => {
+      setSessionEstablished(true);
+      queryClient.invalidateQueries({ queryKey: ['user-check'] });
     },
     onError: (err) => {
       // If the error is from axios, get the status code
@@ -88,5 +95,6 @@ export const useAuth = (): UseAuthResult => {
     login,
     logout,
     user,
+    isSessionEstablished,
   };
 };
