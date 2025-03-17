@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 
@@ -54,8 +54,4 @@ export default function ColourfulText({ text }: { text: string }) {
       ))}
     </>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> c587a36 (add ProjectsPage, ProjectGrid and ProjectCard file for part of ProjectTab)

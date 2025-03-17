@@ -40,6 +40,10 @@ const router = createBrowserRouter([
             element: <GroupsPage />,
             children: [{ path: ':groupId', element: <ProjectDetailPage /> }],
           },
+          {
+            path: 'projects',
+            element: <ProjectDetailPage />,
+          },
           { path: 'calendar', element: <CalendarPage /> },
         ],
       },
