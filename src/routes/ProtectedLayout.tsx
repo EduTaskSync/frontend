@@ -20,7 +20,7 @@ const ProtectedLayout = () => {
   }
   return (
     <UserProvider>
-      <Outlet />;
+      <Outlet />
     </UserProvider>
   );
 };

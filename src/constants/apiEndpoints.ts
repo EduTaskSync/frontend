@@ -3,4 +3,8 @@ export enum ApiEndPoints {
   GET_USER = '/users',
   AUTH_SESSION = '/auth/session',
   LOGOUT = '/auth/logout',
+
+  GET_GROUPS = '/groups/get_groups_for_user',
+  CREATE_GROUP = '/groups/create',
+  ADD_USER_GROUP = '/groups/add',
 }
