@@ -23,6 +23,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
   projectImage: z.instanceof(File).optional(),
+  projectSubmissionDate: z.string().min(1, 'Project submission date is required'),
 });
 
 // type for form values
@@ -37,6 +38,7 @@ const ProjectsPage = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
+      projectSubmissionDate: '',
     },
   });
 
@@ -47,13 +49,17 @@ const ProjectsPage = () => {
     // react-hook-form reset() sets field values to defaults, removes validation errors and clears form submit state
     form.reset();
   };
-
+// flex items-center justify-between mb-6    flex flex-col items-center space-y-2
   return (
     <>
       <AuthHeader tabName="Group Projects" />
       <MainContent>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">FIT1234 Group 1</h1>
+        <div className="flex items-center justify-between mb-6"> 
+          <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">
+            <span className="">Group Projects</span> <br />
+            <span className="text-white">FIT4321 Group 1</span>
+          </h1>
+          
           {/* using controlled variant */}
           <Dialog
             open={open}
@@ -90,6 +96,21 @@ const ProjectsPage = () => {
                           <Input placeholder="Enter project name (e.g., Assignment 1)" {...field} />
                         </FormControl>
                         <FormDescription>Choose a descriptive name for your project.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="projectSubmissionDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-heading font-semibold">Project Submission Date</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter project submission date (e.g., DD/MM/YY)" {...field} />
+                        </FormControl>
+                        <FormDescription>manage a deadline for your project.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
