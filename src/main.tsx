@@ -15,13 +15,14 @@ import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProgressiveSignup } from './routes/SignupPage.tsx';
+import ProjectsPage from './routes/ProjectsPage.tsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
-    children: [{ index: true, element: <LandingPage /> }],
+    children: [{ index: true, element: <LandingPage /> }],  //
   },
   // Protection layer
   {
@@ -32,7 +33,7 @@ const router = createBrowserRouter([
         // UI rendering routes
         element: <AuthLayout />,
         children: [
-          { path: 'signup', element: <ProgressiveSignup /> },
+          { path: 'signup', element: <ProgressiveSignup /> }, 
           { path: 'profile', element: <div>Profile</div> },
           { path: 'dashboard', element: <DashboardPage /> },
           {
@@ -42,7 +43,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'projects',
-            element: <ProjectDetailPage />,
+            element: <ProjectsPage />,
           },
           { path: 'calendar', element: <CalendarPage /> },
         ],
