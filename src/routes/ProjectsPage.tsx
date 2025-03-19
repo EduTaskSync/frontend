@@ -49,16 +49,16 @@ const ProjectsPage = () => {
     // react-hook-form reset() sets field values to defaults, removes validation errors and clears form submit state
     form.reset();
   };
-// flex items-center justify-between mb-6    flex flex-col items-center space-y-2
+  // flex items-center justify-between mb-6    flex flex-col items-center space-y-2
   return (
     <>
-      <AuthHeader tabName="Group Projects" />
+    <AuthHeader tabName="Group Projects" />
       <MainContent>
-        <div className="flex items-center justify-between mb-6"> 
-          <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">
-            <span className="">Group Projects</span> <br />
-            <span className="text-white">FIT4321 Group 1</span>
-          </h1>
+          <div className="flex items-center justify-between mb-6"> 
+            <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">
+              <span className="">Group Projects</span> <br />
+              <span className="text-white">FIT4321 Group 1</span>
+            </h1>
           
           {/* using controlled variant */}
           <Dialog
