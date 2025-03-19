@@ -1,0 +1,37 @@
+name: Deploy Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SERVER_KEY }}
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ vars.DB_HOST }} << 'EOF'
+            # Change directory to where your app is deployed
+            cd frontend
+
+            # Pull the latest changes
+            git pull origin main
+
+            # Install any new dependencies
+            npm install
+            pm2 restart frontend
+          EOF
