@@ -1,28 +1,30 @@
-import { GroupGrid } from '@/components/GroupGrid';
+import { GroupGrid } from '@/components/groups/GroupGrid';
 import { MainContent } from '@/components/MainContent';
-import { Dock } from '@/components/Dock';
-import { CreateGroupDialog, FormValues } from '@/components/CreateGroupDialog';
+import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const GroupsPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { createGroupResponse } = useGroups();
 
-  const handleGroupCreation = (values: FormValues) => {
-    setError(null); // Clear any previous errors
+  const handleGroupCreation = (formattedData: GroupFormData) => {
+    console.log('Received formatted data:', formattedData);
 
-    const formData = {
-      groupName: values.groupName,
-      imgUrl: values.groupImage ? URL.createObjectURL(values.groupImage) : '',
-    };
+    // Clear any previous errors
+    setError(null);
 
-    createGroupResponse.mutate(formData, {
-      onError: () => {
-        setError('Failed to create group. Please try again.');
+    // Send the data to the backend
+    createGroupResponse.mutate(formattedData, {
+      onError: (error) => {
+        console.error('Mutation error:', error);
+        toast.error('Failed to create group', {
+          description: 'Please try again later',
+        });
       },
     });
   };
@@ -44,7 +46,6 @@ const GroupsPage = () => {
         </div>
         <GroupGrid />
       </MainContent>
-      <Dock />
     </>
   );
 };

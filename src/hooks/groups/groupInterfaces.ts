@@ -27,3 +27,11 @@ export interface NewGroupObj {
 export interface NewGroupResponse {
   groupId: string;
 }
+
+export interface DeleteGroupObj {
+  groupId: string;
+}
+
+export interface DeleteGroupResponse {
+  groupId: string;
+}

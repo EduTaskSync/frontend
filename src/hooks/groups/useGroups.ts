@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { GroupListResponse, GroupsObj } from './groupInterfaces';
-import { getAllGroups, createNewGroup } from './groupQueryUtils';
+import { getAllGroups, createNewGroup, deleteGroup } from './groupQueryUtils';
+import { toast } from 'sonner';
+import axios from 'axios';
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = () => {
@@ -58,7 +60,22 @@ export const useGroups = () => {
       if (context?.previousGroups) {
         queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
       }
+
       console.error('Failed to create group:', err);
+
+      // specific error messaging based on error type
+      let errorMessage = 'Please try again later.';
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 401) {
+          errorMessage = 'Authentication expired. Please log in again.';
+        } else if (err.response.status === 403) {
+          errorMessage = "You don't have permission to create groups.";
+        }
+      }
+
+      toast.error('Failed to create group', {
+        description: errorMessage,
+      });
     },
     onSettled: () => {
       // refetch after error or success to ensure we always have the correct data
@@ -70,8 +87,75 @@ export const useGroups = () => {
     },
   });
 
+  const deleteGroupResponse = useMutation({
+    mutationFn: deleteGroup,
+
+    onMutate: async (deleteGroupObj) => {
+      const targetQueryKeyArr = queryKeys.groupList();
+
+      // cancel outgoing group fetch requests so they don't overwrite the optimistic update
+      await queryClient.cancelQueries({ queryKey: targetQueryKeyArr });
+
+      // store a snapshot of the previous data
+      const previousGroups = queryClient.getQueryData<GroupListResponse>(targetQueryKeyArr);
+
+      // immediately update cached group list by filtering out the deleted group
+      queryClient.setQueryData<GroupListResponse>(targetQueryKeyArr, (oldData) => {
+        if (!oldData) return { groups: [] };
+
+        return {
+          groups: oldData.groups.filter((group) => group.groupId !== deleteGroupObj.groupId),
+        };
+      });
+
+      // return previous data if the server responds with error
+      return { previousGroups };
+    },
+
+    // rollback changes if mutation fails
+    onError: (err, deleteGroupObj, context) => {
+      if (context?.previousGroups) {
+        queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
+      }
+
+      console.error('Failed to delete group:', err);
+
+      // specific error messaging based on error type
+      let errorMessage = 'Please try again later.';
+
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 400) {
+          errorMessage = 'This group has ongoing projects.';
+        } else if (err.response.status === 401) {
+          errorMessage = 'Authentication expired. Please log in again.';
+        } else if (err.response.status === 403) {
+          errorMessage = "You don't have permission to delete this group.";
+        } else if (err.response.status === 404) {
+          errorMessage = 'Group not found. It may have been already deleted.';
+        } else if (err.response.status === 409) {
+          errorMessage = 'This group has active assignments. Use force delete if you want to remove it anyway.';
+        }
+      }
+
+      toast.error('Failed to delete group', {
+        description: errorMessage,
+      });
+    },
+
+    onSettled: () => {
+      // refetch after error or success to ensure we always have the correct data
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
+    },
+
+    onSuccess: (data) => {
+      toast.success('Group deleted successfully');
+      console.log('Group deleted successfully:', data);
+    },
+  });
+
   return {
     fetchGroupsResponse,
     createGroupResponse,
+    deleteGroupResponse,
   };
 };

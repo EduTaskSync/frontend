@@ -1,7 +1,13 @@
 import axios from 'axios';
 import axiosConfig from '@/api/axiosConfig';
 import { CustomError } from '@/utils/ErrorClasses';
-import { NewGroupObj, GroupListResponse, NewGroupResponse } from './groupInterfaces';
+import {
+  NewGroupObj,
+  GroupListResponse,
+  NewGroupResponse,
+  DeleteGroupObj,
+  DeleteGroupResponse,
+} from './groupInterfaces';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
 // GET http request for user's assigned groups
@@ -36,5 +42,12 @@ export const getAllGroups = async () => {
 
 export const createNewGroup = async (newGroup: NewGroupObj) => {
   const response = await axiosConfig.post<NewGroupResponse>(ApiEndPoints.CREATE_GROUP, newGroup);
+  return response.data;
+};
+
+export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
+  const response = await axiosConfig.delete<DeleteGroupResponse>(ApiEndPoints.DELETE_GROUP, {
+    data: { groupId: deleteGroupObj.groupId },
+  });
   return response.data;
 };
