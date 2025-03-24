@@ -28,7 +28,7 @@ import { GroupNameField } from './GroupNameField';
 import { DefaultGroupImagesTab } from './DefaultGroupImagesTab';
 
 // obj shape of response data for POST request
-interface GroupFormData {
+export interface GroupFormData {
   groupName: string;
   imgUrl: string;
 }

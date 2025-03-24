@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Outlet, useParams } from 'react-router';
+import { GroupFormData } from '@/components/groups/CreateGroupDialog';
 
 const GroupsPage = () => {
   const [error, setError] = useState<string | null>(null);

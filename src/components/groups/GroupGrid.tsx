@@ -2,6 +2,7 @@ import { GroupCard } from './GroupCard';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { CustomError } from '@/utils/ErrorClasses';
 
 const getImageUrl = (url: string | null | undefined) => {
   // fallback to group image 1 if server sends no image url
@@ -42,7 +43,9 @@ export const GroupGrid = () => {
   if (isError) {
     return (
       <div className="p-6 text-center ">
-        <p className="text-destructive font-medium">{error instanceof Error ? error.title : 'Failed to load groups'}</p>
+        <p className="text-destructive font-medium">
+          {error instanceof CustomError ? error.title : 'Failed to load groups'}
+        </p>
         <p className="text-sm text-muted-foreground mt-2">
           {error instanceof Error ? error.message : 'Please try again later.'}
         </p>
