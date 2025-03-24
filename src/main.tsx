@@ -39,8 +39,8 @@ const router = createBrowserRouter([
           {
             path: 'groups',
             element: <GroupsPage />,
-            children: [{ path: ':groupId', element: <ProjectDetailPage /> }],
           },
+          { path: 'groups/:groupId', element: <ProjectDetailPage /> },
           { path: 'calendar', element: <CalendarPage /> },
         ],
       },
