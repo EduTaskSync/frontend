@@ -11,6 +11,7 @@ export interface GroupsObj {
   groupMembers: GroupMember[];
   groupId: string;
   groupName: string;
+  imgUrl: string;
 }
 
 // wrapper for the shape of the overall response object

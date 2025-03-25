@@ -38,6 +38,7 @@ export const useGroups = () => {
         groupId: `temp-${Date.now()}`,
         groupName: newGroup.groupName,
         groupMembers: [],
+        imgUrl: '',
       };
 
       // immediately update cached group list
@@ -56,7 +57,7 @@ export const useGroups = () => {
     },
 
     // rollback changes if mutation fails
-    onError: (err, newGroup, context) => {
+    onError: (err, _, context) => {
       if (context?.previousGroups) {
         queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
       }
@@ -113,7 +114,7 @@ export const useGroups = () => {
     },
 
     // rollback changes if mutation fails
-    onError: (err, deleteGroupObj, context) => {
+    onError: (err, _, context) => {
       if (context?.previousGroups) {
         queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
       }
