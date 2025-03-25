@@ -1,6 +1,6 @@
 import { GroupGrid } from '@/components/groups/GroupGrid';
 import { MainContent } from '@/components/MainContent';
-import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
+import { CreateGroupDialog, GroupFormData } from '@/components/groups/CreateGroupDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
