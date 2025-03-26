@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { CountdownTimer } from '../CountdownTimer';
 
 // shape of the group object sent to the GroupCard component
 interface GroupCardProps {
@@ -61,7 +62,13 @@ export const GroupCard = ({ group }: GroupCardProps) => {
 
     // Show toast with undo button
     toast.info(`Deleting ${group.name}`, {
-      description: 'This group will be deleted in a few seconds',
+      description: (
+        <div>
+          <p> This group will be deleted in a few seconds</p>
+          <CountdownTimer duration={4000} />
+        </div>
+      ),
+      duration: 4000,
       action: {
         label: 'Undo',
         onClick: () => {
@@ -78,7 +85,7 @@ export const GroupCard = ({ group }: GroupCardProps) => {
 
   return (
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(168,85,247,0.25)] hover:from-purple-500 hover:via-pink-400 hover:to-indigo-500 group/wrapper">
-      <Link to={`/app/groups/${group.id}`} className="w-full group/card block h-full relative">
+      <Link to={`t${group.id}`} className="w-full group/card block h-full relative">
         <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
           <Button
             variant="destructive"
