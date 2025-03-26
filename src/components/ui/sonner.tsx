@@ -10,13 +10,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       toastOptions={{
         classNames: {
-          toast: 'group p-4 font-sans ', // Increased horizontal padding
-          title: 'text-base font-medium mb-1',
-          description: 'text-sm opacity-90 mt-1',
+          toast: 'group p-4 font-sans flex items-start gap-3', // Added flex, items-start and gap-3
+          title: 'text-base font-heading flex items-center', // Added flex and items-center
+          description: 'text-sm italic font-sans opacity-90 mt-1',
           actionButton:
-            'bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-primary/90 h-9',
+            'bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-primary/90 h-9 font-heading',
           cancelButton:
-            'bg-muted text-muted-foreground px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-muted/90 h-9',
+            'bg-muted text-muted-foreground px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-muted/90 h-9 font-heading',
+          // Add specific styling for the info toast
+          info: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200',
         },
         duration: 4000,
       }}

@@ -4,6 +4,7 @@ import { GroupListResponse, GroupsObj } from './groupInterfaces';
 import { getAllGroups, createNewGroup, deleteGroup } from './groupQueryUtils';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { defaultGroupIcons } from '@/constants/general';
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = () => {
@@ -38,6 +39,7 @@ export const useGroups = () => {
         groupId: `temp-${Date.now()}`,
         groupName: newGroup.groupName,
         groupMembers: [],
+        imgUrl: defaultGroupIcons[0].value,
       };
 
       // immediately update cached group list
