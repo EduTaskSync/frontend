@@ -9,19 +9,13 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '@/constants/routes';
 import { useUserContext } from '@/contexts/UserContext';
+import AvatarSelector from '@/components/profile/AvatarSelector';
 
 export function ProgressiveSignup() {
-  console.log('ProgressiveSignup');
-  const { user: backendUser, isLoading: backendUserLoading, exists: userExists } = useUserContext();
+  const { user: backendUser, isLoading: backendUserLoading, refetchUser } = useUserContext();
   const { user: auth0User, isLoading: auth0Loading } = useAuth();
   const { useCreateUser } = useUser();
   const navigate = useNavigate();
-  // Redirect if user exists
-  useEffect(() => {
-    if (userExists) {
-      navigate(routes.dashboard);
-    }
-  }, [userExists, navigate]);
 
   // For creating the user
   const { mutate: createUser, isPending, error: createError, isSuccess } = useCreateUser();
@@ -30,6 +24,8 @@ export function ProgressiveSignup() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<CreateUserDto>({
@@ -39,8 +35,12 @@ export function ProgressiveSignup() {
       firstName: auth0User?.given_name || auth0User?.name?.split(' ')[0] || '',
       lastName: auth0User?.family_name || auth0User?.name?.split(' ').slice(1).join(' ') || '',
       auth0Id: auth0User?.sub || '',
+      profilePicture: auth0User?.picture || '',
     },
   });
+
+  // Watch the profile picture value to pass to AvatarSelector
+  const profilePicture = watch('profilePicture');
   // Update form values when Auth0 user data is loaded
   useEffect(() => {
     if (!auth0Loading && auth0User) {
@@ -50,9 +50,11 @@ export function ProgressiveSignup() {
         firstName: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
         lastName: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
         auth0Id: auth0User.sub || '',
+        profilePicture: auth0User.picture || '',
       });
     }
   }, [auth0Loading, auth0User, reset]);
+
   // Redirect to dashboard if user exists or was just created
   useEffect(() => {
     if (backendUser || isSuccess) {
@@ -66,12 +68,21 @@ export function ProgressiveSignup() {
     createUser(data, {
       onSuccess: () => {
         reset();
+        refetchUser();
         navigate(routes.dashboard);
       },
     });
   };
 
-  // Show loading state
+  // Handler for avatar selection
+  const handleAvatarChange = (url: string) => {
+    setValue('profilePicture', url, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
+
+  // Loading state
   if (auth0Loading || backendUserLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -93,7 +104,6 @@ export function ProgressiveSignup() {
     );
   }
 
-  // Only show the signup form if backend user doesn't exist
   return (
     <div className="w-full max-w-md mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold text-center">Complete Your Profile</h2>
@@ -102,7 +112,23 @@ export function ProgressiveSignup() {
         Welcome! Please complete your profile to continue.
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <label className="block text-sm font-medium">Profile Picture</label>
+
+          <AvatarSelector
+            initialImage={auth0User.picture || undefined}
+            selected={profilePicture}
+            onChange={handleAvatarChange}
+            seed={auth0User.email || auth0User.sub || 'default'}
+          />
+
+          {/* Hidden input to register with React Hook Form */}
+          <input type="hidden" {...register('profilePicture')} />
+
+          {errors.profilePicture && <p className="text-sm text-red-500">{errors.profilePicture.message}</p>}
+        </div>
+
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
             Email
@@ -116,7 +142,7 @@ export function ProgressiveSignup() {
             disabled
           />
           <p className="text-xs text-gray-500">Email address is provided by your authentication provider</p>
-          {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
+          {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -130,7 +156,7 @@ export function ProgressiveSignup() {
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             {...register('firstName')}
           />
-          {errors.firstName && <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>}
+          {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -144,7 +170,7 @@ export function ProgressiveSignup() {
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             {...register('lastName')}
           />
-          {errors.lastName && <p className="text-sm text-red-500 mt-1">{errors.lastName.message}</p>}
+          {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
         </div>
 
         <Button type="submit" className="w-full" disabled={isPending}>

@@ -1,6 +1,7 @@
 export enum ApiEndPoints {
   CREATE_USER = '/users/create',
   GET_USER = '/users',
+  UPDATE_USER = '/users/update',
   AUTH_SESSION = '/auth/session',
   LOGOUT = '/auth/logout',
 

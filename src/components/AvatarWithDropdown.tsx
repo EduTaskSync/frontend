@@ -29,7 +29,7 @@ export default function DropdownMenuWithAvatar({ user }: { user: User }) {
             whileTap={{ scale: 0.95 }}
           >
             <Avatar className="h-7 w-7 sm:h-10 sm:w-10 border border-primary sm:border-2">
-              <AvatarImage src={user?.picture} alt={user.firstName} />
+              <AvatarImage src={user.profilePicture || undefined} alt={user.firstName} />
               <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
             </Avatar>
           </motion.div>
