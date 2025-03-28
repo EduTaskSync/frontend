@@ -8,7 +8,7 @@ export interface GroupMember {
 
 // shape of the 'groups' property of the backend response object
 export interface GroupsObj {
-  groupMembers: GroupMember[];
+  groupMembers: number;
   groupId: string;
   groupName: string;
   imgUrl: string;

@@ -62,7 +62,7 @@ export const GroupGrid = () => {
           group={{
             id: group.groupId,
             name: group.groupName,
-            size: group.groupMembers.length,
+            size: group.groupMembers,
             image: getImageUrl(group.imgUrl),
           }}
         />

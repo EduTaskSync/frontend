@@ -85,7 +85,18 @@ export const GroupCard = ({ group }: GroupCardProps) => {
 
   return (
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(168,85,247,0.25)] hover:from-purple-500 hover:via-pink-400 hover:to-indigo-500 group/wrapper">
-      <Link to={`t${group.id}`} className="w-full group/card block h-full relative">
+      <Link
+        to={`${group.id}`}
+        state={{
+          groupDetails: {
+            id: group.id,
+            name: group.name,
+            size: group.size,
+            image: group.image,
+          },
+        }}
+        className="w-full group/card block h-full relative"
+      >
         <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
           <Button
             variant="destructive"
@@ -105,12 +116,9 @@ export const GroupCard = ({ group }: GroupCardProps) => {
           )}
           style={{ backgroundImage: `url(${group.image})` }}
         >
-          {/* Modern glass-like overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 backdrop-blur-[2px] opacity-60 transition-opacity duration-300 group-hover/card:opacity-75"></div>
-
           {/* Content container */}
           <div className="flex flex-col justify-end h-full z-10">
-            {/* Name with modern glass effect - simplified responsive sizing */}
             <div className="inline-flex flex-col px-3 py-2 bg-black/30 border border-white/10 backdrop-blur-md rounded-lg transition-all duration-300 group-hover/card:bg-black/40 max-w-full">
               <h2 className="font-bold text-lg text-primary-foreground font-heading tracking-tight mb-1 truncate">
                 {group.name}

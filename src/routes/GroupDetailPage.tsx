@@ -1,14 +1,17 @@
 import { MainContent } from '@/components/MainContent';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { CircleArrowLeft, Users, Calendar, Settings, MessageSquare, PlusCircle } from 'lucide-react';
-import { Link } from 'react-router';
+import { CircleArrowLeft, Users, Calendar, PlusCircle } from 'lucide-react';
+import { Link, useLocation } from 'react-router';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { CardSkeleton } from '@/components/CardSkeleton';
+import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 
 const GroupDetailPage = () => {
   const isLoading = false; // Eventually you'll determine this with a data fetch
+
+  const { state } = useLocation();
 
   return (
     <MainContent>
@@ -30,10 +33,7 @@ const GroupDetailPage = () => {
             <Skeleton className="h-4 w-1/3" />
           </div>
         ) : (
-          <>
-            <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">Group Name</h1>
-            <p className="text-muted-foreground">Created on: January 1, 2023</p>
-          </>
+          <GroupDetailsHeader groupDetails={state.groupDetails} />
         )}
       </div>
 
@@ -147,70 +147,6 @@ const GroupDetailPage = () => {
           </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
-      </div>
-
-      {/* Content Tabs and Main Area */}
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Left column - Main content area */}
-        <div className="flex-1">
-          {/* Navigation Tabs */}
-          <div className="border-b mb-6">
-            <div className="flex overflow-x-auto gap-2 sm:gap-6 pb-2">
-              {['Overview', 'Tasks', 'Meetings', 'Resources', 'Discussion'].map((tab) =>
-                isLoading ? (
-                  <Skeleton key={tab} className="h-9 w-24" />
-                ) : (
-                  <Button key={tab} variant="ghost" size="sm" className="font-heading">
-                    {tab}
-                  </Button>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Main content section */}
-          <div className="space-y-6">
-            {/* About section */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-heading font-semibold">About</h2>
-              {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                </div>
-              ) : (
-                <p>Group description text goes here...</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right column - Sidebar */}
-        <div className="md:w-80 lg:w-96 space-y-6">
-          {/* Quick actions */}
-          <div className="rounded-xl border shadow-sm p-4">
-            <h3 className="font-heading font-semibold mb-3">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {isLoading ? (
-                Array(4)
-                  .fill(0)
-                  .map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
-              ) : (
-                <>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>Message All</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </MainContent>
   );
