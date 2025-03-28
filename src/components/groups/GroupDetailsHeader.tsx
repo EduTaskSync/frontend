@@ -42,17 +42,18 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
         {/* Content */}
         <div className="relative p-5 sm:p-6">
           {/* Top row with image and main info */}
-          <div className="flex items-start gap-5 mb-4">
+          <div className="flex items-start gap-5">
             {/* Enlarged rectangular image preview */}
             <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-lg overflow-hidden ring-1 ring-primary/30 shadow-md flex-shrink-0">
               <img src={image || '/group-icon-1.jpg'} alt={name} className="w-full h-full object-cover" />
             </div>
 
-            <div className="flex-1 min-w-0 flex flex-col justify-center h-24 sm:h-32">
+            <div className="flex-1 min-w-0 flex flex-col justify-start">
+              {/* Group name */}
               <h1 className="text-2xl sm:text-4xl text-foreground font-heading font-extrabold truncate">{name}</h1>
 
-              {/* Stats row*/}
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-lg text-muted-foreground">
+              {/* Member badge on its own line */}
+              <div className="mt-2 mb-3">
                 <Badge
                   variant="outline"
                   className="flex items-center gap-1.5 px-3 py-1 bg-background/50 border-primary/20 text-base"
@@ -62,7 +63,10 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                     {size} {size > 1 ? 'members' : 'member'}
                   </span>
                 </Badge>
+              </div>
 
+              {/* Additional stats on a separate line */}
+              <div className="flex space-x-5 text-sm text-muted-foreground pl-1">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-primary" />
                   <span>Created March 15, 2023</span>
@@ -77,7 +81,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
           </div>
 
           {/* Bottom row with description/actions */}
-          <div className="flex justify-between items-center pt-2 border-t border-border/40">
+          <div className="flex justify-between items-center pt-3 mt-4 border-t border-border/40">
             <p className="text-sm text-muted-foreground max-w-xl">
               You can add more details about the group's purpose and activities here.
             </p>
