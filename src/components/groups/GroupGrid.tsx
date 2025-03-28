@@ -1,7 +1,6 @@
 import { GroupCard } from './GroupCard';
 import { useGroups } from '@/hooks/groups/useGroups';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { CardSkeleton } from '../CardSkeleton';
 import { CustomError } from '@/utils/ErrorClasses';
 
 const getImageUrl = (url: string | null | undefined) => {
@@ -25,18 +24,7 @@ export const GroupGrid = () => {
 
   // show loading skeletons for the group cards while data is being fetched
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
-        {new Array(6).fill(undefined).map((_, index) => (
-          <div
-            key={index}
-            className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400/20 via-pink-300/20 to-indigo-400/20"
-          >
-            <Skeleton className={cn('h-[calc(12rem-4px)] rounded-[calc(0.75rem-1px)] w-full', 'bg-card/50')} />
-          </div>
-        ))}
-      </div>
-    );
+    return <CardSkeleton variant="group" count={6} />;
   }
 
   // show error message inside the grid if fetch failed

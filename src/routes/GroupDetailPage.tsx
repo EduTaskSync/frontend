@@ -1,21 +1,22 @@
 import { MainContent } from '@/components/MainContent';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Users, Calendar, Settings, MessageSquare, PlusCircle } from 'lucide-react';
+import { CircleArrowLeft, Users, Calendar, Settings, MessageSquare, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { CardSkeleton } from '@/components/CardSkeleton';
 
 const GroupDetailPage = () => {
-  const isLoading = true; // Eventually you'll determine this with a data fetch
+  const isLoading = false; // Eventually you'll determine this with a data fetch
 
   return (
     <MainContent>
       {/* Back button */}
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild className="gap-1 pl-1">
-          <Link to="/app/groups">
-            <ChevronLeft className="h-4 w-4" />
+      <div className="flex mb-6 font-heading">
+        <Button variant="ghost" size="lg" asChild className="gap-2 pl-1">
+          <Link to="../">
+            <CircleArrowLeft />
             <span>Back to Groups</span>
           </Link>
         </Button>
@@ -53,7 +54,7 @@ const GroupDetailPage = () => {
             <h3 className="font-heading font-semibold text-lg">Members</h3>
           </div>
           {isLoading ? (
-            <Skeleton className="h-9 w-24" />
+            <CardSkeleton variant="member" count={8} horizontal={true} />
           ) : (
             <Button size="sm" variant="outline" className="gap-1">
               <PlusCircle className="h-4 w-4" />
