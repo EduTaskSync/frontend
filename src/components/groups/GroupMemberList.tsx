@@ -43,7 +43,7 @@ export const GroupMemberList = () => {
     <ScrollArea className="w-full whitespace-nowrap pb-4">
       <div className="flex space-x-4">
         {isLoading ? (
-          <CardSkeleton variant="member" count={4} horizontal={true} />
+          <CardSkeleton variant="member" count={5} horizontal={true} />
         ) : (
           members.map((member) => <GroupMemberCard key={member.userId} groupMember={member} />)
         )}
