@@ -28,7 +28,7 @@ export const GroupMemberList = () => {
           <Button
             variant="outline"
             size="sm"
-            className="mt-2 border-destructive/20  hover:bg-destructive/10"
+            className="mt-2 border-destructive/20  hover:bg-destructive/10 hover:cursor-pointer"
             onClick={() => getGroupMembersResponse.refetch()}
           >
             <RefreshCw className="h-3.5 w-3.5" />

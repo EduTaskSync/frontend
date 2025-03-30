@@ -120,7 +120,7 @@ export const GroupDetailsDialog = ({
     >
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="bg-primary hover:bg-primary/90 font-heading">
+          <Button className="bg-primary hover:bg-primary/90 font-heading hover:cursor-pointer">
             {groupId ? 'Edit Group' : 'New Group'}
           </Button>
         )}
@@ -203,7 +203,7 @@ export const GroupDetailsDialog = ({
 
             <DialogFooter className="gap-2">
               <Button
-                className="font-semibold"
+                className="font-semibold hover:cursor-pointer"
                 variant="outline"
                 type="button"
                 onClick={() => {

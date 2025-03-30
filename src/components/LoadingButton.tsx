@@ -10,7 +10,7 @@ export const LoadingButton = ({
   loadingText: string;
   defaultText: string;
 }) => (
-  <Button type="submit" className="font-semibold" disabled={isLoading}>
+  <Button type="submit" className="font-semibold hover:cursor-pointer" disabled={isLoading}>
     {isLoading ? (
       <div className="flex items-center gap-2">
         <Loader2 className="h-4 w-4 animate-spin" />

@@ -13,7 +13,7 @@ const GroupDetailPage = () => {
     <MainContent>
       {/* Back button */}
       <div className="flex mb-6 font-heading">
-        <Button variant="ghost" size="lg" asChild className="gap-2 pl-1">
+        <Button variant="ghost" size="lg" asChild className="gap-2 pl-1 hover:cursor-pointer">
           <Link to="../">
             <CircleArrowLeft />
             <span>Back to Groups</span>
@@ -34,7 +34,7 @@ const GroupDetailPage = () => {
             <h3 className="font-heading font-semibold text-lg">Members</h3>
           </div>
 
-          <Button size="sm" className="gap-1 font-heading text-sm">
+          <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
             <span>Invite</span>
           </Button>
         </div>
@@ -51,7 +51,7 @@ const GroupDetailPage = () => {
             <h3 className="font-heading font-semibold text-lg">Projects</h3>
           </div>
 
-          <Button size="sm" className="gap-2 font-heading text-sm">
+          <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
             <span>New Project</span>
           </Button>
         </div>

@@ -81,7 +81,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
             trigger={
               <Button
                 size="sm"
-                className="h-9 w-9 rounded-full p-0 bg-primary shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-primary/90 hover:scale-105 transition-transform duration-150"
+                className="h-9 w-9 rounded-full p-0 bg-primary shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-primary/90 hover:scale-105 transition-transform duration-150 hover:cursor-pointer"
               >
                 <PencilIcon className="h-4 w-4 text-white" />
                 <span className="sr-only">Edit group</span>
