@@ -8,5 +8,6 @@ export const queryKeys = {
   editGroup: (id: string) => [...queryKeys.groups, id, 'edit'] as const,
 
   // for project related queries
+
   // for calendar related queries
 };

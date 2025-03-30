@@ -59,7 +59,7 @@ export const useGroups = () => {
     },
 
     // rollback changes if mutation fails
-    onError: (err, newGroup, context) => {
+    onError: (err, _, context) => {
       if (context?.previousGroups) {
         queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
       }
@@ -116,7 +116,7 @@ export const useGroups = () => {
     },
 
     // rollback changes if mutation fails
-    onError: (err, deleteGroupObj, context) => {
+    onError: (err, _, context) => {
       if (context?.previousGroups) {
         queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
       }

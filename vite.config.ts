@@ -11,6 +11,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  preview: {
+    port: 5173,
+  },
   server: {
     allowedHosts: ['edutasksync.xyz', 'www.edutasksync.xyz'],
   },

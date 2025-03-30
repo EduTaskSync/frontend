@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 
 export default function ColourfulText({ text }: { text: string }) {
