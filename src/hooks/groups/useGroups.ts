@@ -1,10 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { GroupListResponse, GroupsObj } from './groupInterfaces';
-import { getAllGroups, createNewGroup, deleteGroup } from './groupQueryUtils';
+import { getAllGroups, createNewGroup, deleteGroup, getGroupMembers, editGroupDetails } from './groupQueryUtils';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { defaultGroupIcons } from '@/constants/general';
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = () => {
@@ -38,8 +37,10 @@ export const useGroups = () => {
       const optimisticGroup: GroupsObj = {
         groupId: `temp-${Date.now()}`,
         groupName: newGroup.groupName,
-        groupMembers: [],
-        imgUrl: defaultGroupIcons[0].value,
+        groupDescription: newGroup.groupDetails,
+        groupCreationDate: Date.now().toString(),
+        groupMembers: 1,
+        imgUrl: newGroup.imgUrl,
       };
 
       // immediately update cached group list
@@ -134,8 +135,6 @@ export const useGroups = () => {
           errorMessage = "You don't have permission to delete this group.";
         } else if (err.response.status === 404) {
           errorMessage = 'Group not found. It may have been already deleted.';
-        } else if (err.response.status === 409) {
-          errorMessage = 'This group has active assignments. Use force delete if you want to remove it anyway.';
         }
       }
 
@@ -155,9 +154,47 @@ export const useGroups = () => {
     },
   });
 
+  const getGroupMembersResponse = useQuery({
+    queryKey: queryKeys.getMembers,
+    queryFn: getGroupMembers,
+    staleTime: 5 * 60 * 1000, // 5 mins
+    gcTime: 10 * 60 * 1000, // 10 mins
+  });
+
+  const editGroupDetailsResponse = useMutation({
+    mutationFn: editGroupDetails,
+    onError: (err) => {
+      console.error('Failed to edit group:', err);
+
+      // specific error messaging based on error type
+      let errorMessage = 'Please try again later.';
+
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 400) {
+          errorMessage = 'This group cannot be edited.';
+        } else if (err.response.status === 401) {
+          errorMessage = 'Authentication expired. Please log in again.';
+        } else if (err.response.status === 403) {
+          errorMessage = "You don't have permission to edit this group.";
+        } else if (err.response.status === 404) {
+          errorMessage = 'Group details not found. Please try again later.';
+        }
+      }
+
+      toast.error('Failed to edit group', {
+        description: errorMessage,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
+    },
+  });
+
   return {
     fetchGroupsResponse,
     createGroupResponse,
     deleteGroupResponse,
+    getGroupMembersResponse,
+    editGroupDetailsResponse,
   };
 };

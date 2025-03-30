@@ -9,9 +9,9 @@ export class AuthError extends Error {
 }
 
 export class CustomError extends Error {
-  title: string;
+  title?: string;
 
-  constructor(title: string, message: string) {
+  constructor(message: string, title?: string) {
     super(message);
     this.title = title;
   }

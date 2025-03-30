@@ -7,6 +7,8 @@ import {
   NewGroupResponse,
   DeleteGroupObj,
   DeleteGroupResponse,
+  GetGroupMembersResponse,
+  UpdatedGroup,
 } from './groupInterfaces';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
@@ -25,18 +27,18 @@ export const getAllGroups = async () => {
       const status = error.response?.status;
 
       if (status === 401) {
-        throw new CustomError('Authentication error', 'Please log in again.');
+        throw new CustomError('Please log in again.', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('Permission denied', 'You do not have access to one or more groups.');
+        throw new CustomError('You do not have access to one or more groups.', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('Groups not found', 'Please try again later.');
+        throw new CustomError('Please try again later.', 'Groups not found');
       } else if (status === 500) {
-        throw new CustomError('Internal Server Error', 'Please try again later.');
+        throw new CustomError('Please try again later.', 'Internal Server Error');
       }
     }
 
     // handle unknown errors
-    throw new CustomError('Unknown Error', error instanceof Error ? error.message : 'Please try again later');
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
   }
 };
 
@@ -50,4 +52,34 @@ export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
     data: { groupId: deleteGroupObj.groupId },
   });
   return response.data;
+};
+
+export const getGroupMembers = async () => {
+  try {
+    const response = await axiosConfig.get<GetGroupMembersResponse>(ApiEndPoints.GET_GROUP_USERS);
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching group member data:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to view members.', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Please try again later.', 'Members not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const editGroupDetails = async (updatedGroup: UpdatedGroup) => {
+  await axiosConfig.post(ApiEndPoints.UPDATE_GROUP, updatedGroup);
 };

@@ -23,6 +23,8 @@ interface GroupCardProps {
   group: {
     id: string;
     name: string;
+    description: string;
+    creationDate: string;
     size: number;
     image: string;
   };
@@ -91,6 +93,8 @@ export const GroupCard = ({ group }: GroupCardProps) => {
           groupDetails: {
             id: group.id,
             name: group.name,
+            description: group.description,
+            creationDate: group.creationDate,
             size: group.size,
             image: group.image,
           },

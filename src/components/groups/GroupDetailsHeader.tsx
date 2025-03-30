@@ -1,18 +1,71 @@
+import { useState, useEffect } from 'react';
 import { Users, Calendar, Clock, PencilIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatDate } from '@/lib/utils';
+import { useGroups } from '@/hooks/groups/useGroups';
+import { GroupData, GroupDetailsDialog } from './GroupDetailsDialog';
+import { toast } from 'sonner';
+import { UpdatedGroup } from '@/hooks/groups/groupInterfaces';
 
 interface GroupDetailsHeaderProps {
   groupDetails: {
     id: string;
     name: string;
+    description: string;
+    creationDate: string;
     size: number;
     image: string;
   };
 }
 
 export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) => {
-  const { name, size, image } = groupDetails;
+  // Add local state for optimistic updates
+  const [localDetails, setLocalDetails] = useState(groupDetails);
+
+  // Update local state if prop changes (e.g. from parent component)
+  useEffect(() => {
+    setLocalDetails(groupDetails);
+  }, [groupDetails]);
+
+  const { id, name, size, image, description, creationDate } = localDetails;
+
+  const formattedDate = formatDate(creationDate);
+
+  const { editGroupDetailsResponse } = useGroups();
+
+  // Handler for group edit submission
+  const handleEditGroup = (formattedData: GroupData | UpdatedGroup) => {
+    // Type guard to ensure we're working with an UpdatedGroup
+    if ('groupId' in formattedData) {
+      // Immediately update local state for optimistic UI update
+      setLocalDetails({
+        ...localDetails,
+        name: formattedData.groupName,
+        description: formattedData.groupDetails,
+        image: formattedData.imgUrl,
+      });
+
+      // Then submit to the backend
+      editGroupDetailsResponse.mutate(formattedData as UpdatedGroup, {
+        onError: (error) => {
+          console.error('Edit group error:', error);
+          // If error occurs, revert to original data
+          setLocalDetails(groupDetails);
+          toast.error('Failed to update group details', {
+            description: 'Please try again later',
+          });
+        },
+      });
+    }
+  };
+
+  const prefillData: UpdatedGroup = {
+    groupId: id,
+    groupName: name,
+    groupDetails: description,
+    imgUrl: image,
+  };
 
   return (
     <div className="w-full">
@@ -20,14 +73,21 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
       <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg group">
         {/* Edit button - appears on hover using group-hover */}
         <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button
-            size="sm"
-            className="h-9 w-9 rounded-full p-0 bg-primary shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-primary/90 hover:scale-105 transition-transform duration-150"
-            onClick={() => console.log('Edit group details')}
-          >
-            <PencilIcon className="h-4 w-4 text-white" />
-            <span className="sr-only">Edit group</span>
-          </Button>
+          <GroupDetailsDialog
+            onSubmit={handleEditGroup}
+            isUpdating={editGroupDetailsResponse.isPending}
+            groupId={id}
+            prefillData={prefillData}
+            trigger={
+              <Button
+                size="sm"
+                className="h-9 w-9 rounded-full p-0 bg-primary shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-primary/90 hover:scale-105 transition-transform duration-150"
+              >
+                <PencilIcon className="h-4 w-4 text-white" />
+                <span className="sr-only">Edit group</span>
+              </Button>
+            }
+          />
         </div>
 
         {/* Background image with overlay */}
@@ -69,7 +129,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
               <div className="flex space-x-5 text-sm text-muted-foreground pl-1">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-primary" />
-                  <span>Created March 15, 2023</span>
+                  <span>Created on {formattedDate}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -83,7 +143,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
           {/* Bottom row with description/actions */}
           <div className="flex justify-between items-center pt-3 mt-4 border-t border-border/40">
             <p className="text-sm text-muted-foreground max-w-xl">
-              You can add more details about the group's purpose and activities here.
+              {description || "You can add more details about the group's purpose and activities here."}
             </p>
 
             <div className="flex items-center gap-2 flex-shrink-0 ml-4">{/* Any action buttons could go here */}</div>

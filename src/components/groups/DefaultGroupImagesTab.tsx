@@ -18,8 +18,8 @@ export const DefaultGroupImagesTab = ({ control }: { control: Control<groupFormV
               className={cn(
                 'cursor-pointer rounded-md overflow-hidden border-2 transition-all',
                 field.value === icon.value
-                  ? 'border-primary ring-2 ring-primary/30'
-                  : 'border-border hover:border-primary/50'
+                  ? 'border-primary ring-2 ring-purple-300'
+                  : 'border-border hover:border-purple-300/80'
               )}
             >
               <img src={icon.src} alt={icon.alt} className="w-full h-16 object-cover" />
