@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const groupFormSchema = z
   .object({
     groupName: z.string().min(1, 'Group name is required'),
+    groupDetails: z.string().max(500, 'Keep the group description under 500 characters'),
     groupImageSource: z.enum(['predefined', 'custom']).default('predefined'),
     predefinedImage: z.string().optional(),
     customImageUrl: z.string().optional(),

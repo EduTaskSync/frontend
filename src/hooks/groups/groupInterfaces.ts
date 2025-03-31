@@ -1,15 +1,9 @@
-// object shape for a group member inside the 'groups' property of response
-export interface GroupMember {
-  userId: string;
-  userRole: string;
-  userFirstName: string;
-  userLastName: string;
-}
-
 // shape of the 'groups' property of the backend response object
 export interface GroupsObj {
-  groupMembers: GroupMember[];
+  groupMembers: number;
   groupId: string;
+  groupDescription: string;
+  groupCreationDate: string;
   groupName: string;
   imgUrl: string;
 }
@@ -22,6 +16,7 @@ export interface GroupListResponse {
 // request and response object shapes for creating new group
 export interface NewGroupObj {
   groupName: string;
+  groupDetails: string;
   imgUrl: string;
 }
 
@@ -35,4 +30,23 @@ export interface DeleteGroupObj {
 
 export interface DeleteGroupResponse {
   groupId: string;
+}
+
+export interface GroupMember {
+  userId: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+  profilePicture: string;
+}
+
+export interface GetGroupMembersResponse {
+  users: GroupMember[];
+}
+
+export interface UpdatedGroup {
+  groupId: string;
+  groupName: string;
+  imgUrl: string;
+  groupDetails: string;
 }

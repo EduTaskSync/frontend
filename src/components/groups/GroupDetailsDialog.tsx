@@ -24,31 +24,44 @@ import {
 import { ImagePreview } from './ImagePreview';
 import { LoadingButton } from '@/components/LoadingButton';
 import { useCustomUrlValidation } from '@/hooks/groups/useCustomUrlValidation';
-import { GroupNameField } from './GroupNameField';
+import { BasicGroupInfoFields } from './BasicGroupInfoFields';
 import { DefaultGroupImagesTab } from './DefaultGroupImagesTab';
+import { UpdatedGroup } from '@/hooks/groups/groupInterfaces';
 
 // obj shape of response data for POST request
-export interface GroupFormData {
+export interface GroupData {
   groupName: string;
+  groupDetails: string;
   imgUrl: string;
+  groupId?: string; // Optional groupId for updates
 }
 
-interface CreateGroupDialogProps {
-  onCreateGroup: (formattedData: GroupFormData) => void;
-  isCreating?: boolean;
+interface GroupDetailsDialogProps {
+  onSubmit: (formattedData: GroupData | UpdatedGroup) => void;
+  isUpdating?: boolean;
+  groupId?: string;
+  prefillData?: UpdatedGroup;
+  trigger?: React.ReactNode;
 }
 
-export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateGroupDialogProps) => {
+export const GroupDetailsDialog = ({
+  onSubmit,
+  isUpdating = false,
+  groupId,
+  prefillData,
+  trigger,
+}: GroupDetailsDialogProps) => {
   const [open, setOpen] = useState(false);
 
   // initialize form with react-hook-form
   const form = useForm<groupFormValues>({
     resolver: zodResolver(groupFormSchema),
     defaultValues: {
-      groupName: '',
-      groupImageSource: 'predefined',
-      predefinedImage: defaultGroupIcons[0].value,
-      customImageUrl: '',
+      groupName: prefillData?.groupName || '',
+      groupDetails: prefillData?.groupDetails || '',
+      groupImageSource: prefillData?.imgUrl.startsWith('https') ? 'custom' : 'predefined',
+      predefinedImage: !prefillData?.imgUrl.startsWith('http') ? prefillData?.imgUrl : defaultGroupIcons[0].value,
+      customImageUrl: prefillData?.imgUrl.startsWith('http') ? prefillData.imgUrl : '',
     },
   });
 
@@ -62,22 +75,37 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateG
         ? (values.predefinedImage ?? defaultGroupIcons[0].value)
         : (values.customImageUrl ?? '');
 
-    const formattedData: GroupFormData = {
-      groupName: values.groupName,
-      imgUrl,
-    };
+    let formattedData: GroupData | UpdatedGroup;
+    if (groupId) {
+      formattedData = {
+        groupName: values.groupName,
+        groupDetails: values.groupDetails,
+        imgUrl,
+        groupId,
+      };
+    } else {
+      formattedData = {
+        groupName: values.groupName,
+        groupDetails: values.groupDetails,
+        imgUrl,
+      };
+    }
 
     // send form data over to the backend
-    onCreateGroup(formattedData);
-
+    onSubmit(formattedData);
     // close the dialog after submission
     setOpen(false);
     form.reset();
 
-    // success toast notification
-    toast.success(`${formattedData.groupName} group created successfully`, {
-      description: 'You can now invite members to your group',
-    });
+    if (groupId) {
+      // group details edited successfully
+      toast.success(`${formattedData.groupName} group details updated successfully`);
+    } else {
+      //new group created successfully
+      toast.success(`${formattedData.groupName} group created successfully`, {
+        description: 'You can now invite members to your group',
+      });
+    }
   };
 
   return (
@@ -91,20 +119,36 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateG
       }}
     >
       <DialogTrigger asChild>
-        <Button className="bg-primary hover:bg-primary/90 font-heading">New Group</Button>
+        {trigger || (
+          <Button className="bg-primary hover:bg-primary/90 font-heading hover:cursor-pointer">
+            {groupId ? 'Edit Group' : 'New Group'}
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto p-6 font-sans">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading mb-1">
-            Create <span className="text-purple-300">New Group</span>
+            {groupId ? (
+              <>
+                Edit <span className="text-purple-300">Group Details</span>
+              </>
+            ) : (
+              <>
+                Create <span className="text-purple-300">New Group</span>
+              </>
+            )}
           </DialogTitle>
-          <DialogDescription>Create a group to organize projects and collaborate with team members.</DialogDescription>
+          <DialogDescription>
+            {groupId
+              ? "Update your group's details and settings."
+              : 'Create a group to organize projects and collaborate with team members.'}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-4 font-sans">
-            <GroupNameField control={form.control} />
+            <BasicGroupInfoFields control={form.control} />
             <FormField
               control={form.control}
               name="groupImageSource"
@@ -148,7 +192,7 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateG
                         <ImagePreview
                           imageSource={imageSource}
                           customImageUrl={customImageUrl as string}
-                          defaultIcon={defaultGroupIcons[0].value}
+                          defaultIcon={prefillData ? prefillData.imgUrl : defaultGroupIcons[0].value}
                         />
                       </TabsContent>
                     </Tabs>
@@ -159,7 +203,7 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateG
 
             <DialogFooter className="gap-2">
               <Button
-                className="font-semibold"
+                className="font-semibold hover:cursor-pointer"
                 variant="outline"
                 type="button"
                 onClick={() => {
@@ -170,9 +214,9 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating = false }: CreateG
                 Cancel
               </Button>
               <LoadingButton
-                isLoading={form.formState.isSubmitting || isCreating}
-                loadingText="Creating..."
-                defaultText="Create Group"
+                isLoading={form.formState.isSubmitting || isUpdating}
+                loadingText={groupId ? 'Updating...' : 'Creating...'}
+                defaultText={groupId ? 'Update Group' : 'Create Group'}
               />
             </DialogFooter>
           </form>

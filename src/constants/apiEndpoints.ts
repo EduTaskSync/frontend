@@ -9,4 +9,6 @@ export enum ApiEndPoints {
   CREATE_GROUP = '/groups/create',
   ADD_USER_GROUP = '/groups/add',
   DELETE_GROUP = '/groups/delete',
+  GET_GROUP_USERS = '/groups/get_users_in_group',
+  UPDATE_GROUP = '/groups/update_group',
 }

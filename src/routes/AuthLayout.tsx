@@ -8,7 +8,7 @@ const AuthLayout = () => {
 
   const currentPageName =
     routePageNames[pathName as keyof typeof routePageNames] ||
-    (pathName.startsWith('/app/groups/') ? 'Project Detail' : '');
+    (pathName.startsWith('/app/groups/') ? 'Group Details' : '');
 
   return (
     <>

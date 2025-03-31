@@ -1,7 +1,9 @@
 import { GroupCard } from './GroupCard';
 import { useGroups } from '@/hooks/groups/useGroups';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { CardSkeleton } from '../CardSkeleton';
+import { CustomError } from '@/utils/ErrorClasses';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 const getImageUrl = (url: string | null | undefined) => {
   // fallback to group image 1 if server sends no image url
@@ -20,32 +22,37 @@ const getImageUrl = (url: string | null | undefined) => {
 
 export const GroupGrid = () => {
   const { fetchGroupsResponse } = useGroups();
-  const { data, isLoading, isError, error } = fetchGroupsResponse;
+  const { data, isLoading, isError, error, refetch } = fetchGroupsResponse;
 
   // show loading skeletons for the group cards while data is being fetched
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
-        {new Array(6).fill(undefined).map((_, index) => (
-          <div
-            key={index}
-            className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400/20 via-pink-300/20 to-indigo-400/20"
-          >
-            <Skeleton className={cn('h-[calc(12rem-4px)] rounded-[calc(0.75rem-1px)] w-full', 'bg-card/50')} />
-          </div>
-        ))}
-      </div>
-    );
+    return <CardSkeleton variant="group" count={6} />;
   }
 
   // show error message inside the grid if fetch failed
   if (isError) {
     return (
-      <div className="p-6 text-center ">
-        <p className="text-destructive font-medium">{error instanceof Error ? error.name : 'Failed to load groups'}</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          {error instanceof Error ? error.message : 'Please try again later.'}
-        </p>
+      <div className="w-full p-6 rounded-xl border border-destructive/20 bg-destructive/5 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <h4 className="text-lg font-heading font-semibold text-foreground">
+            {error instanceof CustomError ? error.title : 'Failed to load groups'}
+          </h4>
+          <p className="text-sm text-muted-foreground max-w-md">
+            {error instanceof Error ? error.message : 'Please try again later.'}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2 border-destructive/20 hover:bg-destructive/10 gap-2"
+            onClick={() => refetch()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
@@ -71,7 +78,9 @@ export const GroupGrid = () => {
           group={{
             id: group.groupId,
             name: group.groupName,
-            size: group.groupMembers.length,
+            size: group.groupMembers,
+            description: group.groupDescription,
+            creationDate: group.groupCreationDate,
             image: getImageUrl(group.imgUrl),
           }}
         />

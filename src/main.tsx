@@ -10,7 +10,7 @@ import DashboardPage from './routes/DashboardPage.tsx';
 import GroupsPage from './routes/GroupsPage.tsx';
 import CalendarPage from './routes/CalendarPage.tsx';
 import ProtectedLayout from './routes/ProtectedLayout.tsx';
-import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
+import GroupDetailPage from './routes/GroupDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -39,8 +39,8 @@ const router = createBrowserRouter([
           {
             path: 'groups',
             element: <GroupsPage />,
+            children: [{ path: ':groupId', element: <GroupDetailPage /> }],
           },
-          { path: 'groups/:groupId', element: <ProjectDetailPage /> },
           { path: 'calendar', element: <CalendarPage /> },
         ],
       },
