@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 
 // Custom hook that encapsulates all group-related API operations
-export const useGroups = () => {
+export const useGroups = (groupId?: string) => {
   // needed for making certain cached data stale so that they are updated after mutations by targeting their query key
   const queryClient = useQueryClient();
 
@@ -155,8 +155,13 @@ export const useGroups = () => {
   });
 
   const getGroupMembersResponse = useQuery({
-    queryKey: queryKeys.getMembers,
-    queryFn: getGroupMembers,
+    queryKey: queryKeys.getMembers(groupId as string),
+    queryFn: () => {
+      if (!groupId) {
+        throw new Error('Group ID is required to fetch members');
+      }
+      return getGroupMembers(groupId);
+    },
     staleTime: 5 * 60 * 1000, // 5 mins
     gcTime: 10 * 60 * 1000, // 10 mins
   });

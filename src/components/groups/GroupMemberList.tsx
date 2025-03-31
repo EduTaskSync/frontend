@@ -5,10 +5,21 @@ import { useGroups } from '@/hooks/groups/useGroups';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CustomError } from '@/utils/ErrorClasses';
+import { useParams } from 'react-router';
+import { GetGroupMembersResponse } from '@/hooks/groups/groupInterfaces';
 
 export const GroupMemberList = () => {
-  const { getGroupMembersResponse } = useGroups();
-  const { data, isLoading, isError, error } = getGroupMembersResponse;
+  const { groupId } = useParams<{ groupId: string }>();
+
+  // groupId needed as a parameter for get members request
+  const { getGroupMembersResponse } = useGroups(groupId);
+  const { data, isLoading, isError, error } = getGroupMembersResponse as {
+    data: GetGroupMembersResponse | undefined;
+    isLoading: boolean;
+    isError: boolean;
+    error: unknown;
+    refetch: () => void;
+  };
 
   const members = data?.users || [];
 

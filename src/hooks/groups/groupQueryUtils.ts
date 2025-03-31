@@ -54,9 +54,13 @@ export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
   return response.data;
 };
 
-export const getGroupMembers = async () => {
+export const getGroupMembers = async (groupId: string) => {
   try {
-    const response = await axiosConfig.get<GetGroupMembersResponse>(ApiEndPoints.GET_GROUP_USERS);
+    const response = await axiosConfig.get<GetGroupMembersResponse>(ApiEndPoints.GET_GROUP_USERS, {
+      params: {
+        group_uuid: groupId,
+      },
+    });
     return response.data;
   } catch (error) {
     console.log('Error fetching group member data:', error);
