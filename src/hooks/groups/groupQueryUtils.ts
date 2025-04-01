@@ -29,15 +29,15 @@ export const getAllGroups = async () => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid request. Please check your data and try again.', 'Bad Request');
+        throw new CustomError('Please check your data and try again', 'Something went wrong');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have access to one or more groups.', 'Permission denied');
+        throw new CustomError('You do not have access to one or more groups', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('Please try again later.', 'Groups not found');
+        throw new CustomError('Please try again later', 'Groups not found');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -57,13 +57,13 @@ export const createNewGroup = async (newGroup: NewGroupObj) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid group data. Please check your input and try again.', 'Bad Request');
+        throw new CustomError('Please check your input and try again.', 'Something went wrong');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to create groups.', 'Permission denied');
+        throw new CustomError('You do not have permission to create groups', 'Permission denied');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -85,15 +85,15 @@ export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid group ID or request format.', 'Bad Request');
+        throw new CustomError('Invalid group ID or request format', 'Bad Request');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to delete this group.', 'Permission denied');
+        throw new CustomError('You do not have permission to delete this group', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('The group you are trying to delete cannot be found.', 'Group not found');
+        throw new CustomError('The group you are trying to delete cannot be found', 'Group not found');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -117,15 +117,15 @@ export const getGroupMembers = async (groupId: string) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid group ID format.', 'Bad Request');
+        throw new CustomError('Invalid group ID format', 'Something went wrong');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to view members.', 'Permission denied');
+        throw new CustomError('You do not have permission to view members', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('Please try again later.', 'Members not found');
+        throw new CustomError('Please try again later', 'Members not found');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -145,15 +145,15 @@ export const editGroupDetails = async (updatedGroup: UpdatedGroup) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid group data. Please check your input and try again.', 'Bad Request');
+        throw new CustomError('Please check your input and try again', 'Something went wrong');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to edit this group.', 'Permission denied');
+        throw new CustomError('You do not have permission to edit this group', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('The group you are trying to edit cannot be found.', 'Group not found');
+        throw new CustomError('The group you are trying to edit cannot be found', 'Group not found');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -176,13 +176,13 @@ export const addGroupMember = async (memberDetails: AddGroupMemberObj) => {
         const errorMessage = error.response?.data?.message || 'This user is already a member.';
         throw new CustomError(errorMessage, 'Duplicate member');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please contact group admin', 'Admin privileges required');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to invite members.', 'Permission denied');
+        throw new CustomError('You do not have permission to invite members', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('Please try again later.', 'User with given email does not exist');
+        throw new CustomError('Please try again later', 'User with given email does not exist');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 
@@ -207,15 +207,15 @@ export const searchUserByEmail = async (searchEmail: SearchEmailObj) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid email format.', 'Bad Request');
+        throw new CustomError('Invalid email format', 'Bad Request');
       } else if (status === 401) {
-        throw new CustomError('Please log in again.', 'Authentication error');
+        throw new CustomError('Please log in again', 'Authentication error');
       } else if (status === 403) {
-        throw new CustomError('You do not have permission to search users.', 'Permission denied');
+        throw new CustomError('You do not have permission to search users', 'Permission denied');
       } else if (status === 404) {
-        throw new CustomError('No user exists with given email.', 'User not found');
+        throw new CustomError('No user exists with given email', 'User not found');
       } else if (status === 500) {
-        throw new CustomError('Please try again later.', 'Internal Server Error');
+        throw new CustomError('Please try again later', 'Internal Server Error');
       }
     }
 

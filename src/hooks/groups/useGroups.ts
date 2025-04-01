@@ -228,10 +228,8 @@ export const useGroups = (groupId?: string) => {
       });
     },
 
-    onSuccess: (_, variables) => {
-      toast.success('Member added successfully', {
-        description: `${variables.email} has been added to the group`,
-      });
+    onSuccess: () => {
+      toast.success('Member added to group successfully');
     },
 
     onSettled: async () => {

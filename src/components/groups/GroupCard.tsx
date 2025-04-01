@@ -63,7 +63,7 @@ export const GroupCard = ({ group }: GroupCardProps) => {
     deleteTimeoutRef.current = timeoutId;
 
     // Show toast with undo button
-    toast.info(`Deleting ${group.name}`, {
+    toast.warning(`Deleting ${group.name}`, {
       description: (
         <div>
           <p> This group will be deleted in a few seconds</p>
@@ -78,7 +78,7 @@ export const GroupCard = ({ group }: GroupCardProps) => {
           if (deleteTimeoutRef.current) {
             clearTimeout(deleteTimeoutRef.current);
             deleteTimeoutRef.current = null;
-            toast.success(`Deletion of ${group.name} canceled`);
+            toast.info(`Deletion of ${group.name} canceled`);
           }
         },
       },
