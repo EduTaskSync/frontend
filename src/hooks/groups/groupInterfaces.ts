@@ -50,3 +50,13 @@ export interface UpdatedGroup {
   imgUrl: string;
   groupDetails: string;
 }
+
+export interface AddGroupMemberObj {
+  groupId: string;
+  email: string;
+}
+
+export interface SearchEmailObj {
+  email: string;
+  limit?: number;
+}

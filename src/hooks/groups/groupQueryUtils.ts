@@ -9,6 +9,8 @@ import {
   DeleteGroupResponse,
   GetGroupMembersResponse,
   UpdatedGroup,
+  AddGroupMemberObj,
+  SearchEmailObj,
 } from './groupInterfaces';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
@@ -26,7 +28,9 @@ export const getAllGroups = async () => {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
 
-      if (status === 401) {
+      if (status === 400) {
+        throw new CustomError('Invalid request. Please check your data and try again.', 'Bad Request');
+      } else if (status === 401) {
         throw new CustomError('Please log in again.', 'Authentication error');
       } else if (status === 403) {
         throw new CustomError('You do not have access to one or more groups.', 'Permission denied');
@@ -43,15 +47,59 @@ export const getAllGroups = async () => {
 };
 
 export const createNewGroup = async (newGroup: NewGroupObj) => {
-  const response = await axiosConfig.post<NewGroupResponse>(ApiEndPoints.CREATE_GROUP, newGroup);
-  return response.data;
+  try {
+    const response = await axiosConfig.post<NewGroupResponse>(ApiEndPoints.CREATE_GROUP, newGroup);
+    return response.data;
+  } catch (error) {
+    console.log('Error creating new group:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Invalid group data. Please check your input and try again.', 'Bad Request');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to create groups.', 'Permission denied');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
 };
 
 export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
-  const response = await axiosConfig.delete<DeleteGroupResponse>(ApiEndPoints.DELETE_GROUP, {
-    data: { groupId: deleteGroupObj.groupId },
-  });
-  return response.data;
+  try {
+    const response = await axiosConfig.delete<DeleteGroupResponse>(ApiEndPoints.DELETE_GROUP, {
+      data: { groupId: deleteGroupObj.groupId },
+    });
+    return response.data;
+  } catch (error) {
+    console.log('Error deleting group:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Invalid group ID or request format.', 'Bad Request');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to delete this group.', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('The group you are trying to delete cannot be found.', 'Group not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
 };
 
 export const getGroupMembers = async (groupId: string) => {
@@ -68,7 +116,9 @@ export const getGroupMembers = async (groupId: string) => {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
 
-      if (status === 401) {
+      if (status === 400) {
+        throw new CustomError('Invalid group ID format.', 'Bad Request');
+      } else if (status === 401) {
         throw new CustomError('Please log in again.', 'Authentication error');
       } else if (status === 403) {
         throw new CustomError('You do not have permission to view members.', 'Permission denied');
@@ -85,5 +135,91 @@ export const getGroupMembers = async (groupId: string) => {
 };
 
 export const editGroupDetails = async (updatedGroup: UpdatedGroup) => {
-  await axiosConfig.post(ApiEndPoints.UPDATE_GROUP, updatedGroup);
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.UPDATE_GROUP, updatedGroup);
+    return response.data;
+  } catch (error) {
+    console.log('Error updating group details:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Invalid group data. Please check your input and try again.', 'Bad Request');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to edit this group.', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('The group you are trying to edit cannot be found.', 'Group not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const addGroupMember = async (memberDetails: AddGroupMemberObj) => {
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.INVITE_GROUP_MEMBER, memberDetails);
+    return response.data;
+  } catch (error) {
+    console.log('Error inviting group member:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        const errorMessage = error.response?.data?.message || 'This user is already a member.';
+        throw new CustomError(errorMessage, 'Duplicate member');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to invite members.', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Please try again later.', 'User with given email does not exist');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const searchUserByEmail = async (searchEmail: SearchEmailObj) => {
+  try {
+    const response = await axiosConfig.get(ApiEndPoints.SEARCH_USER_EMAIL, {
+      params: {
+        email: searchEmail.email,
+        limit: searchEmail.limit ?? 5,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log('Error searching for users:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Invalid email format.', 'Bad Request');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again.', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to search users.', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('No user exists with given email.', 'User not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later.', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
 };

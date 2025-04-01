@@ -6,6 +6,7 @@ export const queryKeys = {
   deleteGroup: (id: string) => [...queryKeys.groups, id, 'delete'] as const,
   getMembers: (groupId: string) => ['members', groupId] as const,
   editGroup: (id: string) => [...queryKeys.groups, id, 'edit'] as const,
+  searchEmails: (searchTerm: string) => [...queryKeys.groups, searchTerm] as const,
 
   // for project related queries
 

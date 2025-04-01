@@ -133,7 +133,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                 <div
                   className={cn(
                     'flex items-center gap-2 px-2.5 py-1 rounded-md',
-                    'bg-background/40 border border-border/30 text-sm backdrop-blur-sm'
+                    'bg-background border border-border text-sm backdrop-blur-sm'
                   )}
                 >
                   <Calendar className="h-4 w-4 text-purple-400" />
@@ -143,7 +143,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                 <div
                   className={cn(
                     'flex items-center gap-2 px-2.5 py-1 rounded-md',
-                    'bg-background/40 border border-border/30 text-sm backdrop-blur-sm'
+                    'bg-background border border-border text-sm backdrop-blur-sm'
                   )}
                 >
                   <Clock className="h-4 w-4 text-purple-400" />

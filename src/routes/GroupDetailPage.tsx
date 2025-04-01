@@ -1,13 +1,26 @@
 import { MainContent } from '@/components/MainContent';
 import { Button } from '@/components/ui/button';
 import { CircleArrowLeft, Users, Calendar, FolderKanban } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 import { GroupMemberList } from '@/components/groups/GroupMemberList';
+import { InviteMemberDialog } from '@/components/groups/InviteMemberDialog';
+import { useGroups } from '@/hooks/groups/useGroups';
 
 const GroupDetailPage = () => {
   const { state } = useLocation();
+  const { groupId } = useParams<{ groupId: string }>();
+  const { inviteGroupMemberResponse } = useGroups(groupId);
+
+  const handleSendInvite = (data: { email: string }) => {
+    if (!groupId) return;
+
+    inviteGroupMemberResponse.mutate({
+      email: data.email,
+      groupId: groupId,
+    });
+  };
 
   return (
     <MainContent>
@@ -33,10 +46,15 @@ const GroupDetailPage = () => {
             <Users className="h-5 w-5 text-purple-400" />
             <h3 className="font-heading font-semibold text-lg">Members</h3>
           </div>
-
-          <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
-            <span>Invite</span>
-          </Button>
+          <InviteMemberDialog
+            trigger={
+              <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
+                <span>Invite</span>
+              </Button>
+            }
+            onSubmit={handleSendInvite}
+            isLoading={inviteGroupMemberResponse.isPending}
+          />
         </div>
 
         {/* Horizontally scrollable member list */}
