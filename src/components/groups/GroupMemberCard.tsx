@@ -29,19 +29,19 @@ export const GroupMemberCard = ({ groupMember }: GroupMemberCardProps) => {
   };
 
   return (
-    <div className="group w-44 flex flex-col items-center p-4 rounded-xl bg-card/80 border border-border/40 hover:border-primary/30 shadow-sm hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
+    <div className="group w-44 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-background via-card/90 to-background/80 backdrop-blur-sm border border-primary/30 hover:border-primary shadow-sm hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
       <div className="relative mb-3">
-        {/* Gradient glow effect on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 via-pink-300/30 to-indigo-400/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        {/* Enhanced gradient glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 via-pink-300/40 to-indigo-400/40 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
         <Avatar
           className={cn(
-            'h-20 w-20 border-2 border-border group-hover:border-primary/30 transition-all duration-300',
-            role.toLowerCase() === 'admin' ? 'ring-2 ring-primary/30' : ''
+            'h-20 w-20 border-2 border-border group-hover:border-primary/50 transition-all duration-300',
+            role.toLowerCase() === 'admin' ? 'ring-2 ring-primary/40' : ''
           )}
         >
           <AvatarImage src={profilePic} alt={fullName} />
-          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-purple-300/10 text-primary font-heading text-lg">
+          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-purple-300/15 text-primary font-heading text-lg">
             {fallbackPic}
           </AvatarFallback>
         </Avatar>
@@ -53,7 +53,9 @@ export const GroupMemberCard = ({ groupMember }: GroupMemberCardProps) => {
           variant={getBadgeVariant(role)}
           className={cn(
             'text-xs px-2.5 py-0.5',
-            role.toLowerCase() === 'admin' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-secondary/10'
+            role.toLowerCase() === 'admin'
+              ? 'bg-gradient-to-r from-primary/20 to-purple-400/20 text-primary border-primary/30'
+              : 'bg-secondary/10'
           )}
         >
           {role}
