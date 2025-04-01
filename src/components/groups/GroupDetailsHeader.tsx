@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Users, Calendar, Clock, PencilIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { GroupData, GroupDetailsDialog } from './GroupDetailsDialog';
 import { toast } from 'sonner';
 import { UpdatedGroup } from '@/hooks/groups/groupInterfaces';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 interface GroupDetailsHeaderProps {
   groupDetails: {
@@ -70,7 +71,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
   return (
     <div className="w-full">
       {/* Header with background image overlay and gradient */}
-      <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg group">
+      <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg group border border-border">
         {/* Edit button - appears on hover using group-hover */}
         <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <GroupDetailsDialog
@@ -95,58 +96,78 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${image || '/group-icon-1.jpg'})` }}
         />
-
-        <div className="absolute inset-[-1px] backdrop-blur-sm"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/50 via-background/80 to-background/95"></div>
 
         {/* Content */}
         <div className="relative p-5 sm:p-6">
           {/* Top row with image and main info */}
           <div className="flex items-start gap-5">
-            {/* Enlarged rectangular image preview */}
-            <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-lg overflow-hidden ring-1 ring-primary/30 shadow-md flex-shrink-0">
-              <img src={image || '/group-icon-1.jpg'} alt={name} className="w-full h-full object-cover" />
+            {/* Enlarged rectangular image preview with gradient border */}
+            <div className="p-[2px] rounded-lg bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-sm flex-shrink-0">
+              <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-[calc(0.5rem-1px)] overflow-hidden">
+                <img src={image || '/group-icon-1.jpg'} alt={name} className="w-full h-full object-cover" />
+              </div>
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col justify-start">
               {/* Group name */}
               <h1 className="text-2xl sm:text-4xl text-foreground font-heading font-extrabold truncate">{name}</h1>
 
-              {/* Member badge on its own line */}
-              <div className="mt-2 mb-3">
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-1.5 px-3 py-1 bg-background/50 border-primary/20 text-base"
+              {/* Member stat - custom design to make it stand out */}
+              <div className="mt-4 mb-3">
+                <div
+                  className="inline-flex items-center px-2 py-1 rounded-md border
+                 shadow-md shadow-border border-primary bg-primary/90"
                 >
-                  <Users className="h-4 w-4 text-primary" />
-                  <span>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-1 mr-2 flex items-center justify-center">
+                    <Users className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-semibold font-heading text-sm text-white">
                     {size} {size > 1 ? 'members' : 'member'}
                   </span>
-                </Badge>
+                </div>
               </div>
 
-              {/* Additional stats on a separate line */}
-              <div className="flex space-x-5 text-sm text-muted-foreground pl-1">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-primary" />
-                  <span>Created on {formattedDate}</span>
+              {/* Second row stats */}
+              <div className="flex flex-wrap gap-2">
+                <div
+                  className={cn(
+                    'flex items-center gap-2 px-2.5 py-1 rounded-md',
+                    'bg-background/40 border border-border/30 text-sm backdrop-blur-sm'
+                  )}
+                >
+                  <Calendar className="h-4 w-4 text-purple-400" />
+                  <span className="font-medium">Created on {formattedDate}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-primary" />
-                  <span>Active 2 days ago</span>
+                <div
+                  className={cn(
+                    'flex items-center gap-2 px-2.5 py-1 rounded-md',
+                    'bg-background/40 border border-border/30 text-sm backdrop-blur-sm'
+                  )}
+                >
+                  <Clock className="h-4 w-4 text-purple-400" />
+                  <span className="font-medium">Active 2 days ago</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom row with description/actions */}
-          <div className="flex justify-between items-center pt-3 mt-4 border-t border-border/40">
-            <p className="text-sm text-muted-foreground max-w-xl">
-              {description || "You can add more details about the group's purpose and activities here."}
-            </p>
-
-            <div className="flex items-center gap-2 flex-shrink-0 ml-4">{/* Any action buttons could go here */}</div>
+          {/* Bottom row with description/actions*/}
+          <div className="bg-card/90 rounded-lg p-4 border border-border mt-5">
+            <p className="text-md font-heading font-medium mb-2 text-purple-400">Group details</p>
+            <Separator className="mb-3" />
+            {description ? (
+              <Textarea
+                value={description}
+                readOnly
+                className="min-h-[80px] italic resize-none bg-transparent border-none p-2 text-base leading-relaxed text-foreground focus-visible:ring-0 hover:cursor-default"
+              />
+            ) : (
+              <div className="text-base text-muted-foreground italic p-1">
+                {"You can add more details about the group's purpose and activities here."}
+              </div>
+            )}
           </div>
         </div>
       </div>
