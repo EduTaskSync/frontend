@@ -111,7 +111,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
 
             <div className="flex-1 min-w-0 flex flex-col justify-start">
               {/* Group name */}
-              <h1 className="text-2xl sm:text-4xl text-foreground font-heading font-extrabold truncate">{name}</h1>
+              <h1 className="text-2xl sm:text-4xl text-white font-heading font-extrabold truncate">{name}</h1>
 
               {/* Member stat - custom design to make it stand out */}
               <div className="mt-4 mb-3">
@@ -119,8 +119,8 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                   className="inline-flex items-center px-2 py-1 rounded-md border
                  shadow-md shadow-border border-primary bg-primary/90"
                 >
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-1 mr-2 flex items-center justify-center">
-                    <Users className="h-3.5 w-3.5" />
+                  <div className="bg-foreground/20 backdrop-blur-sm rounded-full p-1 mr-2 flex items-center justify-center">
+                    <Users className="h-3.5 w-3.5 text-white" />
                   </div>
                   <span className="font-semibold font-heading text-sm text-white">
                     {size} {size > 1 ? 'members' : 'member'}
@@ -133,7 +133,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                 <div
                   className={cn(
                     'flex items-center gap-2 px-2.5 py-1 rounded-md',
-                    'bg-background border border-border text-sm backdrop-blur-sm'
+                    'bg-background border border-border text-sm backdrop-blur-md'
                   )}
                 >
                   <Calendar className="h-4 w-4 text-purple-400" />
