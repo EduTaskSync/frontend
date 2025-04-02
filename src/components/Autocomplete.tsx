@@ -1,7 +1,6 @@
 import { CommandGroup, CommandItem, CommandList, CommandInput } from './ui/command';
 import { Command as CommandPrimitive } from 'cmdk';
 import { useState, useRef, useCallback, type KeyboardEvent } from 'react';
-import { Skeleton } from './ui/skeleton';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -103,21 +102,29 @@ export const AutoComplete = ({
           onFocus={() => shouldShowDropdown && setOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
-          className="text-base text-foreground" // Add text-foreground class
+          className="text-base text-sans text-foreground" // Add text-foreground class
         />
       </div>
-      <div className="relative mt-1">
+      <div className="relative mt-[-1px]">
         <div
           className={cn(
-            'animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full rounded-xl bg-popover text-popover-foreground border border-border shadow-md outline-none',
+            'animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full bg-popover text-popover-foreground border border-border shadow-md outline-none',
+            'rounded-b-xl rounded-t-none', // Changed from rounded-xl to rounded-b-xl rounded-t-none
             isOpen && shouldShowDropdown ? 'block' : 'hidden'
           )}
         >
-          <CommandList className="rounded-lg max-h-[300px] overflow-y-auto p-2">
+          <CommandList className="w-full max-h-[300px] overflow-y-auto p-2">
             {isLoading ? (
               <CommandPrimitive.Loading>
-                <div className="p-1">
-                  <Skeleton className="h-8 w-full" />
+                <div className="py-2 px-1">
+                  {/* Custom loader with 3 animated items */}
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-2 px-2 py-1.5 mb-1 animate-pulse">
+                      <div className="flex-1">
+                        <div className="h-4 w-3/4 bg-muted rounded"></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CommandPrimitive.Loading>
             ) : null}
