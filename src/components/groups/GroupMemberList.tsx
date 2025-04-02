@@ -21,8 +21,6 @@ export const GroupMemberList = () => {
     refetch: () => void;
   };
 
-  console.log('group member info', data);
-
   const members = data?.users || [];
 
   if (isError) {

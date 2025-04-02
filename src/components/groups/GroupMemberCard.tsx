@@ -19,20 +19,15 @@ export const GroupMemberCard = ({ groupMember }: GroupMemberCardProps) => {
   const profilePic = profilePicture && profilePicture.startsWith('https://') ? profilePicture : defaultPic;
 
   return (
-    <div className="group w-44 flex flex-col items-center p-4 rounded-xl bg-background/40 dark:bg-card/30 backdrop-blur-md border border-muted dark:border-border hover:border-primary/40 shadow-md dark:shadow-lg shadow-muted/5 dark:shadow-black/5 hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden">
-      {/* Glass-like overlay elements - theme aware */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/20 to-background/5 dark:from-white/5 dark:to-white/0 pointer-events-none"></div>
-      <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+    <div className="group w-44 flex flex-col items-center p-4 rounded-xl bg-background/40 dark:bg-card/30 backdrop-blur-md border border-muted dark:border-border hover:shadow-md dark:shadow-lg shadow-muted/5 dark:shadow-black/5 transition-all duration-300 relative overflow-hidden">
+      {/* Border gradient animation on hover */}
+      <div className="absolute inset-0 rounded-xl p-[1px] -m-[1px] bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/50 group-hover:via-primary/30 group-hover:to-primary/50 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"></div>
 
-      {/* Subtle light reflections - theme aware */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/5 dark:bg-white/5 rounded-full blur-xl transform rotate-45 opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+      {/* Very subtle background tint on hover - keeping this minimal */}
+      <div className="absolute inset-[1px] rounded-lg bg-primary/0 group-hover:bg-primary/5 transition-colors duration-300 pointer-events-none"></div>
 
       <div className="relative mb-3 z-10">
-        {/* More subtle gradient ring around avatar */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-primary/15 to-primary/10 dark:from-purple-500/30 dark:via-pink-400/30 dark:to-indigo-500/30 rounded-full opacity-0 group-hover:opacity-40 blur-sm transition-opacity duration-300"></div>
-
-        {/* Reduced gradient glow effect on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/10 to-primary/10 dark:from-purple-400/20 dark:via-pink-300/20 dark:to-indigo-400/20 rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
+        {/* Removing the avatar ring highlight on hover */}
 
         <Avatar
           className={cn(
