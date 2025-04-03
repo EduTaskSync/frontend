@@ -16,6 +16,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProgressiveSignup } from './routes/SignupPage.tsx';
 import { Toaster } from '@/components/ui/sonner';
+import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -39,7 +40,13 @@ const router = createBrowserRouter([
           {
             path: 'groups',
             element: <GroupsPage />,
-            children: [{ path: ':groupId', element: <GroupDetailPage /> }],
+            children: [
+              {
+                path: ':groupId',
+                element: <GroupDetailPage />,
+                children: [{ path: ':projectId', element: <ProjectDetailsPage /> }],
+              },
+            ],
           },
           { path: 'calendar', element: <CalendarPage /> },
         ],
@@ -68,7 +75,21 @@ createRoot(document.getElementById('root')!).render(
       >
         <ThemeProvider>
           <RouterProvider router={router}></RouterProvider>
-          <Toaster />
+          <Toaster
+            richColors
+            closeButton
+            toastOptions={{
+              classNames: {
+                title: '!font-heading !font-bold !tracking-tight !ml-2',
+                description: '!font-sans !text-md !mt-1 !ml-2',
+                toast: '!group !border !border-border !shadow-lg',
+                actionButton: '!bg-primary !font-heading !text-white !hover:bg-primary/90',
+                cancelButton: '!bg-primary !font-heading !text-white !hover:bg-primary/90',
+                closeButton:
+                  ' !w-7 !h-7 !transition-colors !bg-background !border !border-border/50 !hover:bg-muted !text-primary !flex !items-center !justify-center',
+              },
+            }}
+          />
         </ThemeProvider>
       </Auth0Provider>
     </QueryClientProvider>
