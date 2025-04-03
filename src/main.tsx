@@ -10,13 +10,14 @@ import DashboardPage from './routes/DashboardPage.tsx';
 import GroupsPage from './routes/GroupsPage.tsx';
 import CalendarPage from './routes/CalendarPage.tsx';
 import ProtectedLayout from './routes/ProtectedLayout.tsx';
-import ProjectDetailPage from './routes/ProjectDetailPage.tsx';
+import GroupDetailPage from './routes/GroupDetailPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProgressiveSignup } from './routes/SignupPage.tsx';
 import ProjectsPage from './routes/ProjectsPage.tsx';
 import MemberDetailPage from './routes/MemberDetailPage.tsx';
+import { Toaster } from '@/components/ui/sonner';
 
 const router = createBrowserRouter([
   {
@@ -40,7 +41,11 @@ const router = createBrowserRouter([
           {
             path: 'groups',
             element: <GroupsPage />,
-            children: [{ path: ':groupId', element: <ProjectDetailPage /> }],
+            children: [{ path: ':groupId', element: <GroupDetailPage /> }],
+          },
+          {
+            path: 'projects',
+            element: <ProjectsPage />,
           },
           {
             path: 'projects',
@@ -73,6 +78,7 @@ createRoot(document.getElementById('root')!).render(
       >
         <ThemeProvider>
           <RouterProvider router={router}></RouterProvider>
+          <Toaster />
         </ThemeProvider>
       </Auth0Provider>
     </QueryClientProvider>

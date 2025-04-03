@@ -5,7 +5,7 @@ import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 import { useErrorBoundary } from '@/hooks/useErrorBoundary';
 import axios from 'axios';
-import { AuthError } from '@/utils/AuthError';
+import { AuthError } from '@/utils/ErrorClasses';
 
 interface UseAuthResult {
   isAuthenticated: boolean;

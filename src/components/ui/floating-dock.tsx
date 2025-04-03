@@ -1,9 +1,8 @@
 import { cn } from '@/lib/utils';
-// Replace the existing import with this lazy-loaded version
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Link } from 'react-router';
-import { CopyMinus } from 'lucide-react';
+import { Link, useLocation } from 'react-router';
+import { CopyMinus, X } from 'lucide-react';
 
 export const FloatingDock = ({
   items,
@@ -38,6 +37,15 @@ const FloatingDockMobile = ({
   iconBackgroundClassName?: string;
 }) => {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+
+  // Don't auto-close the dock when clicking an item
+  // Only close if navigating to a different page or clicking the toggle button
+  useEffect(() => {
+    // This effect will only run on location changes
+    // We're not closing the dock here to allow users to click multiple items
+  }, [location.pathname]);
+
   return (
     <div className={cn('relative block md:hidden', className)}>
       <AnimatePresence>
@@ -65,10 +73,18 @@ const FloatingDockMobile = ({
                   key={item.title}
                   className={cn(
                     'h-10 w-10 rounded-full bg-background border-border flex items-center justify-center',
-                    iconBackgroundClassName
+                    iconBackgroundClassName,
+                    location.pathname === item.href ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20' : ''
                   )}
                 >
-                  <div className="h-4 w-4 text-primary">{item.icon}</div>
+                  <div
+                    className={cn(
+                      'h-4 w-4',
+                      location.pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+                    )}
+                  >
+                    {item.icon}
+                  </div>
                 </Link>
               </motion.div>
             ))}
@@ -77,10 +93,13 @@ const FloatingDockMobile = ({
       </AnimatePresence>
       <button
         onClick={() => setOpen(!open)}
-        className="h-10 w-10 rounded-full bg-background border border-border flex items-center justify-center"
+        className={cn(
+          'h-10 w-10 rounded-full bg-background border border-border flex items-center justify-center transition-colors',
+          open ? 'bg-primary/10 text-primary' : ''
+        )}
       >
         <Suspense fallback={<div className="h-5 w-5 animate-pulse bg-primary/20 rounded-full" />}>
-          <CopyMinus />
+          {open ? <X className="h-4 w-4" /> : <CopyMinus className="h-4 w-4" />}
         </Suspense>
       </button>
     </div>

@@ -1,11 +1,14 @@
 import { Spinner } from '@/components/ui/spinner';
 import { routes } from '@/constants/routes';
 import { UserProvider } from '@/contexts/UserContext';
+import { ScrollProvider } from '@/contexts/ScrollContext';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, Outlet } from 'react-router';
+import { Dock } from '@/components/Dock';
 
 const ProtectedLayout = () => {
   const { isLoading, isAuthenticated } = useAuth();
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -18,9 +21,15 @@ const ProtectedLayout = () => {
   if (!isAuthenticated) {
     return <Navigate to={routes.landingPage} />;
   }
+
   return (
     <UserProvider>
-      <Outlet />;
+      <ScrollProvider>
+        <div className="min-h-screen">
+          <Outlet />
+          <Dock />
+        </div>
+      </ScrollProvider>
     </UserProvider>
   );
 };

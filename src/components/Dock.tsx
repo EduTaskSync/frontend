@@ -1,8 +1,11 @@
 import { FloatingDock } from '@/components/ui/floating-dock';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { useScrollContext } from '@/contexts/ScrollContext';
 import { Home, Calendar, Users } from 'lucide-react';
 
 export const Dock = () => {
+  const { visible } = useScrollContext();
+
   const items = [
     {
       title: 'Home',
@@ -22,7 +25,11 @@ export const Dock = () => {
   ];
 
   return (
-    <footer className="fixed bottom-6 left-0 right-0 flex justify-center items-center z-50">
+    <footer
+      className={`fixed bottom-6 left-0 right-0 flex justify-center items-center z-50 transition-transform duration-300 ${
+        visible ? 'translate-y-0' : 'translate-y-full'
+      }`}
+    >
       <BackgroundGradient className="p-1 rounded-xl">
         <FloatingDock
           items={items}

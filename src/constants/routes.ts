@@ -6,7 +6,7 @@ export enum routes {
   dashboard = '/app/dashboard',
   groups = '/app/groups',
   calendar = '/app/calendar',
-  projectDetail = '/app/groups/:groupId',
+  groupDetails = '/app/groups/:groupId',
 }
 
 export const routePageNames = {
@@ -17,5 +17,5 @@ export const routePageNames = {
   [routes.dashboard]: 'Dashboard',
   [routes.groups]: 'Groups',
   [routes.calendar]: 'Calendar',
-  [routes.projectDetail]: 'Project Detail',
+  [routes.groupDetails]: 'Group Details',
 };
