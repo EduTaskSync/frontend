@@ -29,6 +29,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   } = useGetUser({
     queryKey: ['user-check', auth0User?.sub],
     enabled: !auth0Loading && !!auth0User?.sub && isSessionEstablished,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const userExists = userCheckResult?.exists || false;
