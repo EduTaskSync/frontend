@@ -11,11 +11,12 @@ import {
   UpdatedGroup,
   AddGroupMemberObj,
   SearchEmailObj,
+  GroupDetailsResponse,
 } from './groupInterfaces';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
 // GET http request for user's assigned groups
-export const getAllGroups = async () => {
+export const getGroups = async () => {
   try {
     const response = await axiosConfig.get<GroupListResponse>(ApiEndPoints.GET_GROUPS);
     // axios automatically parses JSON so need to use response.json()
@@ -87,7 +88,7 @@ export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
       if (status === 400) {
         throw new CustomError('Invalid group ID or request format', 'Bad Request');
       } else if (status === 401) {
-        throw new CustomError('Please log in again', 'Authentication error');
+        throw new CustomError('A group can only be deleted by an admin', 'Admin privileges required');
       } else if (status === 403) {
         throw new CustomError('You do not have permission to delete this group', 'Permission denied');
       } else if (status === 404) {
@@ -147,11 +148,43 @@ export const editGroupDetails = async (updatedGroup: UpdatedGroup) => {
       if (status === 400) {
         throw new CustomError('Please check your input and try again', 'Something went wrong');
       } else if (status === 401) {
-        throw new CustomError('Please log in again', 'Authentication error');
+        throw new CustomError('Group details can only be updated by an admin', 'Admin privileges required');
       } else if (status === 403) {
         throw new CustomError('You do not have permission to edit this group', 'Permission denied');
       } else if (status === 404) {
         throw new CustomError('The group you are trying to edit cannot be found', 'Group not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later', 'Internal Server Error');
+      }
+    }
+
+    // handle unknown errors
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const getGroupDetails = async (groupId: string) => {
+  try {
+    const response = await axiosConfig.get<GroupDetailsResponse>(ApiEndPoints.GET_GROUP_DETAILS, {
+      params: {
+        groupId,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching group details:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Please try again later', 'Something went wrong');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have permission to view group details', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Please try again later', 'Group details not found');
       } else if (status === 500) {
         throw new CustomError('Please try again later', 'Internal Server Error');
       }
@@ -176,7 +209,7 @@ export const addGroupMember = async (memberDetails: AddGroupMemberObj) => {
         const errorMessage = error.response?.data?.message || 'This user is already a member.';
         throw new CustomError(errorMessage, 'Duplicate member');
       } else if (status === 401) {
-        throw new CustomError('Please contact group admin', 'Admin privileges required');
+        throw new CustomError('Please contact a group admin', 'Admin privileges required');
       } else if (status === 403) {
         throw new CustomError('You do not have permission to invite members', 'Permission denied');
       } else if (status === 404) {

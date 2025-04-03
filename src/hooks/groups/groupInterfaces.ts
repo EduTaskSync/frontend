@@ -2,8 +2,6 @@
 export interface GroupsObj {
   groupMembers: number;
   groupId: string;
-  groupDescription: string;
-  groupCreationDate: string;
   groupName: string;
   imgUrl: string;
 }
@@ -59,4 +57,13 @@ export interface AddGroupMemberObj {
 export interface SearchEmailObj {
   email: string;
   limit?: number;
+}
+
+export interface GroupDetailsResponse {
+  groupMembers: number;
+  groupId: string;
+  groupName: string;
+  groupCreationDate: string;
+  groupDescription: string;
+  groupImage: string;
 }

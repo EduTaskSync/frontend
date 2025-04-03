@@ -1,7 +1,7 @@
 import { MainContent } from '@/components/MainContent';
 import { Button } from '@/components/ui/button';
 import { CircleArrowLeft, Users, Calendar, FolderKanban } from 'lucide-react';
-import { Link, useLocation, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 import { GroupMemberList } from '@/components/groups/GroupMemberList';
@@ -9,7 +9,6 @@ import { InviteMemberDialog } from '@/components/groups/InviteMemberDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
 
 const GroupDetailPage = () => {
-  const { state } = useLocation();
   const { groupId } = useParams<{ groupId: string }>();
   const { inviteGroupMemberResponse } = useGroups(groupId);
 
@@ -27,7 +26,7 @@ const GroupDetailPage = () => {
       {/* Back button */}
       <div className="flex mb-6 font-heading">
         <Button variant="ghost" size="lg" asChild className="gap-2 pl-1 hover:cursor-pointer">
-          <Link to="../">
+          <Link to="..">
             <CircleArrowLeft />
             <span>Back to Groups</span>
           </Link>
@@ -36,7 +35,7 @@ const GroupDetailPage = () => {
 
       {/* Group Header */}
       <div className="mb-8">
-        <GroupDetailsHeader groupDetails={state.groupDetails} />
+        <GroupDetailsHeader />
       </div>
 
       {/* Members Section header - Horizontal Layout */}
@@ -49,7 +48,7 @@ const GroupDetailPage = () => {
           <InviteMemberDialog
             trigger={
               <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
-                <span>Invite</span>
+                <span>Invite Member</span>
               </Button>
             }
             onSubmit={handleSendInvite}

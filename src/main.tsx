@@ -16,6 +16,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProgressiveSignup } from './routes/SignupPage.tsx';
 import { Toaster } from '@/components/ui/sonner';
+import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -39,7 +40,13 @@ const router = createBrowserRouter([
           {
             path: 'groups',
             element: <GroupsPage />,
-            children: [{ path: ':groupId', element: <GroupDetailPage /> }],
+            children: [
+              {
+                path: ':groupId',
+                element: <GroupDetailPage />,
+                children: [{ path: ':projectId', element: <ProjectDetailsPage /> }],
+              },
+            ],
           },
           { path: 'calendar', element: <CalendarPage /> },
         ],

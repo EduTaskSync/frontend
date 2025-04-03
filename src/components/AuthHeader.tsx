@@ -1,5 +1,5 @@
 import ColourfulText from '@/components/ui/colourful-text';
-import DropdownMenuWithAvatar from './AvatarWithDropdown';
+import DropdownMenuWithAvatar from './profile/AvatarWithDropdown';
 import { useUserContext } from '@/contexts/UserContext';
 import { useScrollContext } from '@/contexts/ScrollContext';
 import { Link } from 'react-router';

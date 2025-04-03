@@ -2,12 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { GroupListResponse, GroupsObj } from './groupInterfaces';
 import {
-  getAllGroups,
+  getGroups,
   createNewGroup,
   deleteGroup,
   getGroupMembers,
   editGroupDetails,
   addGroupMember,
+  getGroupDetails,
 } from './groupQueryUtils';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
@@ -20,7 +21,7 @@ export const useGroups = (groupId?: string) => {
   // fetch user's allocated groups
   const fetchGroupsResponse = useQuery({
     queryKey: queryKeys.groupList(),
-    queryFn: getAllGroups,
+    queryFn: getGroups,
     // after 10 seconds data will be considered stale and queryFn will be executed again
     // within the staleTime limit, data wont be refreshed even if the window loses focus/component remounts
     staleTime: 5 * 60 * 1000, // 5 mins
@@ -44,8 +45,6 @@ export const useGroups = (groupId?: string) => {
       const optimisticGroup: GroupsObj = {
         groupId: `temp-${Date.now()}`,
         groupName: newGroup.groupName,
-        groupDescription: newGroup.groupDetails,
-        groupCreationDate: Date.now().toString(),
         groupMembers: 1,
         imgUrl: newGroup.imgUrl,
       };
@@ -164,10 +163,83 @@ export const useGroups = (groupId?: string) => {
     gcTime: 10 * 60 * 1000, // 10 mins
   });
 
+  const getGroupDetailsResponse = useQuery({
+    queryKey: queryKeys.getGroupDetails(groupId as string),
+    queryFn: () => {
+      if (!groupId) {
+        throw new Error('Group ID is required to fetch group details');
+      }
+      return getGroupDetails(groupId);
+    },
+    staleTime: 5 * 60 * 1000, // 5 mins
+    gcTime: 10 * 60 * 1000, // 10 mins
+  });
+
   const editGroupDetailsResponse = useMutation({
     mutationFn: editGroupDetails,
-    onError: (err) => {
+    // Add optimistic updates
+    onMutate: async (updatedGroup) => {
+      if (!groupId) {
+        throw new Error('Group ID is required to update group details');
+      }
+
+      // Target query keys for both details and list views
+      const detailsQueryKey = queryKeys.getGroupDetails(groupId);
+      const listQueryKey = queryKeys.groupList();
+
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: detailsQueryKey });
+      await queryClient.cancelQueries({ queryKey: listQueryKey });
+
+      // Snapshot previous values
+      const previousDetails = queryClient.getQueryData(detailsQueryKey);
+      const previousGroups = queryClient.getQueryData<GroupListResponse>(listQueryKey);
+
+      // Optimistically update group details
+      queryClient.setQueryData(detailsQueryKey, (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          groupName: updatedGroup.groupName,
+          groupDescription: updatedGroup.groupDetails,
+          groupImage: updatedGroup.imgUrl,
+        };
+      });
+
+      // Optimistically update the group in the list view
+      queryClient.setQueryData<GroupListResponse>(listQueryKey, (oldData) => {
+        if (!oldData) return { groups: [] };
+
+        return {
+          groups: oldData.groups.map((group) => {
+            if (group.groupId === updatedGroup.groupId) {
+              return {
+                ...group,
+                groupName: updatedGroup.groupName,
+                imgUrl: updatedGroup.imgUrl,
+              };
+            }
+            return group;
+          }),
+        };
+      });
+
+      // Return previous values for rollback
+      return { previousDetails, previousGroups };
+    },
+
+    onError: (err, _, context) => {
       console.error('Failed to edit group:', err);
+
+      // Rollback to previous state on error
+      if (context?.previousDetails) {
+        queryClient.setQueryData(queryKeys.getGroupDetails(groupId as string), context.previousDetails);
+      }
+
+      if (context?.previousGroups) {
+        queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
+      }
 
       let errorMessage = 'Please try again later.';
       let title = 'Error';
@@ -181,8 +253,24 @@ export const useGroups = (groupId?: string) => {
         description: errorMessage,
       });
     },
+
+    onSuccess: (_, variables) => {
+      // Show success toast
+      toast.success('Group details updated successfully', {
+        description: `"${variables.groupName}" has been updated`,
+      });
+    },
+
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
+      // Invalidate all related queries to ensure consistent state
+      if (groupId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.getGroupDetails(groupId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupList(),
+        });
+      }
     },
   });
 
@@ -241,7 +329,7 @@ export const useGroups = (groupId?: string) => {
           refetchType: 'active',
         });
         await queryClient.invalidateQueries({
-          queryKey: queryKeys.groupList(),
+          queryKey: queryKeys.getGroupDetails(groupId),
           refetchType: 'active',
         });
       }
@@ -252,6 +340,7 @@ export const useGroups = (groupId?: string) => {
     fetchGroupsResponse,
     createGroupResponse,
     deleteGroupResponse,
+    getGroupDetailsResponse,
     getGroupMembersResponse,
     editGroupDetailsResponse,
     inviteGroupMemberResponse,

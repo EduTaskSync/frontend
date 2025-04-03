@@ -1,83 +1,121 @@
-import { useState, useEffect } from 'react';
-import { Users, Calendar, Clock, PencilIcon } from 'lucide-react';
+import { Users, Calendar, Clock, PencilIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDate, cn } from '@/lib/utils';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { GroupData, GroupDetailsDialog } from './GroupDetailsDialog';
-import { toast } from 'sonner';
-import { UpdatedGroup } from '@/hooks/groups/groupInterfaces';
+import { GroupDetailsResponse, UpdatedGroup } from '@/hooks/groups/groupInterfaces';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useParams } from 'react-router';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CustomError } from '@/utils/ErrorClasses';
 
-interface GroupDetailsHeaderProps {
-  groupDetails: {
-    id: string;
-    name: string;
-    description: string;
-    creationDate: string;
-    size: number;
-    image: string;
-  };
-}
+export const GroupDetailsHeader = () => {
+  const { groupId } = useParams();
+  const { editGroupDetailsResponse, getGroupDetailsResponse } = useGroups(groupId);
+  const { data, isError, error, isLoading, refetch } = getGroupDetailsResponse;
 
-export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) => {
-  // Add local state for optimistic updates
-  const [localDetails, setLocalDetails] = useState(groupDetails);
+  // ahndle loading state
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <div className="relative rounded-xl overflow-hidden mb-4 shadow-md border border-border bg-card">
+          <div className="p-5 sm:p-6">
+            {/* loading skeleton for header */}
+            <div className="flex items-start gap-5">
+              {/* image skeleton */}
+              <div className="p-[2px] rounded-lg bg-gradient-to-br from-purple-400/20 via-pink-300/20 to-indigo-400/20 shadow-sm flex-shrink-0">
+                <Skeleton className="h-24 w-32 sm:h-32 sm:w-44 rounded-[calc(0.5rem-1px)]" />
+              </div>
 
-  // Update local state if prop changes (e.g. from parent component)
-  useEffect(() => {
-    setLocalDetails(groupDetails);
-  }, [groupDetails]);
+              <div className="flex-1 flex flex-col gap-4">
+                {/* title skeleton */}
+                <Skeleton className="h-8 w-3/4" />
 
-  const { id, name, size, image, description, creationDate } = localDetails;
+                {/* member badge skeleton */}
+                <Skeleton className="h-6 w-24 mt-2" />
 
-  const formattedDate = formatDate(creationDate);
+                {/* stats skeleton */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Skeleton className="h-8 w-40" />
+                  <Skeleton className="h-8 w-40" />
+                </div>
+              </div>
+            </div>
 
-  const { editGroupDetailsResponse } = useGroups();
+            {/* description section skeleton */}
+            <div className="bg-card/90 rounded-lg p-4 border border-border mt-5">
+              <Skeleton className="h-4 w-32 mb-3" />
+              <Separator className="mb-3" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Handler for group edit submission
+  // handle error state
+  if (isError) {
+    return (
+      <div className="w-full p-6 rounded-xl border border-destructive/20 bg-destructive/5 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <h4 className="font-heading font-semibold text-foreground text-lg">
+            {error instanceof CustomError ? error.title : 'Failed to load group details'}
+          </h4>
+          <p className="text-sm text-muted-foreground max-w-md">
+            {error instanceof Error ? error.message : 'Please try again later'}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2 border-destructive/20 hover:bg-destructive/10 hover:cursor-pointer gap-2"
+            onClick={() => refetch()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // extract data once we know it's available
+  const {
+    groupId: id,
+    groupCreationDate,
+    groupDescription,
+    groupMembers: size,
+    groupName,
+    groupImage,
+  } = data as GroupDetailsResponse;
+  const formattedDate = formatDate(groupCreationDate);
+
+  // handler for group edit submission
   const handleEditGroup = (formattedData: GroupData | UpdatedGroup) => {
-    // Type guard to ensure we're working with an UpdatedGroup
-    if ('groupId' in formattedData) {
-      // Immediately update local state for optimistic UI update
-      setLocalDetails({
-        ...localDetails,
-        name: formattedData.groupName,
-        description: formattedData.groupDetails,
-        image: formattedData.imgUrl,
-      });
-
-      // Then submit to the backend
-      editGroupDetailsResponse.mutate(formattedData as UpdatedGroup, {
-        onError: (error) => {
-          console.error('Edit group error:', error);
-          // If error occurs, revert to original data
-          setLocalDetails(groupDetails);
-          toast.error('Failed to update group details', {
-            description: 'Please try again later',
-          });
-        },
-      });
-    }
+    editGroupDetailsResponse.mutate(formattedData as UpdatedGroup);
   };
 
   const prefillData: UpdatedGroup = {
     groupId: id,
-    groupName: name,
-    groupDetails: description,
-    imgUrl: image,
+    groupName,
+    groupDetails: groupDescription,
+    imgUrl: groupImage,
   };
 
   return (
     <div className="w-full">
-      {/* Header with background image overlay and gradient */}
+      {/* header with background image overlay and gradient */}
       <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg group border border-border">
-        {/* Edit button - appears on hover using group-hover */}
+        {/* edit button - appears on hover using group-hover */}
         <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <GroupDetailsDialog
             onSubmit={handleEditGroup}
             isUpdating={editGroupDetailsResponse.isPending}
-            groupId={id}
+            groupId={groupId}
             prefillData={prefillData}
             trigger={
               <Button
@@ -91,29 +129,33 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
           />
         </div>
 
-        {/* Background image with overlay */}
+        {/* background image with overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${image || '/group-icon-1.jpg'})` }}
+          style={{ backgroundImage: `url(${groupImage || '/group-icon-1.jpg'})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/50 via-background/80 to-background/95"></div>
 
-        {/* Content */}
+        {/* content */}
         <div className="relative p-5 sm:p-6">
-          {/* Top row with image and main info */}
+          {/* top row with image and main info */}
           <div className="flex items-start gap-5">
-            {/* Enlarged rectangular image preview with gradient border */}
+            {/* enlarged rectangular image preview with gradient border */}
             <div className="p-[2px] rounded-lg bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-sm flex-shrink-0">
               <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-[calc(0.5rem-1px)] overflow-hidden">
-                <img src={image || '/group-icon-1.jpg'} alt={name} className="w-full h-full object-cover" />
+                <img
+                  src={groupImage || '/group-icon-1.jpg'}
+                  alt={'Group image'}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col justify-start">
-              {/* Group name */}
-              <h1 className="text-2xl sm:text-4xl text-white font-heading font-extrabold truncate">{name}</h1>
+              {/* group name */}
+              <h1 className="text-2xl sm:text-4xl text-white font-heading font-extrabold truncate">{groupName}</h1>
 
-              {/* Member stat - custom design to make it stand out */}
+              {/* member stat - custom design to make it stand out */}
               <div className="mt-4 mb-3">
                 <div
                   className="inline-flex items-center px-2 py-1 rounded-md border
@@ -128,7 +170,7 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
                 </div>
               </div>
 
-              {/* Second row stats */}
+              {/* second row stats */}
               <div className="flex flex-wrap gap-2">
                 <div
                   className={cn(
@@ -153,13 +195,13 @@ export const GroupDetailsHeader = ({ groupDetails }: GroupDetailsHeaderProps) =>
             </div>
           </div>
 
-          {/* Bottom row with description/actions*/}
+          {/* bottom row with description/actions*/}
           <div className="bg-card/90 rounded-lg p-4 border border-border mt-5">
             <p className="text-md font-heading font-medium mb-2 text-purple-400">Group details</p>
             <Separator className="mb-3" />
-            {description ? (
+            {groupDescription ? (
               <Textarea
-                value={description}
+                value={groupDescription}
                 readOnly
                 className="min-h-[80px] italic resize-none bg-transparent border-none p-2 text-base leading-relaxed text-foreground focus-visible:ring-0 hover:cursor-default"
               />

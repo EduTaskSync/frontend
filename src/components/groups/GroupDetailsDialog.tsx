@@ -59,9 +59,10 @@ export const GroupDetailsDialog = ({
     defaultValues: {
       groupName: prefillData?.groupName || '',
       groupDetails: prefillData?.groupDetails || '',
-      groupImageSource: prefillData?.imgUrl.startsWith('https') ? 'custom' : 'predefined',
-      predefinedImage: !prefillData?.imgUrl.startsWith('http') ? prefillData?.imgUrl : defaultGroupIcons[0].value,
-      customImageUrl: prefillData?.imgUrl.startsWith('http') ? prefillData.imgUrl : '',
+      groupImageSource: prefillData?.imgUrl?.startsWith('https') ? 'custom' : 'predefined',
+      predefinedImage:
+        prefillData?.imgUrl && !prefillData.imgUrl.startsWith('http') ? prefillData.imgUrl : defaultGroupIcons[0].value,
+      customImageUrl: prefillData?.imgUrl?.startsWith('http') ? prefillData.imgUrl : '',
     },
   });
 
