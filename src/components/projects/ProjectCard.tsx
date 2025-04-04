@@ -22,10 +22,6 @@ interface ProjectCardProps {
   project: {
     id: string;
     name: string;
-    description: string;
-    dueDate: string; // ISO date string
-    creationDate: string; // ISO date string
-    memberCount: number;
     progress: number; // 0-100
     image: string;
     groupId: string; // Parent group ID

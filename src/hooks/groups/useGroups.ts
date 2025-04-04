@@ -88,8 +88,10 @@ export const useGroups = (groupId?: string) => {
       // refetch after error or success to ensure we always have the correct data
       queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
     },
-    //debugging purposes
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      toast.success('Group created successfully', {
+        description: `"${variables.groupName}" has been created. You can now invite members.`,
+      });
       console.log('Group created successfully:', data);
     },
   });
