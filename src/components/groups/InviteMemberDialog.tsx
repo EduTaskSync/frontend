@@ -41,7 +41,7 @@ export const InviteMemberDialog = ({ trigger, onSubmit, isLoading = false }: Inv
   const { data, isLoading: isSearching } = useEmailSearch(debouncedSearchTerm);
 
   // Format the email results for the AutoComplete component
-  const emailOptions: Option[] = (data?.emails || []).map((email) => ({
+  const emailOptions: Option[] = (data?.emails || []).map((email: string) => ({
     value: email,
     label: email,
   }));
