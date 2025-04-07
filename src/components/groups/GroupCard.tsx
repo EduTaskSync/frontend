@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { Users, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useGroups } from '@/hooks/groups/useGroups';
 import {
@@ -17,6 +16,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CountdownTimer } from '../CountdownTimer';
+import { ButtonWithTooltip } from '../ButtonWithToolTip';
+import { GroupRole } from '@/constants/general';
+import { useUserContext } from '@/contexts/UserContext';
 
 // shape of the group object sent to the GroupCard component
 interface GroupCardProps {
@@ -29,6 +31,11 @@ interface GroupCardProps {
 }
 
 export const GroupCard = ({ group }: GroupCardProps) => {
+  const { user } = useUserContext();
+  const { getGroupMembersResponse } = useGroups(group.id);
+  const { data: membersData } = getGroupMembersResponse;
+  const isAdmin =
+    membersData?.users.some((member) => member.userId === user?.userId && member.role === GroupRole.ADMIN) || false;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { deleteGroupResponse } = useGroups();
   // Use useRef instead of useState to track the timeout
@@ -87,15 +94,17 @@ export const GroupCard = ({ group }: GroupCardProps) => {
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(168,85,247,0.25)] hover:from-purple-500 hover:via-pink-400 hover:to-indigo-500 group/wrapper">
       <Link to={`${group.id}`} className="w-full group/card block h-full relative">
         <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
-          <Button
+          <ButtonWithTooltip
             variant="destructive"
             size="sm"
             className="h-9 w-9 rounded-full p-0 bg-destructive shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-destructive/90 hover:scale-105 transition-transform duration-150 cursor-pointer"
             onClick={handleDeleteClick}
+            disabled={!isAdmin}
+            tooltipText={isAdmin ? 'Delete group' : 'You are not an admin of this group'}
           >
             <Trash2 className="h-5 w-5 text-white" />
             <span className="sr-only">Delete group</span>
-          </Button>
+          </ButtonWithTooltip>
         </div>
 
         <div

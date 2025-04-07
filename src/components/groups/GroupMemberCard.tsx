@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface GroupMemberCardProps {
   groupMember: GroupMember;
-  isCurrentUser?: boolean; // Optional prop to indicate if the member is the current user
+  isCurrentUser?: boolean;
 }
 
 export const GroupMemberCard = ({ groupMember, isCurrentUser = false }: GroupMemberCardProps) => {

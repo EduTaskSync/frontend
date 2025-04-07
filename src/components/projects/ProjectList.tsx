@@ -6,13 +6,22 @@ import { CustomError } from '@/utils/ErrorClasses';
 import { useParams } from 'react-router';
 import { ProjectSummaryListResponse } from '@/hooks/projects/projectInterfaces';
 import { Spinner } from '../ui/spinner';
+import { useUserContext } from '@/contexts/UserContext';
+import { useGroups } from '@/hooks/groups/useGroups';
+import { GroupRole } from '@/constants/general';
 
 export const ProjectList = () => {
   const { groupId } = useParams<{ groupId: string }>();
 
   // Use the projects hook with the current groupId
-  const { fetchProjectsResponse } = useProjects(groupId);
-  const { data, isLoading, isError, error } = fetchProjectsResponse as {
+  const { user } = useUserContext();
+  const { getGroupMembersResponse } = useGroups(groupId);
+  const { data: membersData } = getGroupMembersResponse;
+  const isAdmin =
+    membersData?.users.some((member) => member.userId === user?.userId && member.role === GroupRole.ADMIN) || false;
+
+  const { fetchProjectsSummaryResponse } = useProjects(groupId);
+  const { data, isLoading, isError, error } = fetchProjectsSummaryResponse as {
     data: ProjectSummaryListResponse | undefined;
     isLoading: boolean;
     isError: boolean;
@@ -40,7 +49,7 @@ export const ProjectList = () => {
             variant="outline"
             size="sm"
             className="mt-2 border-destructive/20 hover:bg-destructive/10 hover:cursor-pointer"
-            onClick={() => fetchProjectsResponse.refetch()}
+            onClick={() => fetchProjectsSummaryResponse.refetch()}
           >
             <RefreshCw className="h-3.5 w-3.5 mr-2" />
             Try Again
@@ -61,7 +70,7 @@ export const ProjectList = () => {
         <div className="flex flex-col space-y-4">
           {projects.map((project) => (
             <div key={project.projectId} className="w-full">
-              <ProjectCard project={project} groupId={groupId || ''} />
+              <ProjectCard project={project} groupId={groupId || ''} isAdmin={isAdmin} />
             </div>
           ))}
         </div>

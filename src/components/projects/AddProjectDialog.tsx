@@ -29,9 +29,10 @@ interface AddProjectDialogProps {
   onSubmit: (values: z.infer<typeof CreateProjectSchema>) => void;
   groupId: string;
   isLoading?: boolean;
+  isAdmin?: boolean;
 }
 
-export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddProjectDialogProps) => {
+export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false, isAdmin = false }: AddProjectDialogProps) => {
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof CreateProjectSchema>>({
@@ -44,6 +45,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
 
   // Handle form submission
   const handleFormSubmit = (values: z.infer<typeof CreateProjectSchema>) => {
+    if (!isAdmin) throw new Error('User is not an admin');
     onSubmit(values);
     setOpen(false);
     form.reset({
@@ -71,12 +73,15 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
           <DialogTitle className="text-xl font-heading mb-1">
             Create <span className="text-emerald-300">New Project</span>
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">Add a new project to this group.</DialogDescription>
+          <DialogDescription className="text-muted-foreground">
+            {isAdmin ? 'Add a new project to this group.' : 'You need admin permissions to create projects.'}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Form for adding projects */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 py-4 font-sans">
+            {/* Project name field - unchanged */}
             <FormField
               control={form.control}
               name="projectName"
@@ -88,7 +93,12 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
                       <div className="absolute left-3 top-[9px] text-gray-400">
                         <FolderKanban className="h-5 w-5" />
                       </div>
-                      <Input placeholder="FIT3162 Final Project" className="pl-10" {...field} disabled={isLoading} />
+                      <Input
+                        placeholder="FIT3162 Final Project"
+                        className="pl-10"
+                        {...field}
+                        disabled={isLoading || !isAdmin}
+                      />
                     </div>
                   </FormControl>
                   <FormDescription>Enter a descriptive name for your project.</FormDescription>
@@ -97,6 +107,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
               )}
             />
 
+            {/* Deadline field - add disabled to calendar button */}
             <FormField
               control={form.control}
               name="deadline"
@@ -113,7 +124,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
                               'w-full pl-10 text-left font-normal',
                               !field.value && 'text-muted-foreground'
                             )}
-                            disabled={isLoading}
+                            disabled={isLoading || !isAdmin}
                           >
                             <div className="absolute left-3 top-[9px] text-gray-400">
                               <CalendarIcon className="h-5 w-5" />
@@ -122,28 +133,13 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <div className="flex flex-col">
-                            <div className="p-2 border-b flex justify-between items-center">
-                              <span className="text-sm font-medium">Select date</span>
-                              {field.value && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 px-2 py-0 text-xs"
-                                  onClick={() => field.onChange(null)}
-                                >
-                                  Clear
-                                </Button>
-                              )}
-                            </div>
-                            <Calendar
-                              mode="single"
-                              selected={field.value || undefined} // Convert null to undefined for the calendar
-                              onSelect={(date) => field.onChange(date || null)} // Convert undefined to null when selecting
-                              initialFocus
-                              disabled={(date) => date < new Date()}
-                            />
-                          </div>
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined} // Convert null to undefined for the calendar
+                            onSelect={(date) => field.onChange(date || null)} // Convert undefined to null when selecting
+                            initialFocus
+                            disabled={(date) => date < new Date()}
+                          />
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -168,6 +164,9 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddPr
                 isLoading={isLoading || form.formState.isSubmitting}
                 loadingText="Creating..."
                 defaultText="Create Project"
+                disabled={!isAdmin}
+                tooltipText={isAdmin ? 'Create new project' : 'Only group admins can create projects.'}
+                tooltipSide="top"
               />
             </DialogFooter>
           </form>
