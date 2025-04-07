@@ -4,6 +4,7 @@ import { CircleArrowLeft, Users, Calendar, KanbanSquare, ListTodo } from 'lucide
 import { Link, useParams, useLocation } from 'react-router';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 
 export const ProjectDetailsPage = () => {
   const { groupId } = useParams<{ groupId: string; projectId: string }>();
@@ -141,16 +142,7 @@ export const ProjectDetailsPage = () => {
 
         {/* Kanban board area */}
         <div className="w-full min-h-[500px] border border-border rounded-xl bg-card/50 p-4">
-          {/* Placeholder for the actual Kanban board component */}
-          <div className="flex items-center justify-center w-full h-full rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
-            <div className="text-center">
-              <KanbanSquare className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="text-lg font-heading">Kanban Board will be implemented here</p>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto mt-2">
-                This area is reserved for your Kanban board implementation, with plenty of space for columns and cards.
-              </p>
-            </div>
-          </div>
+          <KanbanBoard />
         </div>
       </div>
     </MainContent>
