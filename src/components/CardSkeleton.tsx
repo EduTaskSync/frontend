@@ -2,7 +2,7 @@ import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Calendar } from 'lucide-react';
 
-export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event';
+export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event' | 'project';
 
 interface CardSkeletonProps {
   variant: CardSkeletonVariant;
@@ -36,6 +36,39 @@ export const CardSkeleton = ({
             {variant === 'group' && (
               <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400/20 via-pink-300/20 to-indigo-400/20">
                 <Skeleton className="h-[calc(12rem-4px)] rounded-[calc(0.75rem-1px)] w-full bg-card/50" />
+              </div>
+            )}
+
+            {/* Project card skeleton - designed to match ProjectCard */}
+            {variant === 'project' && (
+              <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400/20 via-cyan-300/20 to-teal-400/20 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)]">
+                <div className="relative h-[calc(9rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 bg-card overflow-hidden">
+                  {/* Base overlay with translucent black */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 backdrop-blur-[2px] opacity-60"></div>
+
+                  {/* Status-based gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-blue-700/20 opacity-40"></div>
+
+                  {/* Top section with progress indicator */}
+                  <div className="flex justify-start z-10">
+                    <Skeleton className="h-5 w-20 rounded-md bg-blue-500/10 border border-white/10" />
+                  </div>
+
+                  {/* Content container */}
+                  <div className="flex flex-col justify-end h-full z-10">
+                    <div className="inline-flex flex-col px-3 py-2 bg-black/30 border border-white/10 backdrop-blur-md rounded-lg w-full">
+                      {/* Title skeleton */}
+                      <Skeleton className="h-5 w-3/4 mb-1 bg-gray-400/20" />
+
+                      {/* Project metadata skeleton */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-24 rounded-full bg-white/10 border border-white/5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

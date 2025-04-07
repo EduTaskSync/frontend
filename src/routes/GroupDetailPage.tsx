@@ -7,10 +7,22 @@ import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 import { GroupMemberList } from '@/components/groups/GroupMemberList';
 import { InviteMemberDialog } from '@/components/groups/InviteMemberDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
+import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
+import { useProjects } from '@/hooks/projects/useProjects';
+import { ProjectList } from '@/components/projects/ProjectList';
 
 const GroupDetailPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const { inviteGroupMemberResponse } = useGroups(groupId);
+  const { createProjectResponse } = useProjects(groupId);
+  const handleCreateProject = (data: { projectName: string; deadline: Date | null }) => {
+    if (!groupId) return;
+
+    createProjectResponse.mutate({
+      projectName: data.projectName,
+      deadline: data.deadline,
+    });
+  };
 
   const handleSendInvite = (data: { email: string }) => {
     if (!groupId) return;
@@ -60,7 +72,7 @@ const GroupDetailPage = () => {
         <GroupMemberList />
       </div>
 
-      {/* Projects Section - Horizontal Layout */}
+      {/* Projects Section - Single Project Per Row */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -68,21 +80,18 @@ const GroupDetailPage = () => {
             <h3 className="font-heading font-semibold text-lg">Projects</h3>
           </div>
 
-          <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
-            <span>New Project</span>
-          </Button>
+          <AddProjectDialog
+            trigger={
+              <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
+                <span>New Project</span>
+              </Button>
+            }
+            onSubmit={handleCreateProject}
+            groupId={groupId || ''}
+            isLoading={false} // Set to your API loading state
+          />
         </div>
-
-        {/* Horizontally scrollable project cards */}
-        <ScrollArea className="w-full whitespace-nowrap pb-4">
-          <div className="flex space-x-4 min-h-[140px]">
-            {/* Project cards will go here */}
-            <div className="flex items-center justify-center w-full h-[140px] rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
-              No projects yet. Click "New Project" to get started.
-            </div>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        <ProjectList />
       </div>
 
       {/* Upcoming Tasks Section - Horizontal Layout */}

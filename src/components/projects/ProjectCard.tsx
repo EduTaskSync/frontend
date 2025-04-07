@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router';
-import { Calendar, Users, Trash2 } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -16,34 +16,22 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CountdownTimer } from '../CountdownTimer';
+import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
 
 // Shape of the project object sent to the ProjectCard component
 interface ProjectCardProps {
-  project: {
-    id: string;
-    name: string;
-    description: string;
-    dueDate: string; // ISO date string
-    creationDate: string; // ISO date string
-    memberCount: number;
-    progress: number; // 0-100
-    image: string;
-    groupId: string; // Parent group ID
-  };
+  project: ProjectSummaryResponse;
+  groupId: string; // Optional groupId prop for routing
   onDelete?: (projectId: string) => void;
 }
 
-export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
+export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   // Use useRef to track the timeout for deletion
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Format the due date to display
-  const formattedDueDate = new Date(project.dueDate).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formattedDueDate = project.deadline ? new Date(project.deadline).toLocaleDateString() : 'No deadline';
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to project page
@@ -61,7 +49,7 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
 
     // Create a timeout that will execute the delete after the toast duration
     const timeoutId = setTimeout(() => {
-      onDelete?.(project.id);
+      onDelete?.(project.projectId); // Call the delete function passed as prop
       // Clear the reference after executing
       deleteTimeoutRef.current = null;
     }, 4000); // Match sonner's default 4 second duration
@@ -70,7 +58,7 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
     deleteTimeoutRef.current = timeoutId;
 
     // Show toast with undo button
-    toast.warning(`Deleting ${project.name}`, {
+    toast.warning(`Deleting ${project.projectName}`, {
       description: (
         <div>
           <p>This project will be deleted in a few seconds</p>
@@ -85,14 +73,13 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
           if (deleteTimeoutRef.current) {
             clearTimeout(deleteTimeoutRef.current);
             deleteTimeoutRef.current = null;
-            toast.info(`Deletion of ${project.name} canceled`);
+            toast.info(`Deletion of ${project.projectName} canceled`);
           }
         },
       },
     });
   };
 
-  // Get status color based on progress
   const getStatusColor = () => {
     if (project.progress >= 75) return 'text-emerald-500 bg-emerald-500/10';
     if (project.progress >= 25) return 'text-amber-500 bg-amber-500/10';
@@ -106,10 +93,17 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
     return 'Just started';
   };
 
+  // Get gradient overlay based on progress
+  const getStatusGradient = () => {
+    if (project.progress >= 75) return 'from-emerald-900/50 to-emerald-700/20';
+    if (project.progress >= 25) return 'from-amber-900/50 to-amber-700/20';
+    return 'from-blue-900/50 to-blue-700/20';
+  };
+
   return (
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(56,189,248,0.25)] hover:from-blue-500 hover:via-cyan-400 hover:to-teal-500 group/wrapper">
       <Link
-        to={`/groups/${project.groupId}/projects/${project.id}`}
+        to={`/app/groups/${groupId}/projects/${project.projectId}`}
         state={{
           projectDetails: project,
         }}
@@ -129,25 +123,37 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
 
         <div
           className={cn(
-            'cursor-pointer overflow-hidden relative h-[calc(12rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 transition-all duration-300 bg-card',
+            'cursor-pointer overflow-hidden relative h-[calc(9rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 transition-all duration-300 bg-card',
             'bg-cover bg-center'
           )}
-          style={{ backgroundImage: `url(${project.image})` }}
         >
+          {/* Base overlay with translucent black */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 backdrop-blur-[2px] opacity-60 transition-opacity duration-300 group-hover/card:opacity-75"></div>
 
+          {/* Status-based gradient overlay */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${getStatusGradient()} opacity-40 transition-opacity duration-300 group-hover/card:opacity-60`}
+          ></div>
+
           {/* Top section with progress indicator */}
-          <div className="flex justify-end z-10">
-            <Badge variant="outline" className={cn('px-2.5 py-1 border-white/10 backdrop-blur-md', getStatusColor())}>
+          <div className="flex justify-start z-10">
+            <Badge
+              variant="outline"
+              className={cn(
+                'px-2 py-0.5 border border-white/20 shadow-sm text-xs',
+                'backdrop-blur-md bg-black/30',
+                getStatusColor()
+              )}
+            >
               {getStatusText()}
             </Badge>
           </div>
 
           {/* Content container */}
           <div className="flex flex-col justify-end h-full z-10">
-            <div className="inline-flex flex-col px-3 py-2 bg-black/30 border border-white/10 backdrop-blur-md rounded-lg transition-all duration-300 group-hover/card:bg-black/40 max-w-full">
-              <h2 className="font-bold text-lg text-primary-foreground font-heading tracking-tight mb-1 truncate">
-                {project.name}
+            <div className="inline-flex flex-col px-3 py-2 bg-black/30 border border-white/10 backdrop-blur-md rounded-lg transition-all duration-300 group-hover/card:bg-black/40 w-full">
+              <h2 className="font-bold text-base text-primary-foreground font-heading tracking-tight mb-0.5 truncate">
+                {project.projectName}
               </h2>
 
               {/* Project metadata */}
@@ -155,18 +161,10 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="flex items-center gap-1.5 px-2 py-0.5 bg-white/10 backdrop-blur-sm border-white/10 text-white text-md font-bold"
+                    className="flex items-center gap-1 px-1.5 py-0.5 bg-white/10 backdrop-blur-sm border-white/10 text-white text-xs truncate max-w-[120px]"
                   >
-                    <Users className="h-3 w-3 text-blue-500" />
-                    <span className="font-sans font-bold">{project.memberCount}</span>
-                  </Badge>
-
-                  <Badge
-                    variant="outline"
-                    className="flex items-center gap-1.5 px-2 py-0.5 bg-white/10 backdrop-blur-sm border-white/10 text-white text-xs"
-                  >
-                    <Calendar className="h-3 w-3 text-cyan-400" />
-                    <span>{formattedDueDate}</span>
+                    <Calendar className="h-2.5 w-2.5 text-cyan-400 shrink-0" />
+                    <span className="truncate text-[10px]">{formattedDueDate}</span>
                   </Badge>
                 </div>
               </div>
@@ -180,12 +178,13 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
         <AlertDialogContent className="max-w-md shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-heading text-xl">
-              <span className="text-blue-300">Delete</span> Project
+              <span className="text-emerald-300">Delete</span> Project
             </AlertDialogTitle>
             <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
             <AlertDialogDescription className="font-sans text-base">
               <p className="mb-3">
-                Are you sure you want to delete <span className="font-semibold text-foreground">"{project.name}"</span>?
+                Are you sure you want to delete{' '}
+                <span className="font-semibold text-foreground">"{project.projectName}"</span>?
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-md">
                 <p className="flex items-start gap-2 mt-1">
