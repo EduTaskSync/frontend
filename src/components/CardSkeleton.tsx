@@ -41,26 +41,29 @@ export const CardSkeleton = ({
 
             {/* Project card skeleton - designed to match ProjectCard */}
             {variant === 'project' && (
-              <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400/20 via-cyan-300/20 to-teal-400/20">
-                <div className="relative h-[calc(9rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 bg-card/50 overflow-hidden">
-                  {/* Top progress indicator skeleton */}
+              <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400/20 via-cyan-300/20 to-teal-400/20 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)]">
+                <div className="relative h-[calc(9rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 bg-card overflow-hidden">
+                  {/* Base overlay with translucent black */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 backdrop-blur-[2px] opacity-60"></div>
+
+                  {/* Status-based gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-blue-700/20 opacity-40"></div>
+
+                  {/* Top section with progress indicator */}
                   <div className="flex justify-start z-10">
-                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-20 rounded-md bg-blue-500/10 border border-white/10" />
                   </div>
 
-                  {/* Overlays with gradient skeletons */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-black/5 backdrop-blur-[1px]"></div>
-
-                  {/* Content container skeleton */}
-                  <div className="flex flex-col justify-end h-full z-10 mt-auto">
-                    <div className="px-3 py-2 bg-black/10 border border-white/5 backdrop-blur-sm rounded-lg w-full">
+                  {/* Content container */}
+                  <div className="flex flex-col justify-end h-full z-10">
+                    <div className="inline-flex flex-col px-3 py-2 bg-black/30 border border-white/10 backdrop-blur-md rounded-lg w-full">
                       {/* Title skeleton */}
-                      <Skeleton className="h-5 w-3/4 mb-1" />
+                      <Skeleton className="h-5 w-3/4 mb-1 bg-gray-400/20" />
 
                       {/* Project metadata skeleton */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Skeleton className="h-5 w-20 rounded-full" />
+                          <Skeleton className="h-4 w-24 rounded-full bg-white/10 border border-white/5" />
                         </div>
                       </div>
                     </div>
