@@ -1,23 +1,22 @@
 import { z } from 'zod';
 
-export const ProjectSchema = z.object({
+export const ProjectBaseSchema = z.object({
   projectId: z.string().uuid(),
   projectName: z.string(),
-  groupId: z.string().uuid(),
-  deadline: z.date(),
+  deadline: z.date().nullable(),
+});
+export type ProjectBaseResponse = z.infer<typeof ProjectBaseSchema>;
+
+export const ProjectSummarySchema = ProjectBaseSchema.extend({
   progress: z.number().min(0).max(100),
 });
 
-export const ProjectSummarySchema = ProjectSchema.pick({
-  projectId: true,
-  projectName: true,
-  progress: true,
-  deadline: true,
-});
+export type ProjectSummaryResponse = z.infer<typeof ProjectSummarySchema>;
 
-export type ProjectSummary = z.infer<typeof ProjectSummarySchema>;
-export type Project = z.infer<typeof ProjectSchema>;
+export type ProjectSummaryListResponse = {
+  projects: ProjectSummaryResponse[];
+};
 
-export const CreateProjectSchema = ProjectSchema.omit({ projectId: true, progress: true });
+export const CreateProjectSchema = ProjectBaseSchema.omit({ projectId: true });
 
 export type CreateProjectDto = z.infer<typeof CreateProjectSchema>;

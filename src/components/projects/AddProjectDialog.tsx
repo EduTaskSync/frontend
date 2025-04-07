@@ -22,40 +22,33 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { CreateProjectSchema } from '@/hooks/projects/projectInterfaces';
 
 interface AddProjectDialogProps {
   trigger: React.ReactNode;
-  onSubmit: (values: z.infer<typeof addProjectFormSchema>) => void;
+  onSubmit: (values: z.infer<typeof CreateProjectSchema>) => void;
   groupId: string;
   isLoading?: boolean;
 }
 
-const addProjectFormSchema = z.object({
-  projectName: z.string().min(1, 'Project name is required'),
-  groupId: z.string().min(1, 'Group ID is required'),
-  deadline: z.date().optional(),
-});
-
-export const AddProjectDialog = ({ trigger, onSubmit, groupId, isLoading = false }: AddProjectDialogProps) => {
+export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false }: AddProjectDialogProps) => {
   const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof addProjectFormSchema>>({
-    resolver: zodResolver(addProjectFormSchema),
+  const form = useForm<z.infer<typeof CreateProjectSchema>>({
+    resolver: zodResolver(CreateProjectSchema),
     defaultValues: {
       projectName: '',
-      groupId: groupId,
-      deadline: undefined,
+      deadline: null,
     },
   });
 
   // Handle form submission
-  const handleFormSubmit = (values: z.infer<typeof addProjectFormSchema>) => {
+  const handleFormSubmit = (values: z.infer<typeof CreateProjectSchema>) => {
     onSubmit(values);
     setOpen(false);
     form.reset({
       projectName: '',
-      groupId: groupId,
-      deadline: undefined,
+      deadline: null,
     });
   };
 
@@ -66,8 +59,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, groupId, isLoading = false
         if (!isOpen) {
           form.reset({
             projectName: '',
-            groupId: groupId,
-            deadline: undefined,
+            deadline: null,
           });
         }
         setOpen(isOpen);
@@ -110,7 +102,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, groupId, isLoading = false
               name="deadline"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="font-heading font-semibold">Deadline </FormLabel>
+                  <FormLabel className="font-heading font-semibold">Deadline</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Popover>
@@ -130,18 +122,33 @@ export const AddProjectDialog = ({ trigger, onSubmit, groupId, isLoading = false
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            disabled={(date) => date < new Date()}
-                          />
+                          <div className="flex flex-col">
+                            <div className="p-2 border-b flex justify-between items-center">
+                              <span className="text-sm font-medium">Select date</span>
+                              {field.value && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2 py-0 text-xs"
+                                  onClick={() => field.onChange(null)}
+                                >
+                                  Clear
+                                </Button>
+                              )}
+                            </div>
+                            <Calendar
+                              mode="single"
+                              selected={field.value || undefined} // Convert null to undefined for the calendar
+                              onSelect={(date) => field.onChange(date || null)} // Convert undefined to null when selecting
+                              initialFocus
+                              disabled={(date) => date < new Date()}
+                            />
+                          </div>
                         </PopoverContent>
                       </Popover>
                     </div>
                   </FormControl>
-                  <FormDescription>Set a deadline for your project.</FormDescription>
+                  <FormDescription>Set a deadline for your project (optional).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

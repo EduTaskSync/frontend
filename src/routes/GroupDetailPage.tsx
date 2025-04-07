@@ -7,28 +7,22 @@ import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 import { GroupMemberList } from '@/components/groups/GroupMemberList';
 import { InviteMemberDialog } from '@/components/groups/InviteMemberDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
-import { ProjectCard } from '@/components/projects/ProjectCard';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
-import { ProjectSummary } from '@/hooks/projects/projectInterfaces';
+import { useProjects } from '@/hooks/projects/useProjects';
+import { ProjectList } from '@/components/projects/ProjectList';
 
 const GroupDetailPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const { inviteGroupMemberResponse } = useGroups(groupId);
+  const { createProjectResponse } = useProjects(groupId);
+  const handleCreateProject = (data: { projectName: string; deadline: Date | null }) => {
+    if (!groupId) return;
 
-  const mockGroupProjects: ProjectSummary[] = [
-    {
-      projectId: '1',
-      projectName: 'Project 1',
-      deadline: new Date('2023-12-31'),
-      progress: 50,
-    },
-    {
-      projectId: '2',
-      projectName: 'Project 2',
-      deadline: new Date('2024-01-15'),
-      progress: 75,
-    },
-  ];
+    createProjectResponse.mutate({
+      projectName: data.projectName,
+      deadline: data.deadline,
+    });
+  };
 
   const handleSendInvite = (data: { email: string }) => {
     if (!groupId) return;
@@ -92,29 +86,12 @@ const GroupDetailPage = () => {
                 <span>New Project</span>
               </Button>
             }
-            onSubmit={(data) => {
-              // Handle project creation here
-              console.log('Creating project:', data);
-              // You'll want to add your API call to create a project
-            }}
+            onSubmit={handleCreateProject}
             groupId={groupId || ''}
             isLoading={false} // Set to your API loading state
           />
         </div>
-
-        {mockGroupProjects.length > 0 ? (
-          <div className="flex flex-col space-y-4">
-            {mockGroupProjects.map((project) => (
-              <div key={project.projectId} className="w-full">
-                <ProjectCard project={project} groupId={groupId || ''} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center w-full h-[140px] rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
-            No projects yet. Click New Project to get started.
-          </div>
-        )}
+        <ProjectList />
       </div>
 
       {/* Upcoming Tasks Section - Horizontal Layout */}

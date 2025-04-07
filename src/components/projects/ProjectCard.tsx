@@ -16,17 +16,16 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CountdownTimer } from '../CountdownTimer';
-import { ProjectSummary } from '@/hooks/projects/projectInterfaces';
+import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
 
 // Shape of the project object sent to the ProjectCard component
 interface ProjectCardProps {
-  project: ProjectSummary;
+  project: ProjectSummaryResponse;
   groupId: string; // Optional groupId prop for routing
   onDelete?: (projectId: string) => void;
 }
 
 export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) => {
-  //extract groupid from url
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   // Use useRef to track the timeout for deletion
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -104,7 +103,7 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
   return (
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(56,189,248,0.25)] hover:from-blue-500 hover:via-cyan-400 hover:to-teal-500 group/wrapper">
       <Link
-        to={`/${groupId}/projects/${project.projectId}`}
+        to={`/app/groups/${groupId}/projects/${project.projectId}`}
         state={{
           projectDetails: project,
         }}
