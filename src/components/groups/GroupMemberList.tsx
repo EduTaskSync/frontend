@@ -6,22 +6,31 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CustomError } from '@/utils/ErrorClasses';
 import { useParams } from 'react-router';
-import { GetGroupMembersResponse } from '@/hooks/groups/groupInterfaces';
+import { useUserContext } from '@/contexts/UserContext';
+import { useMemo } from 'react';
 
 export const GroupMemberList = () => {
   const { groupId } = useParams<{ groupId: string }>();
+  const { user } = useUserContext();
 
   // groupId needed as a parameter for get members request
   const { getGroupMembersResponse } = useGroups(groupId);
-  const { data, isLoading, isError, error } = getGroupMembersResponse as {
-    data: GetGroupMembersResponse | undefined;
-    isLoading: boolean;
-    isError: boolean;
-    error: unknown;
-    refetch: () => void;
-  };
+  const { data, isLoading, isError, error } = getGroupMembersResponse;
 
-  const members = data?.users || [];
+  // Sort members to put current user first
+  const sortedMembers = useMemo(() => {
+    const members = data?.users || [];
+
+    if (!user) return members;
+
+    return [...members].sort((a, b) => {
+      // Current user comes first
+      if (a.userId === user.userId) return -1;
+      if (b.userId === user.userId) return 1;
+      // Sort by name
+      return a.firstName.localeCompare(b.firstName);
+    });
+  }, [data?.users, user]);
 
   if (isError) {
     return (
@@ -56,7 +65,9 @@ export const GroupMemberList = () => {
         {isLoading ? (
           <CardSkeleton variant="member" count={5} horizontal={true} />
         ) : (
-          members.map((member) => <GroupMemberCard key={member.userId} groupMember={member} />)
+          sortedMembers.map((member) => (
+            <GroupMemberCard key={member.userId} groupMember={member} isCurrentUser={user?.userId === member.userId} />
+          ))
         )}
       </div>
       <ScrollBar orientation="horizontal" />

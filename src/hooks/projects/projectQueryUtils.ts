@@ -38,3 +38,17 @@ export const createProject = async (projectData: CreateProjectDto, groupId: stri
     throw new CustomError('An unexpected error occurred. Please try again later.', 'Error');
   }
 };
+
+export const deleteProject = async (projectId: string): Promise<void> => {
+  try {
+    const response = await axiosConfig.delete<void>(`${ApiEndPoints.DELETE_PROJECT}/${projectId}`);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message || 'Unknown error occurred';
+      throw new CustomError(errorMessage);
+    }
+    // For non-Axios errors
+    throw new CustomError('An unexpected error occurred. Please try again later.', 'Error');
+  }
+};

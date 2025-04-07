@@ -18,10 +18,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SERVER_KEY }}
 
-      - name: Install dependencies
-        run: |
-          npm install
-
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ vars.DB_HOST }} << 'EOF'
@@ -32,7 +28,7 @@ jobs:
             git pull origin main
 
             # Install any new dependencies
-            npm install
+            npm install --legacy-peer-deps
             npm run build
             pm2 restart frontend
           EOF

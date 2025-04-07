@@ -86,7 +86,7 @@ export const deleteGroup = async (deleteGroupObj: DeleteGroupObj) => {
       const status = error.response?.status;
 
       if (status === 400) {
-        throw new CustomError('Invalid group ID or request format', 'Bad Request');
+        throw new CustomError('Make sure all projects are deleted', 'Bad Request');
       } else if (status === 401) {
         throw new CustomError('A group can only be deleted by an admin', 'Admin privileges required');
       } else if (status === 403) {

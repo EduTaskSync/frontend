@@ -10,11 +10,19 @@ import { useGroups } from '@/hooks/groups/useGroups';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { useProjects } from '@/hooks/projects/useProjects';
 import { ProjectList } from '@/components/projects/ProjectList';
+import { ButtonWithTooltip } from '@/components/ButtonWithToolTip';
+import { GroupRole } from '@/constants/general';
+import { useUserContext } from '@/contexts/UserContext';
 
 const GroupDetailPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
-  const { inviteGroupMemberResponse } = useGroups(groupId);
+  const { inviteGroupMemberResponse, getGroupMembersResponse } = useGroups(groupId);
+  const { user } = useUserContext();
+  const { data: membersData } = getGroupMembersResponse;
+  const isAdmin =
+    membersData?.users.some((member) => member.userId === user?.userId && member.role === GroupRole.ADMIN) || false;
   const { createProjectResponse } = useProjects(groupId);
+
   const handleCreateProject = (data: { projectName: string; deadline: Date | null }) => {
     if (!groupId) return;
 
@@ -59,12 +67,17 @@ const GroupDetailPage = () => {
           </div>
           <InviteMemberDialog
             trigger={
-              <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
+              <ButtonWithTooltip
+                size="sm"
+                className="gap-1 font-heading text-sm hover:cursor-pointer"
+                tooltipText={isAdmin ? 'Invite a new member to this group' : 'Only group admins can invite members.'}
+              >
                 <span>Invite Member</span>
-              </Button>
+              </ButtonWithTooltip>
             }
             onSubmit={handleSendInvite}
             isLoading={inviteGroupMemberResponse.isPending}
+            isAdmin={isAdmin}
           />
         </div>
 
@@ -82,13 +95,18 @@ const GroupDetailPage = () => {
 
           <AddProjectDialog
             trigger={
-              <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
+              <ButtonWithTooltip
+                size="sm"
+                className="gap-2 font-heading text-sm hover:cursor-pointer"
+                tooltipText={isAdmin ? 'Create a new project in this group.' : 'Only group admins can create projects.'}
+              >
                 <span>New Project</span>
-              </Button>
+              </ButtonWithTooltip>
             }
             onSubmit={handleCreateProject}
             groupId={groupId || ''}
-            isLoading={false} // Set to your API loading state
+            isLoading={false}
+            isAdmin={isAdmin}
           />
         </div>
         <ProjectList />
