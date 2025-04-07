@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { Calendar, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -17,16 +16,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CountdownTimer } from '../CountdownTimer';
 import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
+import { useProjects } from '@/hooks/projects/useProjects';
+import { ButtonWithTooltip } from '../ButtonWithToolTip';
 
 // Shape of the project object sent to the ProjectCard component
 interface ProjectCardProps {
   project: ProjectSummaryResponse;
-  groupId: string; // Optional groupId prop for routing
-  onDelete?: (projectId: string) => void;
+  groupId: string;
+  isAdmin?: boolean;
 }
 
-export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) => {
+export const ProjectCard = ({ project, groupId, isAdmin = false }: ProjectCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { deleteProjectResponse } = useProjects(groupId);
   // Use useRef to track the timeout for deletion
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -40,6 +42,10 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
   };
 
   const confirmDelete = () => {
+    if (!isAdmin) {
+      toast.error('You do not have permission to delete this project');
+      return;
+    }
     setShowDeleteDialog(false);
 
     // Cancel any existing timeout first
@@ -49,7 +55,7 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
 
     // Create a timeout that will execute the delete after the toast duration
     const timeoutId = setTimeout(() => {
-      onDelete?.(project.projectId); // Call the delete function passed as prop
+      deleteProjectResponse.mutate(project.projectId);
       // Clear the reference after executing
       deleteTimeoutRef.current = null;
     }, 4000); // Match sonner's default 4 second duration
@@ -110,15 +116,17 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
         className="w-full group/card block h-full relative"
       >
         <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
-          <Button
+          <ButtonWithTooltip
             variant="destructive"
             size="sm"
             className="h-9 w-9 rounded-full p-0 bg-destructive shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-destructive/90 hover:scale-105 transition-transform duration-150 cursor-pointer"
             onClick={handleDeleteClick}
+            disabled={!isAdmin}
+            tooltipText={isAdmin ? 'Delete project' : 'Only group admins can delete projects.'}
           >
             <Trash2 className="h-5 w-5 text-white" />
             <span className="sr-only">Delete project</span>
-          </Button>
+          </ButtonWithTooltip>
         </div>
 
         <div
@@ -182,19 +190,19 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
             </AlertDialogTitle>
             <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
             <AlertDialogDescription className="font-sans text-base">
-              <p className="mb-3">
+              <div className="mb-3">
                 Are you sure you want to delete{' '}
                 <span className="font-semibold text-foreground">"{project.projectName}"</span>?
-              </p>
+              </div>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-md">
-                <p className="flex items-start gap-2 mt-1">
+                <div className="flex items-start gap-2 mt-1">
                   <span className="text-destructive mt-0.5">•</span>
                   All project tasks and resources will be permanently removed
-                </p>
-                <p className="flex items-start gap-2 mt-1">
+                </div>
+                <div className="flex items-start gap-2 mt-1">
                   <span className="text-destructive mt-0.5">•</span>
                   You can undo this action for a few seconds after confirmation
-                </p>
+                </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

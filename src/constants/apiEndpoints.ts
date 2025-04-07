@@ -17,4 +17,5 @@ export enum ApiEndPoints {
   //projects
   CREATE_PROJECT = '/projects/create',
   CREATE_PROJECT_TASK = '/projects/create_task',
+  DELETE_PROJECT = '/projects/delete_project',
 }
