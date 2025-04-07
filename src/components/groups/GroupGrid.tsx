@@ -4,21 +4,7 @@ import { CardSkeleton } from '../CardSkeleton';
 import { CustomError } from '@/utils/ErrorClasses';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertCircle } from 'lucide-react';
-
-const getImageUrl = (url: string | null | undefined) => {
-  // fallback to group image 1 if server sends no image url
-  if (!url) {
-    return '/group-icon-1.jpg';
-  }
-
-  // if it's a relative path starting with / or a full URL, use it directly
-  if (url.startsWith('/') || url.startsWith('http')) {
-    return url;
-  }
-
-  // assume filename inside public folder
-  return `/${url}`;
-};
+import { getImageUrl } from '@/lib/utils';
 
 export const GroupGrid = () => {
   const { fetchGroupsResponse } = useGroups();
