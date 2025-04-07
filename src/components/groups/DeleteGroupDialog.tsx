@@ -94,11 +94,11 @@ export const DeleteGroupDialog = ({ trigger, groupId, groupName, isAdmin = false
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="bg-destructive/10 border border-amber-200 rounded-lg p-3 text-md mb-4">
+        <div className="bg-destructive/10 border border-destructive rounded-lg p-3 text-md mb-4">
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
             <div className="flex flex-col">
-              <p className="text-amber-900 font-semibold">Warning: This action cannot be undone.</p>
+              <p className="text-foreground font-semibold">Warning: This action cannot be undone.</p>
               <p className="text-sm text-muted-foreground">
                 All data associated with this group will be permanently deleted.
               </p>
