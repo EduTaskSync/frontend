@@ -7,10 +7,28 @@ import { GroupDetailsHeader } from '@/components/groups/GroupDetailsHeader';
 import { GroupMemberList } from '@/components/groups/GroupMemberList';
 import { InviteMemberDialog } from '@/components/groups/InviteMemberDialog';
 import { useGroups } from '@/hooks/groups/useGroups';
+import { ProjectCard } from '@/components/projects/ProjectCard';
+import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
+import { ProjectSummary } from '@/hooks/projects/projectInterfaces';
 
 const GroupDetailPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const { inviteGroupMemberResponse } = useGroups(groupId);
+
+  const mockGroupProjects: ProjectSummary[] = [
+    {
+      projectId: '1',
+      projectName: 'Project 1',
+      deadline: new Date('2023-12-31'),
+      progress: 50,
+    },
+    {
+      projectId: '2',
+      projectName: 'Project 2',
+      deadline: new Date('2024-01-15'),
+      progress: 75,
+    },
+  ];
 
   const handleSendInvite = (data: { email: string }) => {
     if (!groupId) return;
@@ -60,7 +78,7 @@ const GroupDetailPage = () => {
         <GroupMemberList />
       </div>
 
-      {/* Projects Section - Horizontal Layout */}
+      {/* Projects Section - Single Project Per Row */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -68,21 +86,35 @@ const GroupDetailPage = () => {
             <h3 className="font-heading font-semibold text-lg">Projects</h3>
           </div>
 
-          <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
-            <span>New Project</span>
-          </Button>
+          <AddProjectDialog
+            trigger={
+              <Button size="sm" className="gap-2 font-heading text-sm hover:cursor-pointer">
+                <span>New Project</span>
+              </Button>
+            }
+            onSubmit={(data) => {
+              // Handle project creation here
+              console.log('Creating project:', data);
+              // You'll want to add your API call to create a project
+            }}
+            groupId={groupId || ''}
+            isLoading={false} // Set to your API loading state
+          />
         </div>
 
-        {/* Horizontally scrollable project cards */}
-        <ScrollArea className="w-full whitespace-nowrap pb-4">
-          <div className="flex space-x-4 min-h-[140px]">
-            {/* Project cards will go here */}
-            <div className="flex items-center justify-center w-full h-[140px] rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
-              No projects yet. Click "New Project" to get started.
-            </div>
+        {mockGroupProjects.length > 0 ? (
+          <div className="flex flex-col space-y-4">
+            {mockGroupProjects.map((project) => (
+              <div key={project.projectId} className="w-full">
+                <ProjectCard project={project} groupId={groupId || ''} />
+              </div>
+            ))}
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        ) : (
+          <div className="flex items-center justify-center w-full h-[140px] rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
+            No projects yet. Click New Project to get started.
+          </div>
+        )}
       </div>
 
       {/* Upcoming Tasks Section - Horizontal Layout */}
