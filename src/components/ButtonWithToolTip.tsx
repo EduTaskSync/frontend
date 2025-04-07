@@ -18,13 +18,32 @@ export const ButtonWithTooltip = ({
   tooltipSide = 'top',
   tooltipAlign = 'center',
   tooltipClassName = 'bg-background border border-border shadow-md font-sans text-sm',
+  disabled = false,
   children,
   ...buttonProps
 }: ButtonWithTooltipProps) => {
+  if (disabled) {
+    return (
+      <TooltipProvider>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <div className="inline-flex" style={{ cursor: 'not-allowed' }}>
+              <Button {...buttonProps} disabled={disabled}>
+                {children}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side={tooltipSide} align={tooltipAlign} className={tooltipClassName}>
+            {tooltipText}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button {...buttonProps}>{children}</Button>
         </TooltipTrigger>
         <TooltipContent side={tooltipSide} align={tooltipAlign} className={tooltipClassName}>
