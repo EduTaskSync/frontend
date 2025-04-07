@@ -176,7 +176,7 @@ export const useProjects = (groupId?: string) => {
     },
 
     // Error handling
-    onError: (err, projectId, context) => {
+    onError: (err, _projectId, context) => {
       // Restore previous data on error
       if (context?.previousProjects && groupId) {
         queryClient.setQueryData(projectQueryKeys.groupProjects(groupId), context.previousProjects);
@@ -198,7 +198,7 @@ export const useProjects = (groupId?: string) => {
     },
 
     // Success handling
-    onSuccess: (_, projectId, context) => {
+    onSuccess: (_, _projectId, context) => {
       const projectName = context?.projectToDelete?.projectName || 'Project';
 
       toast.success('Project deleted', {
