@@ -28,3 +28,18 @@ export const formatDate = (dateString: string) => {
     return 'Invalid date';
   }
 };
+
+export const getImageUrl = (url: string | null | undefined) => {
+  // fallback to group image 1 if server sends no image url
+  if (!url) {
+    return '/group-icon-1.jpg';
+  }
+
+  // if it's a relative path starting with / or a full URL, use it directly
+  if (url.startsWith('/') || url.startsWith('http')) {
+    return url;
+  }
+
+  // assume filename inside public folder
+  return `/${url}`;
+};

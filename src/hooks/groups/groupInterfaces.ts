@@ -65,5 +65,5 @@ export interface GroupDetailsResponse {
   groupName: string;
   groupCreationDate: string;
   groupDescription: string;
-  groupImage: string;
+  imgUrl: string;
 }
