@@ -179,7 +179,7 @@ export const ProjectCard = ({ project, groupId, onDelete }: ProjectCardProps) =>
         <AlertDialogContent className="max-w-md shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-heading text-xl">
-              <span className="text-blue-300">Delete</span> Project
+              <span className="text-emerald-300">Delete</span> Project
             </AlertDialogTitle>
             <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
             <AlertDialogDescription className="font-sans text-base">

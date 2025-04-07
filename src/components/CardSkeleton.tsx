@@ -2,7 +2,7 @@ import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Calendar } from 'lucide-react';
 
-export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event';
+export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event' | 'project';
 
 interface CardSkeletonProps {
   variant: CardSkeletonVariant;
@@ -36,6 +36,36 @@ export const CardSkeleton = ({
             {variant === 'group' && (
               <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-purple-400/20 via-pink-300/20 to-indigo-400/20">
                 <Skeleton className="h-[calc(12rem-4px)] rounded-[calc(0.75rem-1px)] w-full bg-card/50" />
+              </div>
+            )}
+
+            {/* Project card skeleton - designed to match ProjectCard */}
+            {variant === 'project' && (
+              <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400/20 via-cyan-300/20 to-teal-400/20">
+                <div className="relative h-[calc(9rem-4px)] rounded-[calc(0.75rem-1px)] shadow-sm flex flex-col justify-between p-4 bg-card/50 overflow-hidden">
+                  {/* Top progress indicator skeleton */}
+                  <div className="flex justify-start z-10">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+
+                  {/* Overlays with gradient skeletons */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-black/5 backdrop-blur-[1px]"></div>
+
+                  {/* Content container skeleton */}
+                  <div className="flex flex-col justify-end h-full z-10 mt-auto">
+                    <div className="px-3 py-2 bg-black/10 border border-white/5 backdrop-blur-sm rounded-lg w-full">
+                      {/* Title skeleton */}
+                      <Skeleton className="h-5 w-3/4 mb-1" />
+
+                      {/* Project metadata skeleton */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-5 w-20 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

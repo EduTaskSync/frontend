@@ -77,7 +77,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, groupId, isLoading = false
       <DialogContent className="sm:max-w-[500px] p-6 font-sans">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading mb-1">
-            Create <span className="text-emerald-400">New Project</span>
+            Create <span className="text-emerald-300">New Project</span>
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">Add a new project to this group.</DialogDescription>
         </DialogHeader>
