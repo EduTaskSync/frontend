@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
-import { getProjectsSummary, createProject } from '@/hooks/projects/projectQueryUtils';
+import { getProjectsSummary, createProject, deleteProject } from '@/hooks/projects/projectQueryUtils';
 import { CreateProjectDto, ProjectSummaryListResponse, ProjectSummaryResponse } from './projectInterfaces';
 
 // Define query keys for projects
@@ -11,44 +11,6 @@ export const projectQueryKeys = {
   groupProjects: (groupId: string) => [...projectQueryKeys.lists(), { groupId }] as const,
   details: () => [...projectQueryKeys.all, 'detail'] as const,
 };
-
-// const deleteProject = async ({ projectId, groupId }: DeleteProjectRequest): Promise<{ success: boolean }> => {
-//   try {
-//     // Replace with actual API call
-//     const response = await fetch(`/api/groups/${groupId}/projects/${projectId}`, {
-//       method: 'DELETE',
-//     });
-
-//     if (!response.ok) {
-//       throw new CustomError('Failed to delete project', 'Network error', response.status);
-//     }
-//     return { success: true };
-//   } catch (error) {
-//     console.error('Error deleting project:', error);
-//     throw error;
-//   }
-// };
-
-// const updateProject = async (projectData: UpdateProjectRequest): Promise<Project> => {
-//   try {
-//     // Replace with actual API call
-//     const response = await fetch(`/api/groups/${projectData.groupId}/projects/${projectData.projectId}`, {
-//       method: 'PUT',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(projectData),
-//     });
-
-//     if (!response.ok) {
-//       throw new CustomError('Failed to update project', 'Network error', response.status);
-//     }
-//     return response.json();
-//   } catch (error) {
-//     console.error('Error updating project:', error);
-//     throw error;
-//   }
-// };
 
 // Main hook for projects
 export const useProjects = (groupId?: string) => {
@@ -178,169 +140,85 @@ export const useProjects = (groupId?: string) => {
     },
   });
 
-  // // Delete project with optimistic updates
-  // const deleteProjectResponse = useMutation({
-  //   mutationFn: deleteProject,
-  //   onMutate: async (deleteProjectObj) => {
-  //     if (!groupId) {
-  //       throw new Error('Group ID is required to delete a project');
-  //     }
+  const deleteProjectResponse = useMutation({
+    mutationFn: (projectId: string) => {
+      return deleteProject(projectId);
+    },
 
-  //     const queryKey = projectQueryKeys.groupProjects(groupId);
+    // Optimistic update handling
+    onMutate: async (projectId) => {
+      if (!groupId) {
+        throw new Error('Group ID is required to delete a project');
+      }
 
-  //     // Cancel outgoing refetches
-  //     await queryClient.cancelQueries({ queryKey });
+      const queryKey = projectQueryKeys.groupProjects(groupId);
 
-  //     // Snapshot previous data
-  //     const previousProjects = queryClient.getQueryData<ProjectListResponse>(queryKey);
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey });
 
-  //     // Optimistically remove the project from cache
-  //     queryClient.setQueryData<ProjectListResponse>(queryKey, (oldData) => {
-  //       if (!oldData) return { projects: [] };
+      // Snapshot previous data
+      const previousProjects = queryClient.getQueryData<ProjectSummaryListResponse>(queryKey);
 
-  //       return {
-  //         projects: oldData.projects.filter((project) => project.projectId !== deleteProjectObj.projectId),
-  //       };
-  //     });
+      // Store the project being deleted for display in toast
+      const projectToDelete = previousProjects?.projects.find((project) => project.projectId === projectId);
 
-  //     return { previousProjects };
-  //   },
+      // Optimistically remove the project from cache
+      queryClient.setQueryData<ProjectSummaryListResponse>(queryKey, (oldData) => {
+        if (!oldData) return { projects: [] };
 
-  //   // On error, revert to previous state
-  //   onError: (err, variables, context) => {
-  //     if (context?.previousProjects && groupId) {
-  //       queryClient.setQueryData(projectQueryKeys.groupProjects(groupId), context.previousProjects);
-  //     }
+        return {
+          ...oldData,
+          projects: oldData.projects.filter((project) => project.projectId !== projectId),
+        };
+      });
 
-  //     console.error('Failed to delete project:', err);
+      return { previousProjects, projectToDelete };
+    },
 
-  //     let errorMessage = 'Please try again later.';
-  //     let title = 'Error';
+    // Error handling
+    onError: (err, projectId, context) => {
+      // Restore previous data on error
+      if (context?.previousProjects && groupId) {
+        queryClient.setQueryData(projectQueryKeys.groupProjects(groupId), context.previousProjects);
+      }
 
-  //     if (err instanceof CustomError) {
-  //       errorMessage = err.message;
-  //       title = err.title || 'Failed to delete project';
-  //     }
+      console.error('Failed to delete project:', err);
 
-  //     toast.error(title, {
-  //       description: errorMessage,
-  //     });
-  //   },
+      let errorMessage = 'Please try again later.';
+      let title = 'Delete Failed';
 
-  //   // On success
-  //   onSuccess: (_, variables) => {
-  //     toast.success('Project deleted successfully');
-  //   },
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to delete project';
+      }
 
-  //   // Refetch to synchronize with server
-  //   onSettled: () => {
-  //     if (groupId) {
-  //       queryClient.invalidateQueries({
-  //         queryKey: projectQueryKeys.groupProjects(groupId),
-  //       });
-  //     }
-  //   },
-  // });
+      toast.error(title, {
+        description: errorMessage,
+      });
+    },
 
-  // // Update project with optimistic updates
-  // const updateProjectResponse = useMutation({
-  //   mutationFn: updateProject,
-  //   onMutate: async (updatedProject) => {
-  //     if (!groupId) {
-  //       throw new Error('Group ID is required to update a project');
-  //     }
+    // Success handling
+    onSuccess: (_, projectId, context) => {
+      const projectName = context?.projectToDelete?.projectName || 'Project';
 
-  //     const queryKey = projectQueryKeys.groupProjects(groupId);
-  //     const detailQueryKey = projectQueryKeys.detail(updatedProject.projectId);
+      toast.success('Project deleted', {
+        description: `"${projectName}" has been removed.`,
+      });
+    },
 
-  //     // Cancel outgoing refetches
-  //     await queryClient.cancelQueries({ queryKey });
-  //     await queryClient.cancelQueries({ queryKey: detailQueryKey });
-
-  //     // Snapshot previous values
-  //     const previousProjects = queryClient.getQueryData<ProjectListResponse>(queryKey);
-  //     const previousProjectDetail = queryClient.getQueryData(detailQueryKey);
-
-  //     // Update project list cache
-  //     queryClient.setQueryData<ProjectListResponse>(queryKey, (oldData) => {
-  //       if (!oldData) return { projects: [] };
-
-  //       return {
-  //         projects: oldData.projects.map((project) => {
-  //           if (project.projectId === updatedProject.projectId) {
-  //             return {
-  //               ...project,
-  //               projectName: updatedProject.projectName || project.projectName,
-  //               deadline: updatedProject.deadline?.toISOString() || project.deadline,
-  //             };
-  //           }
-  //           return project;
-  //         }),
-  //       };
-  //     });
-
-  //     // Update project detail cache if it exists
-  //     if (previousProjectDetail) {
-  //       queryClient.setQueryData(detailQueryKey, (oldData) => {
-  //         if (!oldData) return oldData;
-  //         return {
-  //           ...oldData,
-  //           projectName: updatedProject.projectName || (oldData as any).projectName,
-  //           deadline: updatedProject.deadline?.toISOString() || (oldData as any).deadline,
-  //         };
-  //       });
-  //     }
-
-  //     return { previousProjects, previousProjectDetail };
-  //   },
-
-  //   // On error, revert to previous state
-  //   onError: (err, _, context) => {
-  //     if (context?.previousProjects && groupId) {
-  //       queryClient.setQueryData(projectQueryKeys.groupProjects(groupId), context.previousProjects);
-  //     }
-
-  //     if (context?.previousProjectDetail) {
-  //       queryClient.setQueryData(projectQueryKeys.detail(_.projectId), context.previousProjectDetail);
-  //     }
-
-  //     console.error('Failed to update project:', err);
-
-  //     let errorMessage = 'Please try again later.';
-  //     let title = 'Error';
-
-  //     if (err instanceof CustomError) {
-  //       errorMessage = err.message;
-  //       title = err.title || 'Failed to update project';
-  //     }
-
-  //     toast.error(title, {
-  //       description: errorMessage,
-  //     });
-  //   },
-
-  //   // On success
-  //   onSuccess: (data) => {
-  //     toast.success('Project updated successfully', {
-  //       description: `"${data.projectName}" has been updated`,
-  //     });
-  //   },
-
-  //   // Refetch to synchronize with server
-  //   onSettled: (_, __, variables) => {
-  //     if (groupId) {
-  //       queryClient.invalidateQueries({
-  //         queryKey: projectQueryKeys.groupProjects(groupId),
-  //       });
-  //       queryClient.invalidateQueries({
-  //         queryKey: projectQueryKeys.detail(variables.projectId),
-  //       });
-  //     }
-  //   },
-  // });
+    // Always refetch after operation to ensure consistency
+    onSettled: () => {
+      if (groupId) {
+        queryClient.invalidateQueries({
+          queryKey: projectQueryKeys.groupProjects(groupId),
+        });
+      }
+    },
+  });
 
   return {
-    fetchProjectsResponse: fetchProjectsSummaryResponse,
+    fetchProjectsSummaryResponse,
     createProjectResponse,
+    deleteProjectResponse,
   };
 };
