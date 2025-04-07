@@ -23,13 +23,19 @@ interface InviteMemberDialogProps {
   trigger: React.ReactNode;
   onSubmit: (values: z.infer<typeof inviteMemberFormSchema>) => void;
   isLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 const inviteMemberFormSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
 });
 
-export const InviteMemberDialog = ({ trigger, onSubmit, isLoading = false }: InviteMemberDialogProps) => {
+export const InviteMemberDialog = ({
+  trigger,
+  onSubmit,
+  isLoading = false,
+  isAdmin = false,
+}: InviteMemberDialogProps) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmail, setSelectedEmail] = useState<Option | undefined>();
@@ -151,6 +157,8 @@ export const InviteMemberDialog = ({ trigger, onSubmit, isLoading = false }: Inv
                 isLoading={isLoading || form.formState.isSubmitting}
                 loadingText="Sending..."
                 defaultText="Send Invitation"
+                disabled={!isAdmin || form.formState.isSubmitting}
+                tooltipText={isAdmin ? 'Invite new member' : 'Only group admins can invite members.'}
               />
             </DialogFooter>
           </form>

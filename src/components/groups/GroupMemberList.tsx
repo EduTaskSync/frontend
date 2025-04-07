@@ -6,7 +6,6 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CustomError } from '@/utils/ErrorClasses';
 import { useParams } from 'react-router';
-import { GetGroupMembersResponse } from '@/hooks/groups/groupInterfaces';
 import { useUserContext } from '@/contexts/UserContext';
 import { useMemo } from 'react';
 
@@ -16,13 +15,7 @@ export const GroupMemberList = () => {
 
   // groupId needed as a parameter for get members request
   const { getGroupMembersResponse } = useGroups(groupId);
-  const { data, isLoading, isError, error } = getGroupMembersResponse as {
-    data: GetGroupMembersResponse | undefined;
-    isLoading: boolean;
-    isError: boolean;
-    error: unknown;
-    refetch: () => void;
-  };
+  const { data, isLoading, isError, error } = getGroupMembersResponse;
 
   // Sort members to put current user first
   const sortedMembers = useMemo(() => {
