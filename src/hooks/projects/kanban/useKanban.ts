@@ -1,6 +1,12 @@
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createKanbanColumn, deleteKanbanColumn, getKanbanColumns, updateKanbanColumn } from './kanbanQueryUtils';
+import {
+  createKanbanColumn,
+  deleteKanbanColumn,
+  getKanbanColumns,
+  reorderKanbanColumns,
+  updateKanbanColumn,
+} from './kanbanQueryUtils';
 import { GetKanbanColumnsResponse, KanbanColumn, UpdatedColumnData } from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
@@ -27,14 +33,16 @@ export const useKanban = (projectId: string) => {
       // get previous column data
       const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(targetQueryKey);
 
-      const optimitsticColumn: KanbanColumn = {
+      const optimisticColumn: KanbanColumn = {
         columnId: nanoid(),
         columnName,
         columnIndex: previousColumns?.columns?.length || 0,
       };
 
-      // handle empty columns
-      queryClient.setQueryData(targetQueryKey, [...(previousColumns?.columns || []), optimitsticColumn]);
+      // Correctly preserve the data structure
+      queryClient.setQueryData<GetKanbanColumnsResponse>(targetQueryKey, {
+        columns: [...(previousColumns?.columns || []), optimisticColumn],
+      });
 
       return { previousColumns };
     },
@@ -79,9 +87,10 @@ export const useKanban = (projectId: string) => {
 
       const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(targetQueryKey);
 
-      queryClient.setQueryData(targetQueryKey, [
-        ...(previousColumns?.columns.filter((column) => column.columnId !== columnId) || []),
-      ]);
+      // Correctly preserve the data structure
+      queryClient.setQueryData<GetKanbanColumnsResponse>(targetQueryKey, {
+        columns: previousColumns?.columns.filter((column) => column.columnId !== columnId) || [],
+      });
 
       return { previousColumns };
     },
@@ -100,7 +109,7 @@ export const useKanban = (projectId: string) => {
       toast.error(title, { description: errorMessage });
     },
     onSuccess: () => {
-      toast.success('Column deleted successfully');
+      toast.success(`Column deleted successfully`);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
@@ -114,11 +123,19 @@ export const useKanban = (projectId: string) => {
       await queryClient.cancelQueries({ queryKey: targetQueryKey });
 
       const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(targetQueryKey);
-      const optimitsticColumn: KanbanColumn = {
-        ...updatedColumnData,
-        columnIndex: previousColumns?.columns?.length || 0,
-      };
-      queryClient.setQueryData(targetQueryKey, [...(previousColumns?.columns || []), optimitsticColumn]);
+
+      // Find the column to update
+      const updatedColumns =
+        previousColumns?.columns.map((column) =>
+          column.columnId === updatedColumnData.columnId
+            ? { ...column, columnName: updatedColumnData.columnName }
+            : column
+        ) || [];
+
+      // Correctly preserve the data structure
+      queryClient.setQueryData<GetKanbanColumnsResponse>(targetQueryKey, {
+        columns: updatedColumns,
+      });
 
       return { previousColumns };
     },
@@ -144,5 +161,30 @@ export const useKanban = (projectId: string) => {
     },
   });
 
-  return { createColumnResponse, getKanbanColumnsResponse, deleteKanbanColumnResponse, updateKanbanColumnResponse };
+  const reorderKanbanColumnsResponse = useMutation({
+    mutationFn: reorderKanbanColumns,
+    //! optimistic updating done locally in KanbanBoard component
+    onError: (error) => {
+      let title = 'Error';
+      let errorMessage = 'Failed to reorder columns';
+
+      if (error instanceof CustomError) {
+        title = error.title || title;
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
+    },
+  });
+
+  return {
+    createColumnResponse,
+    getKanbanColumnsResponse,
+    deleteKanbanColumnResponse,
+    updateKanbanColumnResponse,
+    reorderKanbanColumnsResponse,
+  };
 };

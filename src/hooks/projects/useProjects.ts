@@ -3,8 +3,9 @@ import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 import { getProjectsSummary, createProject, deleteProject } from '@/hooks/projects/projectQueryUtils';
 import { CreateProjectDto, ProjectSummaryListResponse, ProjectSummaryResponse } from './projectInterfaces';
+import { queryClient } from '@/main';
 
-// Define query keys for projects
+// define query keys for projects
 export const projectQueryKeys = {
   all: ['projects'] as const,
   lists: () => [...projectQueryKeys.all, 'list'] as const,
