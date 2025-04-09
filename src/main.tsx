@@ -18,6 +18,7 @@ import { ProgressiveSignup } from './routes/SignupPage.tsx';
 import { Toaster } from '@/components/ui/sonner';
 import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 import { ProjectLayout } from './routes/ProjectLayout.tsx';
+import { KanbanColumnsLoader } from './hooks/projects/kanban/kanbanColumnsLoader.ts';
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,8 @@ const router = createBrowserRouter([
                   {
                     path: ':projectId',
                     element: <ProjectDetailsPage />,
+                    // pre-load kanban board's three default columns if required
+                    loader: KanbanColumnsLoader,
                   },
                 ],
               },
@@ -65,10 +68,10 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
     },
   },
 });

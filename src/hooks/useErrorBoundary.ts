@@ -41,7 +41,7 @@ export const useErrorDetails = (): ErrorObj => {
 export const useErrorBoundary = (error: Error | null) => {
   const navigate = useNavigate();
 
-  // useEffect so tha error handling function will be run whenever a new error is thrown and redirect the user to the error page
+  // useEffect so that error handling function will be run whenever a new error is thrown and redirect the user to the error page
   useEffect(() => {
     if (error) {
       navigate('/error', {

@@ -1,20 +1,20 @@
 import { queryKeys } from '@/utils/queryKeyFactory';
-import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
-import { createKanbanColumn, getKanbanColumns } from './kanbanQueryUtils';
-import { GetKanbanColumnsResponse, KanbanColumn } from './kanbanInterfaces';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createKanbanColumn, deleteKanbanColumn, getKanbanColumns, updateKanbanColumn } from './kanbanQueryUtils';
+import { GetKanbanColumnsResponse, KanbanColumn, UpdatedColumnData } from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 import { nanoid } from 'nanoid';
+import { queryClient } from '@/main';
 
 export const useKanban = (projectId: string) => {
-  const queryClient = useQueryClient();
-
   const getKanbanColumnsResponse = useQuery({
     queryKey: queryKeys.getKanbanColumns(projectId),
     queryFn: () => getKanbanColumns(projectId),
     // fast refetch to sync with updates from other members
     staleTime: 5000,
-    gcTime: 5000,
+    // data stored in cache for 5 minutes until removed
+    gcTime: 1000 * 60 * 5,
   });
 
   const createColumnResponse = useMutation({
@@ -71,5 +71,78 @@ export const useKanban = (projectId: string) => {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 
-  return { createColumnResponse, getKanbanColumnsResponse };
+  const deleteKanbanColumnResponse = useMutation({
+    mutationFn: (columnId: string) => deleteKanbanColumn(columnId),
+    onMutate: async (columnId: string) => {
+      const targetQueryKey = queryKeys.getKanbanColumns(projectId);
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(targetQueryKey);
+
+      queryClient.setQueryData(targetQueryKey, [
+        ...(previousColumns?.columns.filter((column) => column.columnId !== columnId) || []),
+      ]);
+
+      return { previousColumns };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousColumns) {
+        queryClient.setQueryData(queryKeys.getKanbanColumns(projectId), context.previousColumns);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Please try again later';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to delete column';
+        errorMessage = error.message;
+      }
+      toast.error(title, { description: errorMessage });
+    },
+    onSuccess: () => {
+      toast.success('Column deleted successfully');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
+    },
+  });
+
+  const updateKanbanColumnResponse = useMutation({
+    mutationFn: (updatedColumnData: UpdatedColumnData) => updateKanbanColumn(updatedColumnData),
+    onMutate: async (updatedColumnData: UpdatedColumnData) => {
+      const targetQueryKey = queryKeys.getKanbanColumns(projectId);
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(targetQueryKey);
+      const optimitsticColumn: KanbanColumn = {
+        ...updatedColumnData,
+        columnIndex: previousColumns?.columns?.length || 0,
+      };
+      queryClient.setQueryData(targetQueryKey, [...(previousColumns?.columns || []), optimitsticColumn]);
+
+      return { previousColumns };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousColumns) {
+        queryClient.setQueryData(queryKeys.getKanbanColumns(projectId), context.previousColumns);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Please try again later';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to update column details';
+        errorMessage = error.message;
+      }
+      toast.error(title, { description: errorMessage });
+    },
+    onSuccess: () => {
+      toast.success('Column details updated successfully');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
+    },
+  });
+
+  return { createColumnResponse, getKanbanColumnsResponse, deleteKanbanColumnResponse, updateKanbanColumnResponse };
 };

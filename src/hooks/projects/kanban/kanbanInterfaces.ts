@@ -16,3 +16,8 @@ export interface KanbanColumn {
 export interface GetKanbanColumnsResponse {
   columns: KanbanColumn[];
 }
+
+export interface UpdatedColumnData {
+  columnId: string;
+  columnName: string;
+}

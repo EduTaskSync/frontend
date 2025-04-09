@@ -23,5 +23,5 @@ export enum ApiEndPoints {
   KANBAN_GET_COLUMNS = '/projects/get_project_columns',
   KANBAN_UPDATE_COLUMN = '/projects/update_column',
   KANBAN_REORDER_COLUMNS = '/projects/reorder_columns',
-  KANBAN_DELETE_COLUMN = '/projects/delete-column',
+  KANBAN_DELETE_COLUMN = '/projects/delete_column',
 }
