@@ -1,42 +1,34 @@
-import { Column } from './KanbanBoard';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { Id } from './KanbanBoard';
+import { KanbanColumn as Column } from '@/hooks/projects/kanban/kanbanInterfaces';
 
 interface KanbanColumnProps {
   column: Column;
-  colType: string;
-  deleteCol: (colId: Id) => void;
+  onDeleteCol: (columnId: string) => void;
 }
 
 const getColumnStyle = (colType: string) => {
   switch (colType) {
-    case 'todo':
+    case 'To Do':
       return {
         headerClass: 'bg-blue-500/10 border-b-blue-500/20 text-blue-500',
         borderClass: 'border-t-blue-500/30',
         gradientClass: 'from-blue-500/5 to-transparent',
       };
-    case 'in-progress':
+    case 'In Progress':
       return {
         headerClass: 'bg-amber-500/10 border-b-amber-500/20 text-amber-500',
         borderClass: 'border-t-amber-500/30',
         gradientClass: 'from-amber-500/5 to-transparent',
       };
-    case 'done':
+    case 'Done':
       return {
         headerClass: 'bg-emerald-500/10 border-b-emerald-500/20 text-emerald-500',
         borderClass: 'border-t-emerald-500/30',
         gradientClass: 'from-emerald-500/5 to-transparent',
-      };
-    case 'blocked':
-      return {
-        headerClass: 'bg-destructive/10 border-b-destructive/20 text-destructive',
-        borderClass: 'border-t-destructive/30',
-        gradientClass: 'from-destructive/5 to-transparent',
       };
     default:
       return {
@@ -47,8 +39,8 @@ const getColumnStyle = (colType: string) => {
   }
 };
 
-export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) => {
-  const { borderClass, gradientClass, headerClass } = getColumnStyle(colType);
+export const KanbanColumn = ({ column, onDeleteCol }: KanbanColumnProps) => {
+  const { borderClass, gradientClass, headerClass } = getColumnStyle(column.columnName);
 
   return (
     <Card className="flex flex-col h-[500px] w-[300px] border border-border shadow-sm overflow-hidden rounded-xl bg-card ">
@@ -57,8 +49,8 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           {' '}
           4
         </Badge>
-        <CardTitle className=" font-heading text-xl">{column.title}</CardTitle>
-        <Trash2 color="white" onClick={() => deleteCol(column.id)} />
+        <CardTitle className=" font-heading text-xl">{column.columnName}</CardTitle>
+        <Trash2 color="white" onClick={() => onDeleteCol(column.columnId)} />
       </CardHeader>
 
       <CardContent>

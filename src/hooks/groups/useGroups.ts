@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { GroupListResponse, GroupsObj } from './groupInterfaces';
 import {
@@ -12,12 +12,10 @@ import {
 } from './groupQueryUtils';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
+import { queryClient } from '@/main';
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = (groupId?: string) => {
-  // needed for making certain cached data stale so that they are updated after mutations by targeting their query key
-  const queryClient = useQueryClient();
-
   // fetch user's allocated groups
   const fetchGroupsResponse = useQuery({
     queryKey: queryKeys.groupList(),

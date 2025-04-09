@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 
 export const ProjectDetailsPage = () => {
-  const { groupId } = useParams<{ groupId: string; projectId: string }>();
+  const { groupId, projectId } = useParams<{ groupId: string; projectId: string }>();
   const { state } = useLocation();
   const projectDetails = state?.projectDetails || {};
 
@@ -113,7 +113,7 @@ export const ProjectDetailsPage = () => {
 
         {/* Kanban board area */}
         <div className="w-full min-h-[500px] border border-border rounded-xl bg-card/50 p-4">
-          <KanbanBoard />
+          <KanbanBoard projectId={projectId as string} />
         </div>
       </div>
     </MainContent>
