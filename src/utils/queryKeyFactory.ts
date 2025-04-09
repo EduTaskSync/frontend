@@ -8,6 +8,13 @@ export const queryKeys = {
   editGroup: (id: string) => [...queryKeys.groups, id, 'edit'] as const,
 
   // for project related queries
+  projects: ['projects'] as const,
+  projectList: () => [...queryKeys.projects, 'list'] as const,
+  newProject: () => [...queryKeys.projects, 'new'] as const,
+  deleteProject: (id: string) => [...queryKeys.projects, id, 'delete'] as const,
+  //getMembers: (projectId: string) => ['members', projectId] as const,
+  editProject: (id: string) => [...queryKeys.projects, id, 'edit'] as const,
 
+  
   // for calendar related queries
 };

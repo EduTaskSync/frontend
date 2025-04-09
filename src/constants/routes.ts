@@ -7,6 +7,8 @@ export enum routes {
   groups = '/app/groups',
   calendar = '/app/calendar',
   groupDetails = '/app/groups/:groupId',
+  projects = '/app/projects',
+  projectDetails = '/app/projects/:projectId',
 }
 
 export const routePageNames = {
@@ -18,4 +20,6 @@ export const routePageNames = {
   [routes.groups]: 'Groups',
   [routes.calendar]: 'Calendar',
   [routes.groupDetails]: 'Group Details',
+  [routes.projects]: 'Projects',
+  [routes.projectDetails]: 'Project Details',
 };

@@ -2,7 +2,7 @@ import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Calendar } from 'lucide-react';
 
-export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event';
+export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event' | 'project';
 
 interface CardSkeletonProps {
   variant: CardSkeletonVariant;

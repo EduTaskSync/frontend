@@ -1,177 +1,61 @@
-import { AuthHeader } from '@/components/AuthHeader';
-import { ProjectGrid } from '@/components/ProjectGrid';
+import { ProjectGrid } from '@/components/projects/ProjectGrid';
 import { MainContent } from '@/components/MainContent';
-import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { ProjectDetailsDialog, ProjectData } from '@/components/projects/ProjectDetailsDialog';
+import { useProjects } from '@/hooks/projects/useProjects';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { useState } from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
-// zod schema for add new project form
-const formSchema = z.object({
-  projectName: z.string().min(1, 'Project name is required'),
-  projectImage: z.instanceof(File).optional(),
-  projectSubmissionDate: z.string().min(1, 'Project submission date is required'),
-});
-
-// type for form values
-type FormValues = z.infer<typeof formSchema>;
+import { toast } from 'sonner';
+import { Outlet, useParams } from 'react-router';
+//import { ProjectData } from '@/components/projects/ProjectDetailsDialog';
 
 const ProjectsPage = () => {
-  // state to handle opening and closing of dialog
-  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // initialize form with react-hook-form
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      projectName: '',
-      projectSubmissionDate: '',
-    },
-  });
+  const { createProjectResponse } = useProjects();
 
-  const handleProjectCreation = (values: FormValues) => {
-    console.log('Creating project: ', values);
-    // close the dialog
-    setOpen(false);
-    // react-hook-form reset() sets field values to defaults, removes validation errors and clears form submit state
-    form.reset();
+  // check path to decide whether to output Project list Project detail page
+  const { projectId } = useParams();
+  const isDetailsPage = projectId;
+
+  const handleProjectCreation = (formattedData: ProjectData) => {
+    console.log('Received formatted data:', formattedData);
+
+    // Clear any previous errors
+    setError(null);
+
+    // Send the data to the backend
+    createProjectResponse.mutate(formattedData, {
+      onError: (error) => {
+        console.error('Mutation error:', error);
+        toast.error('Failed to create Project', {
+          description: 'Please try again later',
+        });
+      },
+    });
   };
-  // flex items-center justify-between mb-6    flex flex-col items-center space-y-2
+
   return (
     <>
-    <AuthHeader tabName="Group Projects" />
-      <MainContent>
-          <div className="flex items-center justify-between mb-6"> 
-            <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">
-              <span className="">Group Projects</span> <br />
-              <span className="text-white">FIT4321 Group 1</span>
-            </h1>
-          
-          {/* using controlled variant */}
-          <Dialog
-            open={open}
-            onOpenChange={(isOpen) => {
-              // resetting form for the scenario where user doesn't submit and closes dialog instead
-              if (!isOpen) {
-                form.reset();
-              }
-              setOpen(isOpen);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 font-heading">New Project</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] font-sans">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-heading mb-1">
-                  Create <span className="text-purple-300">New Project</span>
-                </DialogTitle>
-                <DialogDescription>
-                  Create a project to check details and collaborate with team members.
-                </DialogDescription>
-              </DialogHeader>
+      {isDetailsPage ? (
+        <Outlet />
+      ) : (
+        <MainContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleProjectCreation)} className="space-y-6 py-4 font-sans">
-                  <FormField
-                    control={form.control}
-                    name="projectName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-heading font-semibold">Project Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter project name (e.g., Assignment 1)" {...field} />
-                        </FormControl>
-                        <FormDescription>Choose a descriptive name for your project.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="projectSubmissionDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-heading font-semibold">Project Submission Date</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter project submission date (e.g., DD/MM/YY)" {...field} />
-                        </FormControl>
-                        <FormDescription>manage a deadline for your project.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="projectImage"
-                    render={({ field: { onChange, ...fieldProps } }) => (
-                      <FormItem>
-                        <FormLabel className="font-heading font-semibold">Project Image</FormLabel>
-                        <FormControl>
-                          <Input
-                            className="cursor-pointer"
-                            type="file"
-                            accept="image/*"
-                            {...fieldProps}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                onChange(file);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>Choose an image to represent your project.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <DialogFooter className="gap-2">
-                    <Button
-                      className="font-semibold"
-                      variant="outline"
-                      type="button"
-                      onClick={() => {
-                        form.reset();
-                        setOpen(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="font-semibold" disabled={form.formState.isSubmitting}>
-                      {form.formState.isSubmitting ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Creating...</span>
-                        </div>
-                      ) : (
-                        'Create Project'
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <ProjectGrid />
-      </MainContent>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl sm:text-3xl text-purple-400 font-heading font-extrabold">Group Projects</h1>
+            <ProjectDetailsDialog onSubmit={handleProjectCreation} isUpdating={createProjectResponse.isPending} />
+          </div>
+          <ProjectGrid />
+        </MainContent>
+      )}
     </>
   );
 };
