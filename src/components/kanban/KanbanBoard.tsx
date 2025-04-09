@@ -119,9 +119,9 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
         />
       </div>
 
-      <ScrollArea className="h-[calc(100vh-230px)] min-h-[500px]">
+      <ScrollArea className="h-[calc(100vh-230px)] min-h-[500px] px-3">
         {isLoadingData ? (
-          <div className="mt-8 px-2">
+          <div className="mt-8 px-3">
             <CardSkeleton variant="kanban-column" count={3} horizontal={true} containerClassName="gap-10" />
           </div>
         ) : (

@@ -80,8 +80,6 @@ export const DeleteKanbanColumnDialog = ({
             <span className="text-destructive">Delete</span> Column
           </AlertDialogTitle>
 
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent mb-3"></div>
-
           <div className="text-base mb-3">
             Are you sure you want to delete <span className="font-semibold text-foreground">"{column.columnName}"</span>
             ?
