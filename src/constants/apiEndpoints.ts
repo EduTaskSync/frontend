@@ -15,18 +15,24 @@ export enum ApiEndPoints {
   GET_GROUP_PROJECTS_SUMMARY = '/groups/get_group_projects',
   UPDATE_GROUP = '/groups/update_group',
 
-  
-  CREATE_TASK = '/projects/create_task',
-  MOVE_TASK = '/projects/move_task',
-  CREATE_COLUMN = '/projects/create_column',
-  GET_PROJECTS_COLUMN = '/projects/get_projects_column',
-  GET_COLUMN_TASK = '/projects/get_column_tasks',
-  UPDATE_COLUMN = '/projects/update_column',
-  REORDER_COLUMN = '/projects/reorder_columns',
-  DELETE_COLUMN = '/projects/delete_column',
-  
   //projects
   CREATE_PROJECT = '/projects/create',
   CREATE_PROJECT_TASK = '/projects/create_task',
   DELETE_PROJECT = '/projects/delete_project',
+
+  MOVE_PROJECT_TASK = '/projects/move_task',
+  CREATE_PROJECT_COLUMN = '/projects/create_column',
+  GET_PROJECT_COLUMN = '/projects/get_project_columns',
+  GET_PROJECT_COLUMN_TASK = '/projects/get_column_tasks',
+  UPDATE_PROJECT_COLUMN = '/projects/update_column',
+  REORDER_PROJECT_COLUMN = '/projects/reorder_columns',
+  DELETE_PROJECT_COLUMN = '/projects/delete_column',
+  GET_USER_PROJECTS = '/projects/get_user_projects',
+  GET_USER_TASKS = '/projects/get_user_tasks',
+  GET_USER_ASSIGNED_TASKS = '/projects/get_user_assigned_tasks',
+  GET_PROJECT_TASKS = '/projects/get_project_tasks',
+  MODIFY_PROJECT_TASK = '/projects/modify_task',
+  ASSIGN_PROJECT_TASKS = '/projects/assign_task',
+  UNASSIGN_PROJECT_TASKS = '/projects/unassign_task',
+  DELETE_PROJECT_TASK = '/projects/delete_task',
 }
