@@ -92,7 +92,7 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending }: KanbanCol
       <div
         ref={setNodeRef}
         style={style}
-        className={`w-[350px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)] opacity-50`}
+        className={`w-[400px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)] opacity-50`}
       ></div>
     );
   }
@@ -101,7 +101,7 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending }: KanbanCol
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-[350px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)]`}
+      className={`w-[400px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)]`}
     >
       <Card className="flex flex-col h-[700px] w-full rounded-[calc(0.75rem-1px)] border-0 shadow-sm overflow-hidden bg-card/95 backdrop-blur-sm ">
         <CardHeader
