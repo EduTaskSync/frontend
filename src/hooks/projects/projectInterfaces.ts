@@ -1,52 +1,22 @@
-// shape of the 'projects' property of the backend response object
-export interface ProjectsObj {
-  projectMembers: number;
-  projectId: string;
-  projectDescription: string;
-  projectCreationDate: string;
-  projectName: string;
-  imgUrl: string;
-}
+import { z } from 'zod';
 
-// wrapper for the shape of the overall response object
-export interface ProjectListResponse {
-  projects: ProjectsObj[];
-}
+export const ProjectBaseSchema = z.object({
+  projectId: z.string().uuid(),
+  projectName: z.string().min(1, { message: 'Project name is required' }),
+  deadline: z.date().nullable(),
+});
+export type ProjectBaseResponse = z.infer<typeof ProjectBaseSchema>;
 
-// request and response object shapes for creating new groject
-export interface NewProjectObj {
-  projectName: string;
-  projectDetails: string;
-  imgUrl: string;
-}
+export const ProjectSummarySchema = ProjectBaseSchema.extend({
+  progress: z.number().min(0).max(100),
+});
 
-export interface NewProjectResponse {
-  projectId: string;
-}
+export type ProjectSummaryResponse = z.infer<typeof ProjectSummarySchema>;
 
-export interface DeleteProjectObj {
-  projectId: string;
-}
+export type ProjectSummaryListResponse = {
+  projects: ProjectSummaryResponse[];
+};
 
-export interface DeleteProjectResponse {
-  projectId: string;
-}
+export const CreateProjectSchema = ProjectBaseSchema.omit({ projectId: true });
 
-export interface ProjectMember {
-  userId: string;
-  role: string;
-  firstName: string;
-  lastName: string;
-  profilePicture: string;
-}
-
-export interface GetProjectMembersResponse {
-  users: ProjectMember[];
-}
-
-export interface UpdatedProject {
-  projectId: string;
-  projectName: string;
-  imgUrl: string;
-  projectDetails: string;
-}
+export type CreateProjectDto = z.infer<typeof CreateProjectSchema>;

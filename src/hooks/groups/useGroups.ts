@@ -1,9 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { GroupListResponse, GroupsObj } from './groupInterfaces';
-import { getAllGroups, createNewGroup, deleteGroup, getGroupMembers, editGroupDetails } from './groupQueryUtils';
+import {
+  getGroups,
+  createNewGroup,
+  deleteGroup,
+  getGroupMembers,
+  editGroupDetails,
+  addGroupMember,
+  getGroupDetails,
+} from './groupQueryUtils';
 import { toast } from 'sonner';
-import axios from 'axios';
+import { CustomError } from '@/utils/ErrorClasses';
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = (groupId?: string) => {
@@ -13,7 +21,7 @@ export const useGroups = (groupId?: string) => {
   // fetch user's allocated groups
   const fetchGroupsResponse = useQuery({
     queryKey: queryKeys.groupList(),
-    queryFn: getAllGroups,
+    queryFn: getGroups,
     // after 10 seconds data will be considered stale and queryFn will be executed again
     // within the staleTime limit, data wont be refreshed even if the window loses focus/component remounts
     staleTime: 5 * 60 * 1000, // 5 mins
@@ -37,8 +45,6 @@ export const useGroups = (groupId?: string) => {
       const optimisticGroup: GroupsObj = {
         groupId: `temp-${Date.now()}`,
         groupName: newGroup.groupName,
-        groupDescription: newGroup.groupDetails,
-        groupCreationDate: Date.now().toString(),
         groupMembers: 1,
         imgUrl: newGroup.imgUrl,
       };
@@ -66,17 +72,15 @@ export const useGroups = (groupId?: string) => {
 
       console.error('Failed to create group:', err);
 
-      // specific error messaging based on error type
       let errorMessage = 'Please try again later.';
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 401) {
-          errorMessage = 'Authentication expired. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = "You don't have permission to create groups.";
-        }
+      let title = 'Error';
+
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to create group';
       }
 
-      toast.error('Failed to create group', {
+      toast.error(title, {
         description: errorMessage,
       });
     },
@@ -84,8 +88,10 @@ export const useGroups = (groupId?: string) => {
       // refetch after error or success to ensure we always have the correct data
       queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
     },
-    //debugging purposes
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      toast.success('Group created successfully', {
+        description: `"${variables.groupName}" has been created. You can now invite members.`,
+      });
       console.log('Group created successfully:', data);
     },
   });
@@ -123,22 +129,15 @@ export const useGroups = (groupId?: string) => {
 
       console.error('Failed to delete group:', err);
 
-      // specific error messaging based on error type
       let errorMessage = 'Please try again later.';
+      let title = 'Error';
 
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 400) {
-          errorMessage = 'This group has ongoing projects.';
-        } else if (err.response.status === 401) {
-          errorMessage = 'Authentication expired. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = "You don't have permission to delete this group.";
-        } else if (err.response.status === 404) {
-          errorMessage = 'Group not found. It may have been already deleted.';
-        }
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to delete group';
       }
 
-      toast.error('Failed to delete group', {
+      toast.error(title, {
         description: errorMessage,
       });
     },
@@ -166,32 +165,176 @@ export const useGroups = (groupId?: string) => {
     gcTime: 10 * 60 * 1000, // 10 mins
   });
 
+  const getGroupDetailsResponse = useQuery({
+    queryKey: queryKeys.getGroupDetails(groupId as string),
+    queryFn: () => {
+      if (!groupId) {
+        throw new Error('Group ID is required to fetch group details');
+      }
+      return getGroupDetails(groupId);
+    },
+    staleTime: 5 * 60 * 1000, // 5 mins
+    gcTime: 10 * 60 * 1000, // 10 mins
+  });
+
   const editGroupDetailsResponse = useMutation({
     mutationFn: editGroupDetails,
-    onError: (err) => {
-      console.error('Failed to edit group:', err);
-
-      // specific error messaging based on error type
-      let errorMessage = 'Please try again later.';
-
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 400) {
-          errorMessage = 'This group cannot be edited.';
-        } else if (err.response.status === 401) {
-          errorMessage = 'Authentication expired. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = "You don't have permission to edit this group.";
-        } else if (err.response.status === 404) {
-          errorMessage = 'Group details not found. Please try again later.';
-        }
+    // Add optimistic updates
+    onMutate: async (updatedGroup) => {
+      if (!groupId) {
+        throw new Error('Group ID is required to update group details');
       }
 
-      toast.error('Failed to edit group', {
+      // Target query keys for both details and list views
+      const detailsQueryKey = queryKeys.getGroupDetails(groupId);
+      const listQueryKey = queryKeys.groupList();
+
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: detailsQueryKey });
+      await queryClient.cancelQueries({ queryKey: listQueryKey });
+
+      // Snapshot previous values
+      const previousDetails = queryClient.getQueryData(detailsQueryKey);
+      const previousGroups = queryClient.getQueryData<GroupListResponse>(listQueryKey);
+
+      // Optimistically update group details
+      queryClient.setQueryData(detailsQueryKey, (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          groupName: updatedGroup.groupName,
+          groupDescription: updatedGroup.groupDetails,
+          groupImage: updatedGroup.imgUrl,
+        };
+      });
+
+      // Optimistically update the group in the list view
+      queryClient.setQueryData<GroupListResponse>(listQueryKey, (oldData) => {
+        if (!oldData) return { groups: [] };
+
+        return {
+          groups: oldData.groups.map((group) => {
+            if (group.groupId === updatedGroup.groupId) {
+              return {
+                ...group,
+                groupName: updatedGroup.groupName,
+                imgUrl: updatedGroup.imgUrl,
+              };
+            }
+            return group;
+          }),
+        };
+      });
+
+      // Return previous values for rollback
+      return { previousDetails, previousGroups };
+    },
+
+    onError: (err, _, context) => {
+      console.error('Failed to edit group:', err);
+
+      // Rollback to previous state on error
+      if (context?.previousDetails) {
+        queryClient.setQueryData(queryKeys.getGroupDetails(groupId as string), context.previousDetails);
+      }
+
+      if (context?.previousGroups) {
+        queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
+      }
+
+      let errorMessage = 'Please try again later.';
+      let title = 'Error';
+
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to edit group';
+      }
+
+      toast.error(title, {
         description: errorMessage,
       });
     },
+
+    onSuccess: (_, variables) => {
+      // Show success toast
+      toast.success('Group details updated successfully', {
+        description: `"${variables.groupName}" has been updated`,
+      });
+    },
+
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.groupList() });
+      // Invalidate all related queries to ensure consistent state
+      if (groupId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.getGroupDetails(groupId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupList(),
+        });
+      }
+    },
+  });
+
+  const inviteGroupMemberResponse = useMutation({
+    mutationFn: addGroupMember,
+    onMutate: async () => {
+      if (!groupId) {
+        throw new Error('Group ID is required to invite members');
+      }
+
+      const targetQueryKeyArr = queryKeys.getMembers(groupId);
+
+      // Cancel outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: targetQueryKeyArr });
+
+      // Snapshot the previous members data
+      const previousMembers = queryClient.getQueryData(targetQueryKeyArr);
+
+      // Since users are auto-added, we don't need to update the optimistic UI here
+      // as we'll invalidate and refetch in onSettled
+
+      return { previousMembers };
+    },
+
+    onError: (err, _, context) => {
+      // Revert to the previous members data if available
+      if (context?.previousMembers) {
+        queryClient.setQueryData(queryKeys.getMembers(groupId as string), context.previousMembers);
+      }
+
+      console.error('Failed to invite member:', err);
+
+      let errorMessage = 'Please try again later.';
+      let title = 'Error';
+
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to add member';
+      }
+
+      toast.error(title, {
+        description: errorMessage,
+      });
+    },
+
+    onSuccess: () => {
+      toast.success('Member added to group successfully');
+    },
+
+    onSettled: async () => {
+      if (groupId) {
+        // Invalidate and force refetch both queries
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.getMembers(groupId),
+          // force refetch active queries
+          refetchType: 'active',
+        });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.getGroupDetails(groupId),
+          refetchType: 'active',
+        });
+      }
     },
   });
 
@@ -199,7 +342,9 @@ export const useGroups = (groupId?: string) => {
     fetchGroupsResponse,
     createGroupResponse,
     deleteGroupResponse,
+    getGroupDetailsResponse,
     getGroupMembersResponse,
     editGroupDetailsResponse,
+    inviteGroupMemberResponse,
   };
 };

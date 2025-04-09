@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
 import { groupFormSchema, groupFormValues } from '@/utils/groupSchema';
 import { defaultGroupIcons } from '@/constants/general';
 
@@ -59,9 +58,10 @@ export const GroupDetailsDialog = ({
     defaultValues: {
       groupName: prefillData?.groupName || '',
       groupDetails: prefillData?.groupDetails || '',
-      groupImageSource: prefillData?.imgUrl.startsWith('https') ? 'custom' : 'predefined',
-      predefinedImage: !prefillData?.imgUrl.startsWith('http') ? prefillData?.imgUrl : defaultGroupIcons[0].value,
-      customImageUrl: prefillData?.imgUrl.startsWith('http') ? prefillData.imgUrl : '',
+      groupImageSource: prefillData?.imgUrl?.startsWith('https') ? 'custom' : 'predefined',
+      predefinedImage:
+        prefillData?.imgUrl && !prefillData.imgUrl.startsWith('http') ? prefillData.imgUrl : defaultGroupIcons[0].value,
+      customImageUrl: prefillData?.imgUrl?.startsWith('http') ? prefillData.imgUrl : '',
     },
   });
 
@@ -93,19 +93,10 @@ export const GroupDetailsDialog = ({
 
     // send form data over to the backend
     onSubmit(formattedData);
+
     // close the dialog after submission
     setOpen(false);
     form.reset();
-
-    if (groupId) {
-      // group details edited successfully
-      toast.success(`${formattedData.groupName} group details updated successfully`);
-    } else {
-      //new group created successfully
-      toast.success(`${formattedData.groupName} group created successfully`, {
-        description: 'You can now invite members to your group',
-      });
-    }
   };
 
   return (
