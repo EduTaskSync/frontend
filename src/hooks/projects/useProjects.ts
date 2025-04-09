@@ -141,36 +141,6 @@ export const useProjects = (groupId?: string) => {
   });
 
   const deleteProjectResponse = useMutation({
-<<<<<<< HEAD
-    mutationFn: deleteProject,
-
-    onMutate: async (deleteProjectObj) => {
-      const targetQueryKeyArr = queryKeys.projectList();
-
-      // cancel outgoing groject fetch requests so they don't overwrite the optimistic update
-      await queryClient.cancelQueries({ queryKey: targetQueryKeyArr });
-
-      // store a snapshot of the previous data
-      const previousProjects = queryClient.getQueryData<ProjectListResponse>(targetQueryKeyArr);
-
-      // immediately update cached project list by filtering out the deleted groject
-      queryClient.setQueryData<ProjectListResponse>(targetQueryKeyArr, (oldData) => {
-        if (!oldData) return { projects: [] };
-
-        return {
-          projects: oldData.projects.filter((project) => project.projectId !== deleteProjectObj.projectId),
-        };
-      });
-
-      // return previous data if the server responds with error
-      return { previousProjects };
-    },
-
-    // rollback changes if mutation fails
-    onError: (err, _, context) => {
-      if (context?.previousProjects) {
-        queryClient.setQueryData(queryKeys.projectList(), context.previousProjects);
-=======
     mutationFn: (projectId: string) => {
       return deleteProject(projectId);
     },
@@ -210,29 +180,10 @@ export const useProjects = (groupId?: string) => {
       // Restore previous data on error
       if (context?.previousProjects && groupId) {
         queryClient.setQueryData(projectQueryKeys.groupProjects(groupId), context.previousProjects);
->>>>>>> origin/main
       }
 
       console.error('Failed to delete project:', err);
 
-<<<<<<< HEAD
-      // specific error messaging based on error type
-      let errorMessage = 'Please try again later.';
-
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 400) {
-          errorMessage = 'This project has ongoing projects.';
-        } else if (err.response.status === 401) {
-          errorMessage = 'Authentication expired. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = "You don't have permission to delete this project.";
-        } else if (err.response.status === 404) {
-          errorMessage = 'Project not found. It may have been already deleted.';
-        }
-      }
-
-      toast.error('Failed to delete project', {
-=======
       let errorMessage = 'Please try again later.';
       let title = 'Delete Failed';
 
@@ -242,62 +193,10 @@ export const useProjects = (groupId?: string) => {
       }
 
       toast.error(title, {
->>>>>>> origin/main
         description: errorMessage,
       });
     },
 
-<<<<<<< HEAD
-    onSettled: () => {
-      // refetch after error or success to ensure we always have the correct data
-      queryClient.invalidateQueries({ queryKey: queryKeys.projectList() });
-    },
-
-    onSuccess: (data) => {
-      toast.success('Project deleted successfully');
-      console.log('Project deleted successfully:', data);
-    },
-  });
-
-  const getProjectMembersResponse = useQuery({
-    queryKey: queryKeys.getMembers(projectId as string),
-    queryFn: () => {
-      if (!projectId) {
-        throw new Error('Project ID is required to fetch members');
-      }
-      return getProjectMembers(projectId);
-    },
-    staleTime: 5 * 60 * 1000, // 5 mins
-    gcTime: 10 * 60 * 1000, // 10 mins
-  });
-
-  const editProjectDetailsResponse = useMutation({
-    mutationFn: editProjectDetails,
-    onError: (err) => {
-      console.error('Failed to edit groject:', err);
-
-      // specific error messaging based on error type
-      let errorMessage = 'Please try again later.';
-
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.status === 400) {
-          errorMessage = 'This project cannot be edited.';
-        } else if (err.response.status === 401) {
-          errorMessage = 'Authentication expired. Please log in again.';
-        } else if (err.response.status === 403) {
-          errorMessage = "You don't have permission to edit this project.";
-        } else if (err.response.status === 404) {
-          errorMessage = 'Project details not found. Please try again later.';
-        }
-      }
-
-      toast.error('Failed to edit project', {
-        description: errorMessage,
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projectList() });
-=======
     // Success handling
     onSuccess: (_, _projectId, context) => {
       const projectName = context?.projectToDelete?.projectName || 'Project';
@@ -314,21 +213,12 @@ export const useProjects = (groupId?: string) => {
           queryKey: projectQueryKeys.groupProjects(groupId),
         });
       }
->>>>>>> origin/main
     },
   });
 
   return {
-<<<<<<< HEAD
-    fetchProjectsResponse,
-    createProjectResponse,
-    deleteProjectResponse,
-    getProjectMembersResponse,
-    editProjectDetailsResponse,
-=======
     fetchProjectsSummaryResponse,
     createProjectResponse,
     deleteProjectResponse,
->>>>>>> origin/main
   };
 };
