@@ -20,6 +20,7 @@ import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 import { ProjectLayout } from './routes/ProjectLayout.tsx';
 import { KanbanColumnsLoader } from './hooks/projects/kanban/kanbanColumnsLoader.ts';
 
+// Create the router configuration
 const router = createBrowserRouter([
   {
     path: '/',
@@ -68,6 +69,8 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+// Create the query client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -76,7 +79,19 @@ export const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
+// Create the root once and store it in a variable
+const rootElement = document.getElementById('root');
+
+// Check if the root element exists
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+// Create the root once
+const root = createRoot(rootElement);
+
+// Render your application
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <Auth0Provider
@@ -88,7 +103,7 @@ createRoot(document.getElementById('root')!).render(
         }}
       >
         <ThemeProvider>
-          <RouterProvider router={router}></RouterProvider>
+          <RouterProvider router={router} />
           <Toaster
             richColors
             closeButton

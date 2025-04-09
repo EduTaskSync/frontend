@@ -21,3 +21,8 @@ export interface UpdatedColumnData {
   columnId: string;
   columnName: string;
 }
+
+export interface ReorderedColumnsData {
+  projectId: string;
+  columnIds: string[];
+}

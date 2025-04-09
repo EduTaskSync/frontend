@@ -1,8 +1,7 @@
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
-import { Calendar } from 'lucide-react';
 
-export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event' | 'project';
+export type CardSkeletonVariant = 'group' | 'task' | 'member' | 'group-header' | 'event' | 'project' | 'kanban-column';
 
 interface CardSkeletonProps {
   variant: CardSkeletonVariant;
@@ -101,19 +100,46 @@ export const CardSkeleton = ({
               </div>
             )}
 
-            {/* Event card skeleton */}
-            {variant === 'event' && (
-              <div className="w-72 shrink-0">
-                <div className="border rounded-xl p-4 space-y-3">
-                  <Skeleton className="h-5 w-3/4" />
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <Skeleton className="h-4 w-28" />
+            {/* Kanban Column skeleton */}
+            {variant === 'kanban-column' && (
+              <div className="flex flex-col h-[500px] w-[300px] border border-border shadow-sm overflow-hidden rounded-xl bg-card">
+                {/* Header skeleton with gradient similar to your kanban columns */}
+                <div className="p-3 mx-5 mt-5 border rounded-xl bg-primary/10 border-b-primary/20">
+                  <div className="flex flex-row items-center justify-between">
+                    <div className="flex-shrink-0">
+                      <Skeleton className="h-5 w-8 rounded-full" />
+                    </div>
+                    <Skeleton className="h-7 w-36" />
+                    <div className="flex-shrink-0">
+                      <Skeleton className="h-5 w-5" />
+                    </div>
                   </div>
-                  <Skeleton className="h-4 w-full" />
-                  <div className="flex items-center gap-2 mt-3">
-                    <Skeleton className="h-7 w-7 rounded-full" />
-                    <Skeleton className="h-4 w-24" />
+                </div>
+
+                {/* Task cards skeleton */}
+                <div className="px-4 py-5 flex-1 flex flex-col gap-3">
+                  {/* Repeat task card skeletons 3 times */}
+                  {Array(3)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className="border border-border/40 rounded-lg p-3 space-y-2 bg-card/60">
+                        <div className="flex justify-between">
+                          <Skeleton className="h-5 w-2/3" />
+                          <Skeleton className="h-5 w-5 rounded-full" />
+                        </div>
+                        <Skeleton className="h-4 w-full" />
+                        <div className="flex justify-between items-center mt-2">
+                          <Skeleton className="h-6 w-16 rounded-full" />
+                          <Skeleton className="h-6 w-6 rounded-full" />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Footer skeleton with gradient */}
+                <div className="p-2 flex items-center justify-center border-t border-t-primary/30 bg-gradient-to-b from-primary/5 to-transparent">
+                  <div className="w-full flex justify-center">
+                    <Skeleton className="h-8 w-32 rounded-md" />
                   </div>
                 </div>
               </div>

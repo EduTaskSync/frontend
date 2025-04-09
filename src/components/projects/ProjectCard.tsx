@@ -186,9 +186,8 @@ export const ProjectCard = ({ project, groupId, isAdmin = false }: ProjectCardPr
         <AlertDialogContent className="max-w-md shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-heading text-xl">
-              <span className="text-emerald-300">Delete</span> Project
+              <span className="text-destructive">Delete</span> Project
             </AlertDialogTitle>
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
             <AlertDialogDescription className="font-sans text-base">
               <div className="mb-3">
                 Are you sure you want to delete{' '}
@@ -206,7 +205,7 @@ export const ProjectCard = ({ project, groupId, isAdmin = false }: ProjectCardPr
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="font-heading mt-4 space-x-3">
+          <AlertDialogFooter className=" mt-4 space-x-3">
             <AlertDialogCancel className="hover:bg-background/80 transition-colors">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
