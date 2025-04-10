@@ -32,6 +32,12 @@ interface AddProjectDialogProps {
   isAdmin?: boolean;
 }
 
+// obj shape of response data for POST request
+export interface ProjectData {
+  projectName: '';
+  deadline: null;
+}
+
 export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false, isAdmin = false }: AddProjectDialogProps) => {
   const [open, setOpen] = useState(false);
 
