@@ -21,8 +21,8 @@ const getImageUrl = (url: string | null | undefined) => {
 };
 
 export const ProjectGrid = () => {
-  const { fetchProjectsResponse } = useProjects();
-  const { data, isLoading, isError, error, refetch } = fetchProjectsResponse;
+  const { fetchProjectsSummaryResponse } = useProjects();
+  const { data, isLoading, isError, error, refetch } = fetchProjectsSummaryResponse;
 
   // show loading skeletons for the project cards while data is being fetched
   if (isLoading) {
@@ -76,13 +76,16 @@ export const ProjectGrid = () => {
         <ProjectCard
           key={project.projectId}
           project={{
-            id: project.projectId,
-            name: project.projectName,
-            size: project.projectMembers,
-            description: project.projectDescription,
-            creationDate: project.projectCreationDate,
-            image: getImageUrl(project.imgUrl),
+            projectId: project.projectId,
+            projectName: project.projectName,
+            //size: project.projectMembers,
+            //description: project.projectDescription,
+            deadline: project.deadline,
+            progress: 1
+            //image: getImageUrl(project.imgUrl),
           }}
+          groupId= ''
+          
         />
       ))}
     </div>

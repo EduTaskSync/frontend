@@ -24,18 +24,12 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CreateProjectSchema } from '@/hooks/projects/projectInterfaces';
 
-interface AddProjectDialogProps {
+export interface AddProjectDialogProps {
   trigger: React.ReactNode;
   onSubmit: (values: z.infer<typeof CreateProjectSchema>) => void;
   groupId: string;
   isLoading?: boolean;
   isAdmin?: boolean;
-}
-
-// obj shape of response data for POST request
-export interface ProjectData {
-  projectName: '';
-  deadline: null;
 }
 
 export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false, isAdmin = false }: AddProjectDialogProps) => {
