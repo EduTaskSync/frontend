@@ -125,7 +125,7 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
             <CardSkeleton variant="kanban-column" count={3} horizontal={true} containerClassName="gap-10" />
           </div>
         ) : (
-          <div className="flex mt-8 px-2 pb-6 gap-x-8">
+          <div className="flex mt-8 px-2 gap-x-8">
             <SortableContext items={columnIds}>
               {localColumns?.map((col) => (
                 <KanbanColumn
