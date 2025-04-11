@@ -13,7 +13,7 @@ import { CustomError } from '@/utils/ErrorClasses';
 export const createKanbanColumn = async (columnData: NewKanbanColumn) => {
   try {
     const response = await axiosConfig.post<CreateKanbanColumnResponse>(ApiEndPoints.KANBAN_CREATE_COLUMN, columnData);
-    console.log('COlumn created successfully with these data:', columnData);
+    console.log('Column created successfully with these data:', columnData);
     return response.data;
   } catch (error) {
     console.log('Error fetching groups:', error);

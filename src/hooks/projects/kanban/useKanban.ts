@@ -24,7 +24,14 @@ export const useKanban = (projectId: string) => {
   });
 
   const createColumnResponse = useMutation({
-    mutationFn: (columnName: string) => createKanbanColumn({ columnName, projectId }),
+    mutationFn: (columnName: string) => {
+      // calculate the next index based on current columns in cache
+      const previousColumns = queryClient.getQueryData<GetKanbanColumnsResponse>(queryKeys.getKanbanColumns(projectId));
+
+      const nextColumnIndex = previousColumns?.columns.length || 0;
+
+      return createKanbanColumn({ columnName, projectId, columnIndex: nextColumnIndex });
+    },
     onMutate: async (columnName: string) => {
       const targetQueryKey = queryKeys.getKanbanColumns(projectId);
 

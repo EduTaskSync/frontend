@@ -1,6 +1,7 @@
 export interface NewKanbanColumn {
   columnName: string;
   projectId: string;
+  columnIndex: number;
 }
 
 export interface CreateKanbanColumnResponse {

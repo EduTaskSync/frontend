@@ -3,11 +3,24 @@ import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useKanban } from '@/hooks/projects/kanban/useKanban';
 import { useLoaderData, useNavigation } from 'react-router';
-import { GetKanbanColumnsResponse, KanbanColumn as Column } from '@/hooks/projects/kanban/kanbanInterfaces';
-import { AddKanbanColumnDialog } from './AddKanbanColumnDialog';
+import {
+  GetKanbanColumnsResponse,
+  KanbanColumn as Column,
+  UpdatedColumnData,
+} from '@/hooks/projects/kanban/kanbanInterfaces';
+import { KanbanColumnDetailsDialog } from './KanbanColumnDetailsDialog';
 import { CardSkeleton } from '../CardSkeleton';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext } from '@dnd-kit/sortable';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  useSensors,
+  useSensor,
+  PointerSensor,
+  closestCenter,
+} from '@dnd-kit/core';
+import { arrayMove, horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useMemo, useState, useEffect } from 'react';
 import { KanbanColumn } from './KanbanColumn';
 import { createPortal } from 'react-dom';
@@ -23,17 +36,28 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [localColumns, setLocalColumns] = useState<Column[]>([]);
 
-  const { getKanbanColumnsResponse, deleteKanbanColumnResponse, createColumnResponse, reorderKanbanColumnsResponse } =
-    useKanban(projectId);
+  const {
+    getKanbanColumnsResponse,
+    deleteKanbanColumnResponse,
+    createColumnResponse,
+    reorderKanbanColumnsResponse,
+    updateKanbanColumnResponse,
+  } = useKanban(projectId);
 
   const { data = initialData, isLoading } = getKanbanColumnsResponse;
 
   // initialize and update localCOlumns whenever data changes from the server
   useEffect(() => {
     if (data?.columns) {
-      setLocalColumns(data.columns);
+      //! sort columns by their index before setting in local state
+      const sortedColumns = [...data.columns.sort((a, b) => a.columnIndex - b.columnIndex)];
+      setLocalColumns(sortedColumns);
     }
   }, [data]);
+
+  console.log(
+    `Server sent these columns: ${data.columns.map((c) => `${c.columnName} col index prop: (${c.columnIndex})`)}`
+  );
 
   // check if we are loading data from either the router or the query
   const isLoadingData = isLoading || navigation.state === 'loading';
@@ -50,6 +74,16 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
   };
 
   const onDragEnd = (event: DragEndEvent) => {
+    console.log('drag ended', event);
+
+    // Debug logging
+    console.log('Before reorder:');
+    console.log('columnIds:', columnIds);
+    console.log(
+      'localColumns:',
+      localColumns.map((c) => `${c.columnName} col index prop(${c.columnIndex})`)
+    );
+
     const { active, over } = event;
 
     // Reset active column after drag operation
@@ -71,23 +105,24 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
         // create a new array with the updated order
         const newColumnIds = arrayMove(columnIds, oldIndex, newIndex);
 
-        // create a new array of columns in the exact order defined by newColumnIds
-        const updatedColumns = newColumnIds
-          //? map over the column ids to find the corresponding column objects
-          .map((id) => {
-            const column = localColumns.find((col) => col.columnId === id);
-            return column!;
-          })
-          //? update the index prop of each column object to preserve the exact order
-          .map((col, index) => ({
-            ...col,
+        console.log('After arrayMove:');
+        //? loop thru all local columns adn update their column indexes
+        const updatedColumns = newColumnIds.map((colId, index) => {
+          const column = localColumns.find((col) => col.columnId === colId);
+          return {
+            ...column!,
             columnIndex: index,
-          }));
+          };
+        });
+        console.log(
+          'Updated columns:',
+          updatedColumns.map((c) => `${c.columnName} col index prop: (${c.columnIndex})`)
+        );
 
-        // Update local state immediately with properly ordered columns
+        // update local state immediately with properly ordered columns
         setLocalColumns(updatedColumns);
 
-        // Send the update to the server
+        // send the update to the server
         reorderKanbanColumnsResponse.mutate({
           projectId,
           columnIds: newColumnIds,
@@ -96,8 +131,26 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
     }
   };
 
-  const handleAddColumn = (columnName: string) => {
-    createColumnResponse.mutate(columnName);
+  // sensor configuration
+  const sensors = useSensors(
+    useSensor(
+      //? this sensor targets mouse clicks, touch and pointer events
+      PointerSensor,
+      {
+        activationConstraint: {
+          //? prevent accidental drags: user must move the pointer at least 8 pixels before a drag operation begins
+          distance: 8,
+        },
+      }
+    )
+  );
+
+  const handleEditColumn = (colData: UpdatedColumnData | string) => {
+    if (typeof colData === 'string') {
+      createColumnResponse.mutate(colData);
+    } else {
+      updateKanbanColumnResponse.mutate(colData);
+    }
   };
 
   const handleDeleteCol = (columnId: string) => {
@@ -105,16 +158,17 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
   };
 
   return (
-    <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+    //? closest center collision detection: measures distance from center point of the dragged item and the center of each potential drop target. Target with the shortest distance is selected as drop target.
+    <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors} collisionDetection={closestCenter}>
       <div className="flex justify-end px-2">
-        <AddKanbanColumnDialog
+        <KanbanColumnDetailsDialog
           trigger={
             <Button className="font-heading cursor-pointer">
               <ListPlus />
               Add Column
             </Button>
           }
-          onAddColumn={handleAddColumn}
+          submitHandler={handleEditColumn}
           isSubmitting={createColumnResponse.isPending}
         />
       </div>
@@ -126,13 +180,16 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
           </div>
         ) : (
           <div className="flex mt-8 px-2 gap-x-8">
-            <SortableContext items={columnIds}>
+            {/* //? optimizes the drag and drop algorithm for horiontally scrolled lists */}
+            <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
               {localColumns?.map((col) => (
                 <KanbanColumn
                   key={col.columnId}
                   column={col}
                   isDeletePending={deleteKanbanColumnResponse.isPending}
                   onDeleteCol={handleDeleteCol}
+                  isEditPending={updateKanbanColumnResponse.isPending}
+                  onEditCol={handleEditColumn}
                 />
               ))}
             </SortableContext>
@@ -148,8 +205,8 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
             <KanbanColumn
               key={activeColumn.columnId}
               column={activeColumn}
-              isDeletePending={deleteKanbanColumnResponse.isPending}
               onDeleteCol={handleDeleteCol}
+              isDeletePending={deleteKanbanColumnResponse.isPending}
             />
           )}
         </DragOverlay>,
