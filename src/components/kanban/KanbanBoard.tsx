@@ -1,7 +1,7 @@
 import { ListPlus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import { useKanban } from '@/hooks/projects/kanban/useKanban';
+import { useKanbanColumns } from '@/hooks/projects/kanban/useKanban';
 import { useLoaderData, useNavigation } from 'react-router';
 import {
   GetKanbanColumnsResponse,
@@ -42,7 +42,7 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
     createColumnResponse,
     reorderKanbanColumnsResponse,
     updateKanbanColumnResponse,
-  } = useKanban(projectId);
+  } = useKanbanColumns(projectId);
 
   const { data = initialData, isLoading } = getKanbanColumnsResponse;
 
@@ -83,7 +83,6 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
       'localColumns:',
       localColumns.map((c) => `${c.columnName} col index prop(${c.columnIndex})`)
     );
-
     const { active, over } = event;
 
     // Reset active column after drag operation

@@ -85,17 +85,33 @@ export const CardSkeleton = ({
               </div>
             )}
 
-            {/* Task card skeleton */}
+            {/* Task card skeleton - updated to match TaskCard component */}
             {variant === 'task' && (
-              <div className="border rounded-lg p-3 space-y-2">
-                <div className="flex justify-between">
-                  <Skeleton className="h-5 w-2/3" />
-                  <Skeleton className="h-5 w-5 rounded-full" />
+              <div className="border shadow-sm rounded-lg p-3 space-y-2 bg-card hover:shadow-md transition-all duration-200">
+                {/* Task title */}
+                <Skeleton className="h-5 w-4/5" />
+
+                {/* Task metadata */}
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  {/* Created at badge */}
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="h-3 w-3 rounded-full" /> {/* Clock icon */}
+                    <Skeleton className="h-3 w-16" /> {/* Date text */}
+                  </div>
+
+                  {/* Deadline badge */}
+                  <Skeleton className="h-5 w-24 rounded-full" />
                 </div>
-                <Skeleton className="h-4 w-full" />
-                <div className="flex justify-between items-center mt-2">
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                  <Skeleton className="h-6 w-6 rounded-full" />
+
+                {/* Assignees section - only shown if there are assignees */}
+                <div className="flex justify-between items-center pt-1 mt-1">
+                  <Skeleton className="h-3 w-16" /> {/* "Assignees" text */}
+                  {/* Avatar group */}
+                  <div className="flex -space-x-2">
+                    <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                    <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                    <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                  </div>
                 </div>
               </div>
             )}

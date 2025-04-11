@@ -17,6 +17,10 @@ export const queryKeys = {
 
   // kanban keys
   getKanbanColumns: (projectId: string) => [...queryKeys.projects, projectId, 'columns'],
-
+  getColumnTasks: (projectId: string, columnId: string) => [
+    ...queryKeys.getKanbanColumns(projectId),
+    columnId,
+    'tasks',
+  ],
   // for calendar related queries
 };
