@@ -24,9 +24,9 @@ export const KanbanColumnsLoader = async ({ params }: LoaderFunctionArgs) => {
     }
 
     // no columns exist, so create three default columns
-    await createKanbanColumn({ columnName: 'To Do', projectId });
-    await createKanbanColumn({ columnName: 'In Progress', projectId });
-    await createKanbanColumn({ columnName: 'Done', projectId });
+    await createKanbanColumn({ columnName: 'To Do', projectId, columnIndex: 0 });
+    await createKanbanColumn({ columnName: 'In Progress', projectId, columnIndex: 1 });
+    await createKanbanColumn({ columnName: 'Done', projectId, columnIndex: 2 });
 
     const newColumns = await getKanbanColumns(projectId);
     queryClient.setQueryData(queryKeys.getKanbanColumns(projectId), newColumns);

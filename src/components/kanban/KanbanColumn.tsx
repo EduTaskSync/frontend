@@ -1,17 +1,20 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { ClipboardPlus, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { KanbanColumn as Column } from '@/hooks/projects/kanban/kanbanInterfaces';
+import { KanbanColumn as Column, UpdatedColumnData } from '@/hooks/projects/kanban/kanbanInterfaces';
 import { DeleteKanbanColumnDialog } from './DeleteKanbanColumnDialog';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { KanbanColumnDetailsDialog } from './KanbanColumnDetailsDialog';
 
 interface KanbanColumnProps {
   column: Column;
   onDeleteCol: (columnId: string) => void;
   isDeletePending: boolean;
+  onEditCol?: (updatedColumn: UpdatedColumnData) => void;
+  isEditPending?: boolean;
 }
 
 const getColumnStyle = (colType: string) => {
@@ -38,11 +41,12 @@ const getColumnStyle = (colType: string) => {
         accent: 'emerald',
       };
     default:
+      // Brighter purple for better readability
       return {
-        headerClass: 'bg-primary/10 border-b-primary/20 text-primary',
-        borderClass: 'border-t-primary/30',
-        gradientClass: 'from-primary/5 to-transparent',
-        accent: 'purple',
+        headerClass: 'bg-violet-500/15 border-b-violet-500/25 text-violet-500',
+        borderClass: 'border-t-violet-500/30',
+        gradientClass: 'from-violet-500/5 to-transparent',
+        accent: 'violet', // Changed from 'purple' to 'violet' for better contrast
       };
   }
 };
@@ -53,7 +57,7 @@ enum DefaultColumns {
   Done = 'Done',
 }
 
-export const KanbanColumn = ({ column, onDeleteCol, isDeletePending }: KanbanColumnProps) => {
+export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPending, onEditCol }: KanbanColumnProps) => {
   const { borderClass, gradientClass, headerClass, accent } = getColumnStyle(column.columnName);
   const isDefaultColumn = Object.values(DefaultColumns).includes(column.columnName as DefaultColumns);
 
@@ -84,7 +88,7 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending }: KanbanCol
         ? 'from-amber-400 via-orange-300 to-amber-500'
         : accent === 'emerald'
           ? 'from-emerald-400 via-green-300 to-emerald-500'
-          : 'from-purple-400 via-pink-300 to-indigo-400';
+          : 'from-violet-400 via-fuchsia-300 to-purple-400'; // Brighter gradient for default columns
 
   // show a placeholder layout to mimic the column's shadow while dragging
   if (isDragging) {
@@ -104,58 +108,82 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending }: KanbanCol
       className={`w-[400px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)]`}
     >
       <Card className="flex flex-col h-[700px] w-full rounded-[calc(0.75rem-1px)] border-0 shadow-sm overflow-hidden bg-card/95 backdrop-blur-sm ">
-        <CardHeader
-          className={cn(
-            headerClass,
-            '  mx-3 mt-3 p-3 border rounded-xl flex flex-row items-center justify-between backdrop-blur-sm'
-          )}
-        >
-          {/* Left side: Task count badge */}
-          <Badge
-            variant="outline"
-            className={`font-heading text-xs px-2.5 py-0.5 bg-background/40 backdrop-blur-sm border-${accent}-500/30 text-${accent}-400`}
-          >
-            4 Tasks
-          </Badge>
+        <CardHeader className={cn(headerClass, 'mx-3 mt-3 p-3 border rounded-xl backdrop-blur-sm')}>
+          {/* Three-column layout for the header */}
+          <div className="flex items-center justify-between w-full min-h-[40px]">
+            {/* Left: Edit button (if not default column) or empty placeholder */}
+            <div className="flex-shrink-0 w-10">
+              {!isDefaultColumn ? (
+                <KanbanColumnDetailsDialog
+                  prefillColData={{ columnId: column.columnId, columnName: column.columnName }}
+                  isSubmitting={isEditPending ?? false}
+                  submitHandler={(data) => {
+                    if (typeof data === 'string') {
+                      console.warn('Unexpected string data in edit operation');
+                      return;
+                    }
+                    onEditCol?.(data);
+                  }}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className=" cursor-pointer h-9 w-9 rounded-full hover:bg-foreground/10"
+                      title="Edit column name"
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </Button>
+                  }
+                />
+              ) : (
+                <div className="h-9 w-9" aria-hidden="true"></div>
+              )}
+            </div>
 
-          {/* Center: Column name */}
-          <CardTitle
-            {...attributes}
-            {...listeners}
-            className=" cursor-grabbing font-heading text-lg truncate text-center"
-          >
-            {column.columnName}
-          </CardTitle>
-
-          {/* Right side: Add task button or Delete column button */}
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full hover:bg-foreground/10"
-              title="Add Task"
+            {/* Center: Column name */}
+            <CardTitle
+              {...attributes}
+              {...listeners}
+              className="cursor-grabbing font-heading text-lg truncate text-center flex-1"
             >
-              <ClipboardPlus className="h-4 w-4" />
-              <span className="sr-only">Add Task</span>
-            </Button>
+              {column.columnName}
+            </CardTitle>
 
-            {!isDefaultColumn && (
-              <DeleteKanbanColumnDialog
-                isSubmitting={isDeletePending}
-                column={column}
-                onDeleteColumn={onDeleteCol}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive ml-1"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                    <span className="sr-only">Delete column</span>
-                  </Button>
-                }
-              />
-            )}
+            {/* Right: Delete button (if not default column) or empty placeholder */}
+            <div className="flex-shrink-0 w-10 flex justify-end">
+              {!isDefaultColumn ? (
+                <DeleteKanbanColumnDialog
+                  isSubmitting={isDeletePending ?? false}
+                  column={column}
+                  onDeleteColumn={onDeleteCol}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className=" cursor-pointer h-9 w-9 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-5 w-5 text-destructive " />
+                      <span className="sr-only">Delete column</span>
+                    </Button>
+                  }
+                />
+              ) : (
+                <div className="h-9 w-9" aria-hidden="true"></div>
+              )}
+            </div>
+          </div>
+
+          {/* Task count badge - centered and more readable */}
+          <div className="flex justify-center w-full mt-2">
+            <Badge
+              variant="outline"
+              className={cn(
+                'font-heading text-sm px-3 py-1 bg-background/80 backdrop-blur-sm',
+                `border-${accent}-500/40 text-${accent}-600 dark:text-${accent}-400 shadow-sm`
+              )}
+            >
+              4 Tasks
+            </Badge>
           </div>
         </CardHeader>
 
