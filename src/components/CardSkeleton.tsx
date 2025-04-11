@@ -20,9 +20,13 @@ export const CardSkeleton = ({
 }: CardSkeletonProps) => {
   const cards = Array(count).fill(0);
 
-  // Container styles for other variants
+  // Container styles with better responsiveness
   const containerStyles = cn(
-    horizontal ? 'flex space-x-4 w-full overflow-hidden' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
+    variant === 'task'
+      ? 'grid grid-cols-1 gap-3' // One task per row
+      : horizontal
+        ? 'flex space-x-4 w-full overflow-hidden'
+        : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
     containerClassName
   );
 
@@ -85,28 +89,31 @@ export const CardSkeleton = ({
               </div>
             )}
 
-            {/* Task card skeleton - updated to match TaskCard component */}
+            {/* Task card skeleton - refined to match TaskCard appearance */}
             {variant === 'task' && (
-              <div className="border shadow-sm rounded-lg p-3 space-y-2 bg-card hover:shadow-md transition-all duration-200">
+              <div className="border border-border/40 shadow-sm rounded-lg p-3 space-y-2.5 bg-card/80 hover:shadow-md transition-all duration-200">
                 {/* Task title */}
-                <Skeleton className="h-5 w-4/5" />
+                <Skeleton className="h-5 w-3/4" />
 
-                {/* Task metadata */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                  {/* Created at badge */}
-                  <div className="flex items-center gap-1">
-                    <Skeleton className="h-3 w-3 rounded-full" /> {/* Clock icon */}
-                    <Skeleton className="h-3 w-16" /> {/* Date text */}
+                {/* Task metadata row */}
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {/* Created date */}
+                  <div className="flex items-center gap-1.5">
+                    <Skeleton className="h-3.5 w-3.5 rounded-full" /> {/* Clock icon */}
+                    <Skeleton className="h-3.5 w-20" /> {/* Date text */}
                   </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1"></div>
 
                   {/* Deadline badge */}
                   <Skeleton className="h-5 w-24 rounded-full" />
                 </div>
 
-                {/* Assignees section - only shown if there are assignees */}
-                <div className="flex justify-between items-center pt-1 mt-1">
-                  <Skeleton className="h-3 w-16" /> {/* "Assignees" text */}
-                  {/* Avatar group */}
+                {/* Assignees section - with proper spacing */}
+                <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-border/30">
+                  <Skeleton className="h-3.5 w-16" /> {/* "Assignees" text */}
+                  {/* Avatar group with proper overlapping */}
                   <div className="flex -space-x-2">
                     <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
                     <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
@@ -116,46 +123,71 @@ export const CardSkeleton = ({
               </div>
             )}
 
-            {/* Kanban Column skeleton */}
+            {/* Kanban Column skeleton - updated to match dimensions of actual columns */}
             {variant === 'kanban-column' && (
-              <div className="flex flex-col h-[500px] w-[300px] border border-border shadow-sm overflow-hidden rounded-xl bg-card">
-                {/* Header skeleton with gradient similar to your kanban columns */}
-                <div className="p-3 mx-5 mt-5 border rounded-xl bg-primary/10 border-b-primary/20">
-                  <div className="flex flex-row items-center justify-between">
-                    <div className="flex-shrink-0">
-                      <Skeleton className="h-5 w-8 rounded-full" />
-                    </div>
-                    <Skeleton className="h-7 w-36" />
-                    <div className="flex-shrink-0">
-                      <Skeleton className="h-5 w-5" />
+              <div className="w-[400px] p-[2px] rounded-xl bg-gradient-to-br from-blue-400/20 via-cyan-300/20 to-blue-500/20 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)]">
+                <div className="flex flex-col h-[700px] w-full rounded-[calc(0.75rem-1px)] border-0 shadow-sm overflow-hidden bg-card/95 backdrop-blur-sm">
+                  {/* Header skeleton with gradient similar to your kanban columns */}
+                  <div className="mx-3 mt-3 p-2 pb-1 border rounded-xl backdrop-blur-sm bg-background/80">
+                    <div className="flex items-center gap-2 w-full">
+                      {/* Left: Edit button */}
+                      <Skeleton className="flex-shrink-0 h-8 w-8 rounded-full" />
+
+                      {/* Center: Column name and badge */}
+                      <div className="flex-1 flex flex-col items-center">
+                        <Skeleton className="h-5 w-32 mb-1" /> {/* Column name */}
+                        <Skeleton className="h-5 w-16 rounded-full" /> {/* Badge */}
+                      </div>
+
+                      {/* Right: Delete button */}
+                      <Skeleton className="flex-shrink-0 h-8 w-8 rounded-full" />
                     </div>
                   </div>
-                </div>
 
-                {/* Task cards skeleton */}
-                <div className="px-4 py-5 flex-1 flex flex-col gap-3">
-                  {/* Repeat task card skeletons 3 times */}
-                  {Array(3)
-                    .fill(0)
-                    .map((_, i) => (
-                      <div key={i} className="border border-border/40 rounded-lg p-3 space-y-2 bg-card/60">
-                        <div className="flex justify-between">
-                          <Skeleton className="h-5 w-2/3" />
-                          <Skeleton className="h-5 w-5 rounded-full" />
-                        </div>
-                        <Skeleton className="h-4 w-full" />
-                        <div className="flex justify-between items-center mt-2">
-                          <Skeleton className="h-6 w-16 rounded-full" />
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                  {/* Task list container */}
+                  <div className="flex-1 p-3 pt-2 overflow-hidden">
+                    {/* Add Task button skeleton */}
+                    <Skeleton className="h-9 w-full mb-3 rounded-md" />
 
-                {/* Footer skeleton with gradient */}
-                <div className="p-2 flex items-center justify-center border-t border-t-primary/30 bg-gradient-to-b from-primary/5 to-transparent">
-                  <div className="w-full flex justify-center">
-                    <Skeleton className="h-8 w-32 rounded-md" />
+                    {/* Task cards */}
+                    <div className="space-y-2">
+                      {Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div
+                            key={i}
+                            className="border border-border/40 shadow-sm rounded-lg p-3 space-y-2.5 bg-card/80"
+                          >
+                            {/* Task title */}
+                            <Skeleton className="h-5 w-3/4" />
+
+                            {/* Task metadata row */}
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                                <Skeleton className="h-3.5 w-20" />
+                              </div>
+                              <div className="flex-1"></div>
+                              <Skeleton className="h-5 w-24 rounded-full" />
+                            </div>
+
+                            {/* Assignees section */}
+                            <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-border/30">
+                              <Skeleton className="h-3.5 w-16" />
+                              <div className="flex -space-x-2">
+                                <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                                <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                                <Skeleton className="h-6 w-6 rounded-full border-2 border-background" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-2 flex items-center justify-center border-t bg-gradient-to-b from-blue-500/5 to-blue-500/10 backdrop-blur-sm">
+                    <Skeleton className="h-4 w-24" />
                   </div>
                 </div>
               </div>

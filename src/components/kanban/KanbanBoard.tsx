@@ -172,14 +172,18 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
         />
       </div>
 
-      <ScrollArea className="h-[calc(100vh-230px)] min-h-[500px] px-3">
+      <ScrollArea className="h-full m-4 pb-4">
         {isLoadingData ? (
-          <div className="mt-8 px-3">
+          <div className="mt-8 px-3 mb-6">
+            {' '}
+            {/* Increased bottom margin */}
             <CardSkeleton variant="kanban-column" count={3} horizontal={true} containerClassName="gap-10" />
           </div>
         ) : (
-          <div className="flex mt-8 px-2 gap-x-8">
-            {/* //? optimizes the drag and drop algorithm for horiontally scrolled lists */}
+          <div className="flex mt-8 px-2 gap-x-8 mb-6">
+            {' '}
+            {/* Increased bottom margin */}
+            {/* //? optimizes the drag and drop algorithm for horizontally scrolled lists */}
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
               {localColumns?.map((col) => (
                 <KanbanColumn
@@ -194,8 +198,7 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
             </SortableContext>
           </div>
         )}
-
-        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="horizontal" className="mt-2" /> {/* Added top margin to the scrollbar */}
       </ScrollArea>
       {/* //? When dragging an element, the dragged preview should appear above all other elements on the page, regardless of the stacking context of the parent container. By using createPortal to render the DragOverlay directly into document.body, it ensures that the dragged element always appears on top of everything else */}
       {createPortal(
