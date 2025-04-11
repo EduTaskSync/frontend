@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CountdownTimer } from '../CountdownTimer';
-import { ProjectSummaryResponse } from '@/hooks/projects/projectsInterfaces';
+import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
 import { useProjects } from '@/hooks/projects/useProjects';
 import { ButtonWithTooltip } from '../ButtonWithToolTip';
 

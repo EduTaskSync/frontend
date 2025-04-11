@@ -1,4 +1,4 @@
-import { CreateProjectDto, ProjectBaseResponse, ProjectSummaryListResponse } from './projectsInterfaces';
+import { CreateProjectDto, ProjectBaseResponse, ProjectSummaryListResponse } from './projectInterfaces';
 import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 import { CustomError } from '@/utils/ErrorClasses';

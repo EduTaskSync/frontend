@@ -18,14 +18,13 @@ import { ProgressiveSignup } from './routes/SignupPage.tsx';
 import { Toaster } from '@/components/ui/sonner';
 import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 import { ProjectLayout } from './routes/ProjectLayout.tsx';
-import { ProjectsPage } from './routes/ProjectsPage.tsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
-    children: [{ index: true, element: <ProjectsPage /> }], //LandingPage
+    children: [{ index: true, element: <LandingPage /> }],
   },
   // Protection layer
   {
