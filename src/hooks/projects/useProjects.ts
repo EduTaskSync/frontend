@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 import { getProjectsSummary, createProject, deleteProject } from '@/hooks/projects/projectQueryUtils';
-import { CreateProjectDto, ProjectSummaryListResponse, ProjectSummaryResponse } from './projectInterfaces';
+import { CreateProjectDto, ProjectSummaryListResponse, ProjectSummaryResponse } from './projectsInterfaces';
 
 // Define query keys for projects
 export const projectQueryKeys = {
@@ -61,6 +61,7 @@ export const useProjects = (groupId?: string) => {
         projectName: newProject.projectName,
         deadline: newProject.deadline,
         progress: 0,
+        imgUrl: newProject.imgUrl
       };
 
       // Update cache with optimistic data - make sure we're using ProjectSummaryListResponse
@@ -116,6 +117,7 @@ export const useProjects = (groupId?: string) => {
             projectName: data.projectName,
             deadline: data.deadline,
             progress: 0,
+            imgUrl: data.imgUrl
           };
 
           return {

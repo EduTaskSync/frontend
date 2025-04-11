@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const projectFormSchema = z
   .object({
     projectName: z.string().min(1, 'project name is required'),
-    projectDetails: z.string().max(500, 'Keep the project description under 500 characters'),
+    projectId: z.string().min(1, 'project Id is required'),
+    projectDeadline: z.date().nullable(),
+    projectProgress: z.number(),
+    projectTask: z.string().max(500, 'Keep the project description under 500 characters'),
     projectImageSource: z.enum(['predefined', 'custom']).default('predefined'),
     predefinedImage: z.string().optional(),
     customImageUrl: z.string().optional(),

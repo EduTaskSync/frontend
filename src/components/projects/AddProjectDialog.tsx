@@ -24,7 +24,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CreateProjectSchema } from '@/hooks/projects/projectInterfaces';
 
-export interface AddProjectDialogProps {
+interface AddProjectDialogProps {
   trigger: React.ReactNode;
   onSubmit: (values: z.infer<typeof CreateProjectSchema>) => void;
   groupId: string;
