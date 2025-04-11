@@ -2,18 +2,29 @@ import { queryKeys } from '@/utils/queryKeyFactory';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   createKanbanColumn,
+  getKanbanColumnTasks,
   deleteKanbanColumn,
   getKanbanColumns,
   reorderKanbanColumns,
   updateKanbanColumn,
+  createKanbanTask,
+  NewKanbanTaskData,
+  moveKanbanTask,
+  updateKanbanTask,
 } from './kanbanQueryUtils';
-import { GetKanbanColumnsResponse, KanbanColumn, UpdatedColumnData } from './kanbanInterfaces';
+import {
+  ColumnTasksResponse,
+  GetKanbanColumnsResponse,
+  KanbanColumn,
+  Task,
+  UpdatedColumnData,
+} from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 import { nanoid } from 'nanoid';
 import { queryClient } from '@/main';
 
-export const useKanban = (projectId: string) => {
+export const useKanbanColumns = (projectId: string) => {
   const getKanbanColumnsResponse = useQuery({
     queryKey: queryKeys.getKanbanColumns(projectId),
     queryFn: () => getKanbanColumns(projectId),
@@ -182,9 +193,6 @@ export const useKanban = (projectId: string) => {
 
       toast.error(title, { description: errorMessage });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
-    },
   });
 
   return {
@@ -193,5 +201,99 @@ export const useKanban = (projectId: string) => {
     deleteKanbanColumnResponse,
     updateKanbanColumnResponse,
     reorderKanbanColumnsResponse,
+  };
+};
+
+export const useKanbanTasks = (projectId: string, columnId: string) => {
+  const getKanbanTasksResponse = useQuery({
+    queryKey: queryKeys.getColumnTasks(projectId, columnId),
+    queryFn: () => getKanbanColumnTasks(columnId),
+    staleTime: 5 * 1000,
+    gcTime: 5 * 60 * 1000,
+    enabled: !!columnId,
+  });
+
+  const createKanbanTaskResponse = useMutation({
+    mutationFn: (newTaskData: NewKanbanTaskData) => createKanbanTask(newTaskData),
+    onMutate: async (newTaskData: NewKanbanTaskData) => {
+      const targetQueryKey = queryKeys.getColumnTasks(projectId, columnId);
+
+      // cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      // snapshot the previous tasks
+      const previousTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
+
+      // create an optimistic task with temporary ID
+      const optimisticTask: Task = {
+        taskId: nanoid(),
+        taskName: newTaskData.taskName,
+        columndId: newTaskData.columnId,
+        taskAssignees: [],
+        taskDeadline: newTaskData.taskDeadline,
+        taskCreationTime: new Date().toISOString(),
+      };
+
+      // update the cache with optimistic data
+      queryClient.setQueryData<ColumnTasksResponse>(targetQueryKey, {
+        tasks: [...(previousTasks?.tasks || []), optimisticTask],
+      });
+
+      return { previousTasks };
+    },
+    onSuccess: () => {
+      toast.success('Task created successfully', {
+        description: 'You can delegate the task to a group member',
+      });
+
+      // invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: queryKeys.getColumnTasks(projectId, columnId) });
+    },
+    onError: (error, _, context) => {
+      // Rollback to previous state
+      if (context?.previousTasks) {
+        queryClient.setQueryData(queryKeys.getColumnTasks(projectId, columnId), context.previousTasks);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Failed to create task. Please try again later.';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to create task';
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+  });
+
+  const moveKanbanTaskResponse = useMutation({
+    mutationFn: moveKanbanTask,
+    //! optimistic updating handled in KanbanColumn component
+    onError: (error) => {
+      let title = 'Error';
+      let errorMessage = 'Failed to reorder columns';
+
+      if (error instanceof CustomError) {
+        title = error.title || title;
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+  });
+
+  const updateKanbanTaskResponse = useMutation({
+    mutationFn: updateKanbanTask,
+    onMutate: () => {},
+  });
+
+  return {
+    getKanbanTasksResponse,
+    createKanbanTaskResponse,
+    moveKanbanTaskResponse,
+    updateKanbanTaskResponse,
   };
 };
