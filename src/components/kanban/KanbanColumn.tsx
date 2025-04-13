@@ -32,10 +32,8 @@ interface KanbanColumnProps {
 
 export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPending, onEditCol }: KanbanColumnProps) => {
   const { projectId } = useParams();
-  const { createKanbanTaskResponse, getKanbanTasksResponse, updateKanbanTaskResponse } = useKanbanTasks(
-    projectId!,
-    column.columnId
-  );
+  const { createKanbanTaskResponse, deleteKanbanTaskResponse, getKanbanTasksResponse, updateKanbanTaskResponse } =
+    useKanbanTasks(projectId!, column.columnId);
 
   const { data, isLoading, isError, error } = getKanbanTasksResponse as {
     data: ColumnTasksResponse;
@@ -77,11 +75,15 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
           : 'from-violet-400 via-fuchsia-300 to-purple-400'; // Brighter gradient for default columns
 
   const submitTaskDetails = (data: NewTaskData | UpdatedTaskData) => {
-    if ('projectId' in data) {
-      createKanbanTaskResponse.mutate(data);
-    } else {
+    if ('taskId' in data) {
       updateKanbanTaskResponse.mutate(data);
+    } else {
+      createKanbanTaskResponse.mutate(data);
     }
+  };
+
+  const onDeleteTask = (taskId: string) => {
+    deleteKanbanTaskResponse.mutate(taskId);
   };
 
   return (
@@ -222,7 +224,16 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
               </div>
             ) : data?.tasks?.length > 0 ? (
               // Tasks available
-              data.tasks.map((task) => <TaskCard key={task.taskId} task={task} accent={accent} />)
+              data.tasks.map((task) => (
+                <TaskCard
+                  key={task.taskId}
+                  onDeleteTask={onDeleteTask}
+                  task={task}
+                  accent={accent}
+                  isDeletePending={deleteKanbanTaskResponse.isPending}
+                  onEditTask={submitTaskDetails}
+                />
+              ))
             ) : (
               // No tasks (empty state)
               <div

@@ -27,7 +27,7 @@ interface KanbanTaskDetailsDialogProps {
   columnId: string;
   trigger: React.ReactNode;
   onSubmitHandler: (data: NewTaskData | UpdatedTaskData) => void;
-  prefillData?: NewTaskData;
+  prefillData?: NewTaskData | UpdatedTaskData;
   isSubmitting: boolean;
 }
 
@@ -83,15 +83,23 @@ export const KanbanTaskDetailsDialog = ({
   const onSubmit = (data: FormValues) => {
     form.reset();
     setOpen(false);
+    if (prefillData && 'taskId' in prefillData) {
+      const updatedTaskDetails: UpdatedTaskData = {
+        taskId: prefillData.taskId,
+        taskName: data.taskName,
+        taskDeadline: data.taskDeadline.toISOString(),
+      };
+      onSubmitHandler(updatedTaskDetails);
+    } else {
+      const taskDetails: NewTaskData = {
+        taskName: data.taskName,
+        projectId: projectId!,
+        columnId,
+        taskDeadline: data.taskDeadline.toISOString(),
+      };
 
-    const taskDetails: NewTaskData = {
-      taskName: data.taskName,
-      projectId: projectId!,
-      columnId,
-      taskDeadline: data.taskDeadline.toISOString(),
-    };
-
-    onSubmitHandler(taskDetails);
+      onSubmitHandler(taskDetails);
+    }
   };
 
   return (
@@ -120,7 +128,9 @@ export const KanbanTaskDetailsDialog = ({
             )}
           </DialogTitle>
           <DialogDescription>
-            Enter task details. You can assign the task to one or more group members.
+            {prefillData
+              ? 'Update the task description and its deadline.'
+              : 'Enter task details. You can assign the task to one or more group members.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -131,7 +141,7 @@ export const KanbanTaskDetailsDialog = ({
               name="taskName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-heading font-semibold">Task Name</FormLabel>
+                  <FormLabel className="font-heading font-semibold">Task Description</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input placeholder="Enter a clear and concise description of the task" {...field} />
