@@ -24,7 +24,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
-    children: [{ index: true, element: <LandingPage /> }],
+    children: [{ index: true, element: <ProjectDetailsPage /> }],  //LandingPage
   },
   // Protection layer
   {

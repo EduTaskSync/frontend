@@ -1,10 +1,13 @@
-import { Column } from './KanbanBoard';
+import { Column, TaskData } from './KanbanBoard';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Id } from './KanbanBoard';
+import { AddTaskDialog } from './AddTaskDialog';
+import { useState } from 'react';
+
 
 interface KanbanColumnProps {
   column: Column;
@@ -48,7 +51,18 @@ const getColumnStyle = (colType: string) => {
 };
 
 export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) => {
+  
   const { borderClass, gradientClass, headerClass } = getColumnStyle(colType);
+  const [localColumn, setLocalColumn] = useState<Column>(column);
+
+  const handleAddTask = (task: TaskData) => {
+    
+    setLocalColumn((prev) => ({
+      ...prev,
+      tasks: [...prev.tasks, task],
+    }));
+    console.log(task);
+  };
 
   return (
     <Card className="flex flex-col h-[500px] w-[300px] border border-border shadow-sm overflow-hidden rounded-xl bg-card ">
@@ -66,16 +80,26 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
       </CardContent>
 
       <CardFooter
-        className={cn(borderClass, gradientClass, 'p-2 flex items-center justify-center border-t bg-gradient-to-b')}
+        className={cn(
+          borderClass,
+          gradientClass,
+          'flex flex-col items-center border-t bg-gradient-to-b p-4 gap-4'
+        )}
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
-        >
-          <ClipboardPlus className="h-4 w-4" />
-          Add Task
-        </Button>
+        <AddTaskDialog columnId={column.id} onAddTask={handleAddTask} />
+
+        <div className="w-full space-y-2">
+            {localColumn.tasks.map((task, index) => (
+              <div key={index} className="bg-gray-700 p-3 rounded">
+                <p className="font-semibold">{task.taskName}</p>
+                {task.taskDeadline && (
+                  <p className="text-sm text-gray-400">
+                      Deadline: {new Date(task.taskDeadline).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            ))}
+        </div>
       </CardFooter>
     </Card>
   );
