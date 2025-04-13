@@ -55,8 +55,7 @@ export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTa
 
   const [taskInput, setTaskInput] = useState('');
   const [taskDeadline, setTaskDeadline] = useState<string>('');
-  const [columns, setColumns] = useState<Column[]>([]);
-
+  
   // initialize form with react-hook-form
   //const form = useForm<taskFormValues>({
   //  resolver: zodResolver(taskFormSchema),
@@ -77,15 +76,8 @@ export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTa
       };
       
       onAddTask?.(taskToAdd);
-      //console.log('Add task to column:', columnId, taskToAdd);
-      //setColumns((prevColumns) =>
-      //  prevColumns.map((col) =>
-      //    col.id === columnId
-      //      ? { ...col, tasks: [...col.tasks, taskToAdd] }
-      //      : col
-      //  )
-      //);
-      
+      console.log('Add task to column:', columnId, taskToAdd);
+            
       setTaskInput('');
       setTaskDeadline('');
       setOpen(false);
@@ -150,7 +142,7 @@ export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTa
 
             <DialogFooter className="mt-4 flex gap-2 justify-end">
               <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={() => handleAddTask}>OK</Button>
+              <Button onClick={handleAddTask}>OK</Button>
               
             </DialogFooter>
           </DialogContent>
