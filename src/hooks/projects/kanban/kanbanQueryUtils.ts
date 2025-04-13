@@ -221,6 +221,34 @@ export const createKanbanTask = async (newTask: NewTaskData) => {
   }
 };
 
+export const deleteKanbanTask = async (taskId: string) => {
+  try {
+    // Change from sending the ID in the request body to adding it to the URL path
+    const response = await axiosConfig.delete(`${ApiEndPoints.KANBAN_DELETE_TASK}/${taskId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting task:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Please check your data and try again', 'Something went wrong');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have access to this project', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Task not found or already deleted', 'Task not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later', 'Internal Server Error');
+      }
+    }
+
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
 export const moveKanbanTask = async (moveTaskData: MoveTaskData) => {
   try {
     const response = await axiosConfig.post(ApiEndPoints.KANBAN_MOVE_TASK, moveTaskData);

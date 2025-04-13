@@ -7,8 +7,8 @@ import {
   getKanbanColumns,
   reorderKanbanColumns,
   updateKanbanColumn,
+  deleteKanbanTask,
   createKanbanTask,
-  NewKanbanTaskData,
   moveKanbanTask,
   updateKanbanTask,
 } from './kanbanQueryUtils';
@@ -18,6 +18,7 @@ import {
   KanbanColumn,
   Task,
   UpdatedColumnData,
+  NewTaskData,
 } from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
@@ -206,7 +207,7 @@ export const useKanbanColumns = (projectId: string) => {
 
 export const useKanbanTasks = (projectId: string, columnId: string) => {
   const getKanbanTasksResponse = useQuery({
-    queryKey: queryKeys.getColumnTasks(projectId, columnId),
+    queryKey: queryKeys.getKanbanColumnTasks(projectId, columnId),
     queryFn: () => getKanbanColumnTasks(columnId),
     staleTime: 5 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -214,9 +215,9 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
   });
 
   const createKanbanTaskResponse = useMutation({
-    mutationFn: (newTaskData: NewKanbanTaskData) => createKanbanTask(newTaskData),
-    onMutate: async (newTaskData: NewKanbanTaskData) => {
-      const targetQueryKey = queryKeys.getColumnTasks(projectId, columnId);
+    mutationFn: (newTaskData: NewTaskData) => createKanbanTask(newTaskData),
+    onMutate: async (newTaskData: NewTaskData) => {
+      const targetQueryKey = queryKeys.getKanbanColumnTasks(projectId, columnId);
 
       // cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: targetQueryKey });
@@ -245,14 +246,11 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
       toast.success('Task created successfully', {
         description: 'You can delegate the task to a group member',
       });
-
-      // invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: queryKeys.getColumnTasks(projectId, columnId) });
     },
     onError: (error, _, context) => {
       // Rollback to previous state
       if (context?.previousTasks) {
-        queryClient.setQueryData(queryKeys.getColumnTasks(projectId, columnId), context.previousTasks);
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(projectId, columnId), context.previousTasks);
       }
 
       let title = 'Error';
@@ -265,8 +263,55 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
 
       toast.error(title, { description: errorMessage });
     },
+    onSettled: () => {
+      // invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumnTasks(projectId, columnId) });
+    },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+  });
+
+  const deleteKanbanTaskResponse = useMutation({
+    mutationFn: deleteKanbanTask,
+    onMutate: (taskId) => {
+      const targetQueryKey = queryKeys.getKanbanColumnTasks(projectId, columnId);
+      queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      const previousColumnTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
+
+      const optimisticTasks = [
+        ...(previousColumnTasks?.tasks.filter((task) => {
+          return task.taskId !== taskId;
+        }) || []),
+      ];
+
+      queryClient.setQueryData(targetQueryKey, optimisticTasks);
+      return { previousColumnTasks };
+    },
+    onSuccess: () => {
+      toast.success('Task deleted successfully');
+    },
+    onError: (error, _, context) => {
+      if (context?.previousColumnTasks) {
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(projectId, columnId), {
+          tasks: context.previousColumnTasks.tasks,
+        });
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Failed to create task. Please try again later.';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to create task';
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    onSettled: () => {
+      //? this will invalidate the tasks query too as the keys were built hierarchically
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
+    },
   });
 
   const moveKanbanTaskResponse = useMutation({
@@ -283,16 +328,72 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
 
       toast.error(title, { description: errorMessage });
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
+    },
   });
 
   const updateKanbanTaskResponse = useMutation({
     mutationFn: updateKanbanTask,
-    onMutate: () => {},
+    onMutate: async (updatedTaskData) => {
+      // Create query key for the column containing this task
+      const targetQueryKey = queryKeys.getKanbanColumnTasks(projectId, columnId);
+
+      // Cancel any outgoing refetches for this column
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      // Snapshot the previous tasks
+      const previousTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
+
+      // Create an optimistic update - only update the taskName and taskDeadline
+      const updatedTasks =
+        previousTasks?.tasks.map((task) =>
+          task.taskId === updatedTaskData.taskId
+            ? {
+                ...task,
+                taskName: updatedTaskData.taskName,
+                taskDeadline: updatedTaskData.taskDeadline,
+              }
+            : task
+        ) || [];
+
+      // Update the cache with optimistic data
+      queryClient.setQueryData<ColumnTasksResponse>(targetQueryKey, {
+        tasks: updatedTasks,
+      });
+
+      return { previousTasks };
+    },
+    onSuccess: () => {
+      toast.success('Task details updated successfully');
+    },
+    onError: (error, _, context) => {
+      // Rollback to previous state
+      if (context?.previousTasks) {
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(projectId, columnId), context.previousTasks);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Failed to update task. Please try again later.';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to update task';
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getKanbanColumnTasks(projectId, columnId),
+      });
+    },
   });
 
   return {
     getKanbanTasksResponse,
     createKanbanTaskResponse,
+    deleteKanbanTaskResponse,
     moveKanbanTaskResponse,
     updateKanbanTaskResponse,
   };
