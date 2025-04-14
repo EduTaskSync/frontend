@@ -1,6 +1,7 @@
 // UI components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -12,14 +13,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-
+import { LoadingButton } from '@/components/LoadingButton';
+import { FolderKanban } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { z } from 'zod';
 import { taskFormSchema, taskFormValues } from '@/utils/taskSchema';
 import { nullable } from 'zod';
 import { Id, Column, TaskData } from './KanbanBoard';
+import { CreateTaskSchema } from '@/hooks/tasks/taskInterfaces.ts';
 
 // task data for POST request
 export interface TaskPostData {
@@ -29,12 +37,11 @@ export interface TaskPostData {
   taskDeadline: Date | null;
 }
 
-interface TaskDetailsDialogProps {
-  onSubmit: (formattedData: TaskData ) => void;
-  isUpdating?: boolean;
-  columnId?: Id;
-  prefillData?: TaskData;
-  trigger?: React.ReactNode;
+interface AddTaskDialogProps {
+  trigger: React.ReactNode;
+  onSubmit: (values: z.infer<typeof CreateTaskSchema>) => void;
+  columnId: Id;
+  isLoading?: boolean;
 }
 
 interface AddTaskDialogProps {
@@ -42,14 +49,8 @@ interface AddTaskDialogProps {
   onAddTask?: (task: TaskData) => void;
 }
 
-export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTask }) =>
-//({
-//  onSubmit,
-//  isUpdating = false,
-//  columnId,
-//  prefillData,
-//  trigger,
-//}: TaskDetailsDialogProps) => 
+export const AddTaskDialog = ({trigger, onSubmit, isLoading = true,
+}: AddTaskDialogProps) => 
 {
   const [open, setOpen] = useState(false);
 
@@ -57,51 +58,25 @@ export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTa
   const [taskDeadline, setTaskDeadline] = useState<string>('');
   
   // initialize form with react-hook-form
-  //const form = useForm<taskFormValues>({
-  //  resolver: zodResolver(taskFormSchema),
-  //  defaultValues: {
-  //    taskName: prefillData?.taskName || '',
-  //    taskDeadline: prefillData?.taskDeadline || null,
-      
-  // },
-  //});
+  const form = useForm<z.infer<typeof CreateTaskSchema>>({
+      resolver: zodResolver(CreateTaskSchema),
+      defaultValues: {
+        taskName: '',
+        taskDeadline: null,
+      },
+  });
 
-  // add a task
-  const handleAddTask = () => {
+  
+
+  // Handle form submission
+  const handleFormSubmit = (values: z.infer<typeof CreateTaskSchema>) => {
     
-    //if (taskInput.trim() !== '') {
-      const taskToAdd: TaskData = {
-        taskName: taskInput,
-        taskDeadline: taskDeadline ? new Date(taskDeadline) : null,
-      };
-      
-      onAddTask?.(taskToAdd);
-      console.log('Add task to column:', columnId, taskToAdd);
-            
-      setTaskInput('');
-      setTaskDeadline('');
-      setOpen(false);
-    //}
-  };
-  
-
-  const handleSubmitTask = (values: TaskPostData) => {
-        
-      let formattedData: TaskPostData;
-      
-      formattedData = {
-          taskName: values.taskName,
-          projectId: values.projectId,
-          columnId: values.columnId,
-          taskDeadline: values.taskDeadline,
-      };
-  
-      // send form data over to the backend
-      //onSubmit(formattedData);
-  
-      // close the dialog after submission
-      setOpen(false);
-      //form.reset();
+    onSubmit(values);
+    setOpen(false);
+    form.reset({
+        taskName: '',
+        taskDeadline: null,
+    });
   };
 
   return (
@@ -114,40 +89,119 @@ export const AddTaskDialog : React.FC<AddTaskDialogProps> = ({ columnId, onAddTa
           setOpen(isOpen);
         }}
       >
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 font-heading hover:cursor-pointer">
-              {'Add Task'}
-            </Button>
-          </DialogTrigger>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
+          >
+            <ClipboardPlus className="h-4 w-4" />
+              Add Task
+          </Button>
+        </DialogTrigger>
           
-          <DialogContent className="bg-gray-900 border-purple-600">
-            <DialogHeader>
-              <DialogTitle>New Task</DialogTitle>
-            </DialogHeader>
+        <DialogContent className="sm:max-w-[500px] p-6 font-sans">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-heading mb-1">
+              Create <span className="text-emerald-300">New Task</span>
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="flex flex-col gap-3">
-              {'Task'}
-              <Input
-                placeholder="Input Task"
-                value={taskInput}
-                onChange={(e) => setTaskInput(e.target.value)}
+          {/* Form for adding task */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 py-4 font-sans">
+              {/* task name field - unchanged */}
+              <FormField
+                control={form.control}
+                name="taskName"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="font-heading font-semibold">Task</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <div className="absolute left-3 top-[9px] text-gray-400">
+                          <FolderKanban className="h-5 w-5" />
+                        </div>
+                        <Input
+                          placeholder="FIT3162 Task"
+                          className="pl-10"
+                          {...field}
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>Enter a descriptive for your task.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {'Deadline'}
-              <Input
-                type="date"
-                value={taskDeadline}
-                onChange={(e) => setTaskDeadline(e.target.value)}
+          
+              {/* Deadline field - add disabled to calendar button */}
+              <FormField
+                control={form.control}
+                name="taskDeadline"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="font-heading font-semibold">Deadline</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full pl-10 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                              disabled={isLoading}
+                            >
+                              <div className="absolute left-3 top-[9px] text-gray-400">
+                                <CalendarIcon className="h-5 w-5" />
+                              </div>
+                              {field.value ? format(field.value, 'PPP') : <span>Select deadline date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value || undefined} // Convert null to undefined for the calendar
+                              onSelect={(date) => field.onChange(date || null)} // Convert undefined to null when selecting
+                              initialFocus
+                              disabled={(date) => date < new Date()}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </FormControl>
+                    <FormDescription>Set a deadline for your task (optional).</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
+          
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  disabled={isLoading}
+                  className="font-semibold hover:cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <LoadingButton
+                  isLoading={isLoading || form.formState.isSubmitting}
+                  loadingText="Creating..."
+                  defaultText="Create task"
+                  disabled={isLoading}
+                  tooltipText={ 'Create new task'}
+                  tooltipSide="top"
+                />
+              </DialogFooter>
+            </form>
+          </Form>
 
-            <DialogFooter className="mt-4 flex gap-2 justify-end">
-              <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddTask}>OK</Button>
-              
-            </DialogFooter>
-          </DialogContent>
-        
-
+        </DialogContent>
       </Dialog>
   )
 }

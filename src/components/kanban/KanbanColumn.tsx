@@ -7,7 +7,8 @@ import { Badge } from '../ui/badge';
 import { Id } from './KanbanBoard';
 import { AddTaskDialog } from './AddTaskDialog';
 import { useState } from 'react';
-
+import { ButtonWithTooltip } from '@/components/ButtonWithToolTip';
+import { useTasks } from '@/hooks/tasks/useTasks';
 
 interface KanbanColumnProps {
   column: Column;
@@ -55,6 +56,21 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
   const { borderClass, gradientClass, headerClass } = getColumnStyle(colType);
   const [localColumn, setLocalColumn] = useState<Column>(column);
 
+  const { createTaskResponse } = useTasks();
+
+  const handleCreateTask = (data: TaskData) => {
+    //if (!Id) return;
+
+    createTaskResponse.mutate({
+
+      taskName: data.taskName,
+      //projectId: data.projectId,
+      columnId: localColumn.id.toString(),
+      taskDeadline: data.taskDeadline,
+      //projectName: data.taskName,
+    });
+  };
+
   const handleAddTask = (task: TaskData) => {
     
     setLocalColumn((prev) => ({
@@ -62,6 +78,19 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
       tasks: [...prev.tasks, task],
     }));
     console.log(task);
+  };
+
+  const handleDeleteTask = (index: number) => {
+    setLocalColumn((prev: Column) => ({
+      ...prev,
+      tasks: prev.tasks.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleEditTask = (index: number) => {
+    const task = localColumn.tasks[index];
+    alert(`EDIT：\nTASK：${task.taskName}\nDEALINE：${task.taskDeadline ? new Date(task.taskDeadline).toLocaleDateString() : ''}`);
+    
   };
 
   return (
@@ -86,17 +115,48 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           'flex flex-col items-center border-t bg-gradient-to-b p-4 gap-4'
         )}
       >
-        <AddTaskDialog columnId={column.id} onAddTask={handleAddTask} />
+        <AddTaskDialog
+          trigger={
+            <ButtonWithTooltip
+              size="sm"
+              className="gap-2 font-heading text-sm hover:cursor-pointer"
+              tooltipText={'Create a new task in this project.'}
+            >
+              <span>New Project</span>
+            </ButtonWithTooltip>
+          }
+          onSubmit={handleCreateTask}
+          columnId ={column.id || ''}
+          isLoading={false}
+        />
 
         <div className="w-full space-y-2">
             {localColumn.tasks.map((task, index) => (
               <div key={index} className="bg-gray-700 p-3 rounded">
-                <p className="font-semibold">{task.taskName}</p>
-                {task.taskDeadline && (
-                  <p className="text-sm text-gray-400">
-                      Deadline: {new Date(task.taskDeadline).toLocaleDateString()}
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  
+                  <div>
+                    <p className="font-semibold">{task.taskName}</p>
+                    {task.taskDeadline && (
+                      <p className="text-sm text-gray-400">
+                          Deadline: {new Date(task.taskDeadline).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                      className="font-heading text-red-400 hover:text-red-600 text-sm"
+                      onClick={() => handleDeleteTask(index)}
+                >
+                  remove
+                </button>
+
+                  <button
+                    className="font-semibold text-blue-400 hover:text-blue-600 text-sm"
+                    onClick={() => handleEditTask(index)}
+                  >
+                    edit
+                  </button>
               </div>
             ))}
         </div>

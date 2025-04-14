@@ -16,7 +16,10 @@ export interface Column {
 // Task data
 export interface TaskData {
   taskName: string;
+  //projectId: string;
+  //columnId: Id;
   taskDeadline: Date | null;
+  //projectName: string;
 }
 
 export const KanbanBoard = () => {
