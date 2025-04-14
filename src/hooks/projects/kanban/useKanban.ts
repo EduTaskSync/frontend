@@ -19,6 +19,7 @@ import {
   Task,
   UpdatedColumnData,
   NewTaskData,
+  MoveTaskData,
 } from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
@@ -314,25 +315,6 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
     },
   });
 
-  const moveKanbanTaskResponse = useMutation({
-    mutationFn: moveKanbanTask,
-    //! optimistic updating handled in KanbanColumn component
-    onError: (error) => {
-      let title = 'Error';
-      let errorMessage = 'Failed to reorder columns';
-
-      if (error instanceof CustomError) {
-        title = error.title || title;
-        errorMessage = error.message;
-      }
-
-      toast.error(title, { description: errorMessage });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
-    },
-  });
-
   const updateKanbanTaskResponse = useMutation({
     mutationFn: updateKanbanTask,
     onMutate: async (updatedTaskData) => {
@@ -394,7 +376,106 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
     getKanbanTasksResponse,
     createKanbanTaskResponse,
     deleteKanbanTaskResponse,
-    moveKanbanTaskResponse,
     updateKanbanTaskResponse,
   };
+};
+
+export const useKanbanTaskMove = () => {
+  const moveTaskBetweenColumnsResponse = useMutation({
+    mutationFn: moveKanbanTask,
+    onMutate: async (moveData: MoveTaskData) => {
+      // cancel any outgoing requests for source and target columns
+      const sourceColumnKey = queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.sourceColumnId);
+
+      const targetColumnKey = queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.targetColumnId);
+
+      await queryClient.cancelQueries({ queryKey: sourceColumnKey });
+
+      await queryClient.cancelQueries({ queryKey: targetColumnKey });
+
+      // get current task data from both columns
+      const sourceColumnTasks = queryClient.getQueryData<ColumnTasksResponse>(sourceColumnKey);
+
+      const targetColumnTasks = queryClient.getQueryData<ColumnTasksResponse>(targetColumnKey);
+
+      // find the task to move from the source column
+      const taskToMove = sourceColumnTasks?.tasks.find((task) => task.taskId === moveData.taskId);
+
+      // handle (unlikely) case where the task to be moved does not exist in source column
+      if (!taskToMove) {
+        return { sourceColumnTasks, targetColumnTasks };
+      }
+      // optimistically update the source column without the dragged task
+      queryClient.setQueryData(sourceColumnKey, {
+        tasks: [sourceColumnTasks?.tasks.filter((task) => task.taskId !== moveData.taskId)],
+      });
+
+      //? calculate new indexes for target column tasks
+      // create a copy of the target column tasks
+      const updatedTargetTasks = [...(targetColumnTasks?.tasks || [])];
+
+      const targetIndex = moveData.taskIndex;
+
+      // create a optimisitc task object to display on the target column
+      const optimisticTargetTask = {
+        ...taskToMove,
+        columnIndex: moveData.targetColumnId,
+        taskIndex: targetIndex,
+      };
+
+      if (targetIndex === 0) {
+        // insert at the beginning
+        updatedTargetTasks.unshift(optimisticTargetTask);
+      } else if (targetIndex >= updatedTargetTasks.length) {
+        // insert at the end
+        updatedTargetTasks.push(optimisticTargetTask);
+      } else {
+        // insert at a specific index in the middle of the array
+        updatedTargetTasks.splice(targetIndex, 0, optimisticTargetTask);
+      }
+      //! update taskIndex properties for all the task objects
+      const updatedTargetTasksWithIndexProps = updatedTargetTasks.map((task, index) => {
+        return { ...task, taskIndex: index };
+      });
+
+      // optimistically update the target column with the updated task
+      queryClient.setQueryData(targetColumnKey, { tasks: updatedTargetTasksWithIndexProps });
+
+      // return previous column data for rollback
+      return { sourceColumnTasks, targetColumnTasks };
+    },
+    onError: (error, moveData, context) => {
+      // reset the tasks on the source and target columns to previous tasks
+      if (context?.sourceColumnTasks && context?.targetColumnTasks) {
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.sourceColumnId), {
+          tasks: context.sourceColumnTasks.tasks,
+        });
+
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.targetColumnId), {
+          tasks: context.targetColumnTasks.tasks,
+        });
+      }
+      let title = 'Error';
+      let errorMessage = 'Failed to move task';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to move task';
+        errorMessage = error.message;
+      }
+      toast.error(title, { description: errorMessage });
+    },
+    onSuccess: () => {
+      toast.success('Task status updated successfully');
+    },
+    onSettled: (_, __, moveData) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.sourceColumnId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getKanbanColumnTasks(moveData.projectId, moveData.targetColumnId),
+      });
+    },
+  });
+
+  return { moveTaskBetweenColumnsResponse };
 };

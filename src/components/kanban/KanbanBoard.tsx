@@ -1,12 +1,13 @@
 import { ListPlus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import { useKanbanColumns } from '@/hooks/projects/kanban/useKanban';
+import { useKanbanColumns, useKanbanTaskMove } from '@/hooks/projects/kanban/useKanban';
 import { useLoaderData, useNavigation } from 'react-router';
 import {
   GetKanbanColumnsResponse,
   KanbanColumn as Column,
   UpdatedColumnData,
+  Task,
 } from '@/hooks/projects/kanban/kanbanInterfaces';
 import { KanbanColumnDetailsDialog } from './KanbanColumnDetailsDialog';
 import { CardSkeleton } from '../CardSkeleton';
@@ -19,6 +20,7 @@ import {
   useSensor,
   PointerSensor,
   closestCenter,
+  DragOverEvent,
 } from '@dnd-kit/core';
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useMemo, useState, useEffect } from 'react';
@@ -33,8 +35,10 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
   const navigation = useNavigation();
   const initialData = useLoaderData<GetKanbanColumnsResponse>();
 
+  //? local state for column drag and drop
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [localColumns, setLocalColumns] = useState<Column[]>([]);
+  const { moveTaskBetweenColumnsResponse } = useKanbanTaskMove();
 
   const {
     getKanbanColumnsResponse,
@@ -55,10 +59,6 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
     }
   }, [data]);
 
-  console.log(
-    `Server sent these columns: ${data.columns.map((c) => `${c.columnName} col index prop: (${c.columnIndex})`)}`
-  );
-
   // check if we are loading data from either the router or the query
   const isLoadingData = isLoading || navigation.state === 'loading';
 
@@ -67,22 +67,16 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
   const columnIds = useMemo(() => localColumns?.map((col) => col.columnId) || [], [localColumns]);
 
   const onDragStart = (event: DragStartEvent) => {
-    console.log('Drag started', event);
     if (event.active.data.current?.type === 'Column') {
       setActiveColumn(event.active.data.current.column);
+    }
+
+    if (event.active.data.current?.type === 'Task') {
+      setActiveColumn(event.active.data.current.task);
     }
   };
 
   const onDragEnd = (event: DragEndEvent) => {
-    console.log('drag ended', event);
-
-    // Debug logging
-    console.log('Before reorder:');
-    console.log('columnIds:', columnIds);
-    console.log(
-      'localColumns:',
-      localColumns.map((c) => `${c.columnName} col index prop(${c.columnIndex})`)
-    );
     const { active, over } = event;
 
     // Reset active column after drag operation
@@ -104,7 +98,6 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
         // create a new array with the updated order
         const newColumnIds = arrayMove(columnIds, oldIndex, newIndex);
 
-        console.log('After arrayMove:');
         //? loop thru all local columns adn update their column indexes
         const updatedColumns = newColumnIds.map((colId, index) => {
           const column = localColumns.find((col) => col.columnId === colId);
@@ -113,10 +106,6 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
             columnIndex: index,
           };
         });
-        console.log(
-          'Updated columns:',
-          updatedColumns.map((c) => `${c.columnName} col index prop: (${c.columnIndex})`)
-        );
 
         // update local state immediately with properly ordered columns
         setLocalColumns(updatedColumns);
@@ -125,6 +114,58 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
         reorderKanbanColumnsResponse.mutate({
           projectId,
           columnIds: newColumnIds,
+        });
+      }
+    }
+  };
+
+  const onDragOver = (event: DragOverEvent) => {
+    //? case: dropping a task between columns
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    // //? drag and drop a task between two columns
+    const isActiveATask = active?.data?.current?.id === 'Task';
+    const isOverAColumn = over?.data?.current?.id === 'Column';
+    const isOverATask = over?.data?.current?.id === 'Task';
+
+    if (isActiveATask) {
+      const task: Task = active.data.current?.task;
+
+      if (isOverAColumn) {
+        //! dropping over a column: task gets added to the start
+        const targetColumn: Column = over?.data.current?.column;
+
+        if (task.columndId === targetColumn.columnId) {
+          return;
+        }
+
+        moveTaskBetweenColumnsResponse.mutate({
+          taskId: task.taskId,
+          targetColumnId: targetColumn.columnId,
+          taskIndex: 0,
+          projectId,
+          sourceColumnId: task.columndId,
+        });
+      } else if (isOverATask) {
+        const targetTask: Task = over.data.current?.task;
+        // do nothing: task dropped back to previous column / task dropped to previous position
+        if (
+          task.taskId === targetTask.taskId ||
+          (task.columndId === targetTask.columndId && Math.abs(task.taskIndex - targetTask.taskIndex) <= 1)
+        ) {
+          return;
+        }
+
+        moveTaskBetweenColumnsResponse.mutate({
+          taskId: task.taskId,
+          targetColumnId: targetTask.columndId,
+          taskIndex: targetTask.taskIndex + 1,
+          projectId,
+          sourceColumnId: task.columndId,
         });
       }
     }
@@ -158,7 +199,13 @@ export const KanbanBoard = ({ projectId }: KanbanBoardProps) => {
 
   return (
     //? closest center collision detection: measures distance from center point of the dragged item and the center of each potential drop target. Target with the shortest distance is selected as drop target.
-    <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors} collisionDetection={closestCenter}>
+    <DndContext
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+      sensors={sensors}
+      collisionDetection={closestCenter}
+    >
       <div className="flex justify-end px-2">
         <KanbanColumnDetailsDialog
           trigger={
