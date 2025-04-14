@@ -1,4 +1,4 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Pencil, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -11,7 +11,7 @@ import {
   UpdatedTaskData,
 } from '@/hooks/projects/kanban/kanbanInterfaces';
 import { DeleteKanbanColumnDialog } from './DeleteKanbanColumnDialog';
-import { useSortable } from '@dnd-kit/sortable';
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { KanbanColumnDetailsDialog } from './KanbanColumnDetailsDialog';
 import { useKanbanTasks } from '@/hooks/projects/kanban/useKanban';
@@ -21,6 +21,8 @@ import { TaskCard } from './TaskCard';
 import { KanbanTaskDetailsDialog } from './KanbanTaskDetailsDialog';
 import { DefaultColumns, getColumnStyle } from '@/lib/utils';
 import { CardSkeleton } from '../CardSkeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useMemo } from 'react';
 
 interface KanbanColumnProps {
   column: Column;
@@ -42,7 +44,9 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
     error: CustomError;
   };
 
-  const { borderClass, gradientClass, headerClass, accent } = getColumnStyle(column.columnName);
+  //! optimistic update using local state
+
+  const { headerClass, accent } = getColumnStyle(column.columnName);
   const isDefaultColumn = Object.values(DefaultColumns).includes(column.columnName as DefaultColumns);
 
   //? attributes: An object containing accessibility attributes that should be applied to the draggable element to ensure proper accessibility support
@@ -63,6 +67,11 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
     // converts the transform object into a usable CSS string like translate3d(100px, 0, 0).
     transform: CSS.Transform.toString(transform),
   };
+
+  //? define task ids for dnd kit
+  const taskIds = useMemo(() => {
+    return data.tasks.map((task) => task.taskId);
+  }, [data.tasks]);
 
   // dynamically generate the border gradient class based on column type
   const borderGradient =
@@ -91,11 +100,11 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
       ref={setNodeRef}
       style={style} // This style includes the transition from useSortable
       className={cn(
-        `w-[400px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)]`,
+        `w-[420px] p-[2px] rounded-xl bg-gradient-to-br ${borderGradient} shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] hover:shadow-[0_0px_15px_5px_rgba(56,189,248,0.15)]`,
         isDragging ? 'opacity-50' : 'opacity-100'
       )}
     >
-      <Card className="flex flex-col h-[700px] w-full rounded-[calc(0.75rem-1px)] border-0 shadow-sm overflow-hidden bg-card/95 backdrop-blur-sm ">
+      <Card className="flex flex-col h-[800px] w-full rounded-[calc(0.75rem-1px)] border-0 shadow-sm overflow-hidden bg-card/95 backdrop-blur-sm ">
         <CardHeader className={cn(headerClass, 'mx-3 mt-3 p-2 pb-1 border rounded-xl backdrop-blur-sm')}>
           {/* Combined row: Compact layout with all elements */}
           <div className="flex items-center gap-2 w-full">
@@ -189,12 +198,11 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
           </div>
         )}
 
-        {/* CardContent - reduce top padding */}
-        <CardContent className="flex-1 p-3 pt-2 overflow-y-auto scrollbar-thin space-y-3 ">
+        {/* CardContent - replace overflow-y-auto with ScrollArea */}
+        <CardContent className="flex-1 p-3 pt-2 space-y-3 overflow-hidden">
           {/* Task List */}
-          <div className="space-y-2">
+          <div className="h-full">
             {isLoading ? (
-              // Use TaskCard skeleton instead of loading spinner
               <div className="space-y-2">
                 <CardSkeleton variant="task" count={3} containerClassName="grid grid-cols-1 gap-2" />
               </div>
@@ -223,17 +231,26 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
                 </div>
               </div>
             ) : data?.tasks?.length > 0 ? (
-              // Tasks available
-              data.tasks.map((task) => (
-                <TaskCard
-                  key={task.taskId}
-                  onDeleteTask={onDeleteTask}
-                  task={task}
-                  accent={accent}
-                  isDeletePending={deleteKanbanTaskResponse.isPending}
-                  onEditTask={submitTaskDetails}
-                />
-              ))
+              // Apply right padding to ScrollArea to prevent content touching edge if scrollbar *was* there
+              <ScrollArea className="h-full px-5">
+                <SortableContext items={taskIds}>
+                  <div className="space-y-2 pb-2">
+                    {' '}
+                    {/* Removed px-1, padding handled by ScrollArea */}
+                    {data.tasks.map((task) => (
+                      <TaskCard
+                        key={task.taskId}
+                        onDeleteTask={onDeleteTask}
+                        task={task}
+                        accent={accent}
+                        isDeletePending={deleteKanbanTaskResponse.isPending}
+                        isEditPending={updateKanbanTaskResponse.isPending}
+                        onEditTask={submitTaskDetails}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </ScrollArea>
             ) : (
               // No tasks (empty state)
               <div
@@ -250,16 +267,6 @@ export const KanbanColumn = ({ column, onDeleteCol, isDeletePending, isEditPendi
             )}
           </div>
         </CardContent>
-
-        <CardFooter
-          className={cn(
-            borderClass,
-            gradientClass,
-            'p-2 flex items-center justify-center border-t bg-gradient-to-b backdrop-blur-sm'
-          )}
-        >
-          <div className="text-xs text-center text-muted-foreground font-medium">Drag tasks here</div>
-        </CardFooter>
       </Card>
     </div>
   );

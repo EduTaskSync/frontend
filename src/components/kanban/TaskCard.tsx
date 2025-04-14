@@ -36,8 +36,10 @@ export const TaskCard = ({
   const assertedProjectId = projectId as string; // Type assertion
 
   // set up drag and drop functionality
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { setNodeRef, listeners, transform, transition, attributes, isDragging } = useSortable({
+    // unique id for each task
     id: task.taskId,
+    // optinal additional data
     data: {
       type: 'Task',
       task,
@@ -96,7 +98,7 @@ export const TaskCard = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary shadow-sm"
+                className=" cursor-pointer h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary shadow-sm"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -112,7 +114,7 @@ export const TaskCard = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive shadow-sm"
+                className=" cursor-pointer h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive shadow-sm"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

@@ -51,6 +51,7 @@ export interface Task {
   taskAssignees: TaskAssignee[];
   taskDeadline: string;
   taskCreationTime: string;
+  taskIndex: number;
 }
 
 export interface NewTaskResponse {
@@ -61,8 +62,10 @@ export interface NewTaskResponse {
 
 export interface MoveTaskData {
   taskId: string;
-  columnId: string;
-  columnIndex: number;
+  targetColumnId: string;
+  taskIndex: number;
+  projectId: string;
+  sourceColumnId: string;
 }
 
 interface TaskAssignee {
