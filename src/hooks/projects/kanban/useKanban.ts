@@ -230,15 +230,25 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
       const optimisticTask: Task = {
         taskId: nanoid(),
         taskName: newTaskData.taskName,
-        columndId: newTaskData.columnId,
+        columnId: newTaskData.columnId,
         taskAssignees: [],
         taskDeadline: newTaskData.taskDeadline,
         taskCreationTime: new Date().toISOString(),
+        // new tasks are added to the top
+        taskIndex: 0,
       };
+
+      //? arrange the tasks according to the updated task indexes
+      const updatedTasks = [
+        optimisticTask,
+        ...(previousTasks?.tasks.map((task) => {
+          return { ...task, taskIndex: task.taskIndex + 1 };
+        }) || []),
+      ];
 
       // update the cache with optimistic data
       queryClient.setQueryData<ColumnTasksResponse>(targetQueryKey, {
-        tasks: [...(previousTasks?.tasks || []), optimisticTask],
+        tasks: updatedTasks,
       });
 
       return { previousTasks };
@@ -280,13 +290,24 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
 
       const previousColumnTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
 
-      const optimisticTasks = [
-        ...(previousColumnTasks?.tasks.filter((task) => {
-          return task.taskId !== taskId;
-        }) || []),
-      ];
+      // Find the task to be deleted to know its index
+      const taskToDelete = previousColumnTasks?.tasks.find((task) => task.taskId === taskId);
+      if (!taskToDelete) return { previousColumnTasks };
 
-      queryClient.setQueryData(targetQueryKey, optimisticTasks);
+      // Remove the deleted task and adjust indexes of tasks that come after it
+      const optimisticTasks =
+        previousColumnTasks?.tasks
+          .filter((task) => task.taskId !== taskId)
+          .map((task) => {
+            // Only decrement index for tasks that were after the deleted task
+            if (task.taskIndex > taskToDelete.taskIndex) {
+              return { ...task, taskIndex: task.taskIndex - 1 };
+            }
+            return task;
+          }) || [];
+
+      // Update the cache with reindexed tasks
+      queryClient.setQueryData(targetQueryKey, { tasks: optimisticTasks });
       return { previousColumnTasks };
     },
     onSuccess: () => {
@@ -300,17 +321,16 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
       }
 
       let title = 'Error';
-      let errorMessage = 'Failed to create task. Please try again later.';
+      let errorMessage = 'Failed to delete task. Please try again later.';
 
       if (error instanceof CustomError) {
-        title = error.title || 'Failed to create task';
+        title = error.title || 'Failed to delete task'; // Fixed error message
         errorMessage = error.message;
       }
 
       toast.error(title, { description: errorMessage });
     },
     onSettled: () => {
-      //? this will invalidate the tasks query too as the keys were built hierarchically
       queryClient.invalidateQueries({ queryKey: queryKeys.getKanbanColumns(projectId) });
     },
   });
@@ -406,8 +426,16 @@ export const useKanbanTaskMove = () => {
         return { sourceColumnTasks, targetColumnTasks };
       }
       // optimistically update the source column without the dragged task
+      const remainingSourceTasks = sourceColumnTasks?.tasks
+        .filter((task) => task.taskId !== moveData.taskId)
+        .map((task, idx) => ({
+          ...task,
+          taskIndex: idx,
+        }));
+
+      // Update the cache with the filtered tasks
       queryClient.setQueryData(sourceColumnKey, {
-        tasks: [sourceColumnTasks?.tasks.filter((task) => task.taskId !== moveData.taskId)],
+        tasks: remainingSourceTasks || [],
       });
 
       //? calculate new indexes for target column tasks
@@ -419,7 +447,7 @@ export const useKanbanTaskMove = () => {
       // create a optimisitc task object to display on the target column
       const optimisticTargetTask = {
         ...taskToMove,
-        columnIndex: moveData.targetColumnId,
+        columnId: moveData.targetColumnId,
         taskIndex: targetIndex,
       };
 
@@ -463,9 +491,6 @@ export const useKanbanTaskMove = () => {
         errorMessage = error.message;
       }
       toast.error(title, { description: errorMessage });
-    },
-    onSuccess: () => {
-      toast.success('Task status updated successfully');
     },
     onSettled: (_, __, moveData) => {
       queryClient.invalidateQueries({
