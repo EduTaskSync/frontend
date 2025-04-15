@@ -29,6 +29,7 @@ interface KanbanTaskDetailsDialogProps {
   onSubmitHandler: (data: NewTaskData | UpdatedTaskData) => void;
   prefillData?: NewTaskData | UpdatedTaskData;
   isSubmitting: boolean;
+  taskIndex: number;
 }
 
 const taskDetailsFormSchema = z.object({
@@ -44,6 +45,7 @@ export const KanbanTaskDetailsDialog = ({
   onSubmitHandler,
   isSubmitting,
   prefillData,
+  taskIndex,
 }: KanbanTaskDetailsDialogProps) => {
   const [open, setOpen] = useState(false);
   const { projectId } = useParams();
@@ -96,6 +98,7 @@ export const KanbanTaskDetailsDialog = ({
         projectId: projectId!,
         columnId,
         taskDeadline: data.taskDeadline.toISOString(),
+        taskIndex,
       };
 
       onSubmitHandler(taskDetails);

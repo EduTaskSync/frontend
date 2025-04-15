@@ -10,12 +10,6 @@ export interface CreateKanbanColumnResponse {
   columnId: string;
 }
 
-export interface KanbanColumn {
-  columnId: string;
-  columnName: string;
-  columnIndex: number;
-}
-
 export interface GetKanbanColumnsResponse {
   columns: KanbanColumn[];
 }
@@ -25,9 +19,15 @@ export interface UpdatedColumnData {
   columnName: string;
 }
 
+export interface KanbanColumn {
+  columnId: string;
+  columnName: string;
+  columnIndex: number;
+}
+
 export interface ReorderedColumnsData {
   projectId: string;
-  columnIds: string[];
+  newColumns: KanbanColumn[];
 }
 
 //? tasks
@@ -36,6 +36,7 @@ export interface NewTaskData {
   projectId: string;
   columnId: string;
   taskDeadline: string;
+  taskIndex: number;
 }
 
 export interface UpdatedTaskData {
@@ -47,7 +48,7 @@ export interface UpdatedTaskData {
 export interface Task {
   taskName: string;
   taskId: string;
-  columndId: string;
+  columnId: string;
   taskAssignees: TaskAssignee[];
   taskDeadline: string;
   taskCreationTime: string;

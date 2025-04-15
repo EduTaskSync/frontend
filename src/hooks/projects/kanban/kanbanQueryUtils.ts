@@ -1,6 +1,7 @@
 import axiosConfig from '@/api/axiosConfig';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 import {
+  ColumnTasksResponse,
   CreateKanbanColumnResponse,
   GetKanbanColumnsResponse,
   MoveTaskData,
@@ -163,7 +164,7 @@ export const reorderKanbanColumns = async (reorderedKanbanColumns: ReorderedColu
 
 export const getKanbanColumnTasks = async (columnId: string) => {
   try {
-    const response = await axiosConfig.get(ApiEndPoints.KANBAN_GET_COLUMN_TASKS, {
+    const response = await axiosConfig.get<ColumnTasksResponse>(ApiEndPoints.KANBAN_GET_COLUMN_TASKS, {
       params: {
         columnId,
       },
