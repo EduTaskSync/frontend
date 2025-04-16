@@ -9,6 +9,7 @@ import { AddTaskDialog } from './AddTaskDialog';
 import { useState } from 'react';
 import { ButtonWithTooltip } from '@/components/ButtonWithToolTip';
 import { useTasks } from '@/hooks/tasks/useTasks';
+import { TaskList } from '@/components/kanban/TaskList';
 
 interface KanbanColumnProps {
   column: Column;
@@ -115,50 +116,25 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           'flex flex-col items-center border-t bg-gradient-to-b p-4 gap-4'
         )}
       >
+
         <AddTaskDialog
           trigger={
-            <ButtonWithTooltip
-              size="sm"
-              className="gap-2 font-heading text-sm hover:cursor-pointer"
-              tooltipText={'Create a new task in this project.'}
+            <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
             >
-              <span>New Project</span>
-            </ButtonWithTooltip>
+              <ClipboardPlus className="h-4 w-4" />
+                Add Task
+            </Button>
           }
           onSubmit={handleCreateTask}
           columnId ={column.id || ''}
           isLoading={false}
         />
 
-        <div className="w-full space-y-2">
-            {localColumn.tasks.map((task, index) => (
-              <div key={index} className="bg-gray-700 p-3 rounded">
-                <div className="flex items-center gap-2">
-                  
-                  <div>
-                    <p className="font-semibold">{task.taskName}</p>
-                    {task.taskDeadline && (
-                      <p className="text-sm text-gray-400">
-                          Deadline: {new Date(task.taskDeadline).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <button
-                      className="font-heading text-red-400 hover:text-red-600 text-sm"
-                      onClick={() => handleDeleteTask(index)}
-                >
-                  remove
-                </button>
-
-                  <button
-                    className="font-semibold text-blue-400 hover:text-blue-600 text-sm"
-                    onClick={() => handleEditTask(index)}
-                  >
-                    edit
-                  </button>
-              </div>
-            ))}
+        <div>
+          <TaskList />
         </div>
       </CardFooter>
     </Card>

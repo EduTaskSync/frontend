@@ -13,12 +13,12 @@ export const taskQueryKeys = {
 };
 
 // Main hook for tasks
-export const useTasks = (columnId?: string) => {
+export const useTasks = (taskName?: string) => {
   const queryClient = useQueryClient();
 
   // Fetch tasks for a specific project
   const fetchTasksSummaryResponse = useQuery({
-    queryKey: taskQueryKeys.taskProjects(columnId as string),
+    queryKey: taskQueryKeys.taskProjects(taskName as string),
     queryFn: () => {
       //if (!columnId) {
       //  throw new Error('Column ID is required to fetch tasks');
@@ -28,7 +28,7 @@ export const useTasks = (columnId?: string) => {
     // Setting cache management
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    enabled: !!columnId, // Only run if groupId exists
+    enabled: !!taskName, // Only run if groupId exists
   });
 
   // Create new task with optimistic updates
@@ -43,11 +43,11 @@ export const useTasks = (columnId?: string) => {
 
     // Optimistic update handling
     onMutate: async (newTask) => {
-      if (!columnId) {
-        throw new Error('Column ID is required to create a task');
+      if (!taskName) {
+        throw new Error('Task name is required to create a task');
       }
 
-      const queryKey = taskQueryKeys.taskProjects(columnId);
+      const queryKey = taskQueryKeys.taskProjects(taskName);
 
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey });
@@ -81,8 +81,8 @@ export const useTasks = (columnId?: string) => {
 
     // Error handling
     onError: (err, _, context) => {
-      if (context?.previousTasks && columnId) {
-        queryClient.setQueryData(taskQueryKeys.taskProjects(columnId), context.previousTasks);
+      if (context?.previousTasks && taskName) {
+        queryClient.setQueryData(taskQueryKeys.taskProjects(taskName), context.previousTasks);
       }
 
       console.error('Failed to create task:', err);
@@ -103,8 +103,8 @@ export const useTasks = (columnId?: string) => {
     // Success handling - add task to cache if needed
     onSuccess: (data:CreateTaskDto) => {
       // Check if we need to update the cache directly instead of just invalidating
-      if (columnId) {
-        queryClient.setQueryData<TaskSummaryListResponse>(taskQueryKeys.taskProjects(columnId), (oldData) => {
+      if (taskName) {
+        queryClient.setQueryData<TaskSummaryListResponse>(taskQueryKeys.taskProjects(taskName), (oldData) => {
           // If we don't have cached data, don't try to update it
           if (!oldData) return oldData;
 
@@ -118,7 +118,7 @@ export const useTasks = (columnId?: string) => {
             
             taskName: data.taskName,
             projectId: `temp-${Date.now()}`,
-            columnId: columnId,
+            columnId: data.columnId,
             taskDeadline: data.taskDeadline,
             projectName: `temp-${Date.now()}`,
           };
@@ -137,26 +137,26 @@ export const useTasks = (columnId?: string) => {
 
     // Refetch if needed for consistency
     onSettled: () => {
-      if (columnId) {
+      if (taskName) {
         queryClient.invalidateQueries({
-          queryKey: taskQueryKeys.taskProjects(columnId),
+          queryKey: taskQueryKeys.taskProjects(taskName),
         });
       }
     },
   });
 
   const deleteTaskResponse = useMutation({
-    mutationFn: (columnId: string) => {
-      return deleteTask(columnId);
+    mutationFn: (taskName: string) => {
+      return deleteTask(taskName);
     },
 
     // Optimistic update handling
-    onMutate: async (columnId) => {
-      if (!columnId) {
-        throw new Error('Column ID is required to delete a task');
+    onMutate: async (taskName) => {
+      if (!taskName) {
+        throw new Error('Task name is required to delete a task');
       }
 
-      const queryKey = taskQueryKeys.taskProjects(columnId);
+      const queryKey = taskQueryKeys.taskProjects(taskName);
 
       // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey });
@@ -165,7 +165,7 @@ export const useTasks = (columnId?: string) => {
       const previousTasks = queryClient.getQueryData<TaskSummaryListResponse>(queryKey);
 
       // Store the task being deleted for display in toast
-      const taskToDelete = previousTasks?.tasks.find((task) => task.columnId === columnId);
+      const taskToDelete = previousTasks?.tasks.find((task) => task.taskName === taskName);
 
       // Optimistically remove the task from cache
       queryClient.setQueryData<TaskSummaryListResponse>(queryKey, (oldData) => {
@@ -173,7 +173,7 @@ export const useTasks = (columnId?: string) => {
 
         return {
           ...oldData,
-          projects: oldData.tasks.filter((task) => task.columnId !== columnId),
+          tasks: oldData.tasks.filter((task) => task.taskName !== taskName),
         };
       });
 
@@ -183,8 +183,8 @@ export const useTasks = (columnId?: string) => {
     // Error handling
     onError: (err, _projectId, context) => {
       // Restore previous data on error
-      if (context?.previousTasks && columnId) {
-        queryClient.setQueryData(taskQueryKeys.taskProjects(columnId), context.previousTasks);
+      if (context?.previousTasks && taskName) {
+        queryClient.setQueryData(taskQueryKeys.taskProjects(taskName), context.previousTasks);
       }
 
       console.error('Failed to delete task:', err);
@@ -213,9 +213,9 @@ export const useTasks = (columnId?: string) => {
 
     // Always refetch after operation to ensure consistency
     onSettled: () => {
-      if (columnId) {
+      if (taskName) {
         queryClient.invalidateQueries({
-          queryKey: taskQueryKeys.taskProjects(columnId),
+          queryKey: taskQueryKeys.taskProjects(taskName),
         });
       }
     },
@@ -224,6 +224,6 @@ export const useTasks = (columnId?: string) => {
   return {
     fetchTasksSummaryResponse,
     createTaskResponse,
-    deleteTaskResponse,
+    deleteTaskResponse
   };
 };

@@ -49,14 +49,15 @@ interface AddTaskDialogProps {
   onAddTask?: (task: TaskData) => void;
 }
 
-export const AddTaskDialog = ({trigger, onSubmit, isLoading = true,
+export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
 }: AddTaskDialogProps) => 
 {
   const [open, setOpen] = useState(false);
 
   const [taskInput, setTaskInput] = useState('');
-  const [taskDeadline, setTaskDeadline] = useState<string>('');
-  
+  const [taskDeadline, setTaskDeadline] = useState<Date | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
   // initialize form with react-hook-form
   const form = useForm<z.infer<typeof CreateTaskSchema>>({
       resolver: zodResolver(CreateTaskSchema),
@@ -84,27 +85,24 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = true,
         open={open}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            //form.reset();
+            form.reset({
+              taskName: '',
+              taskDeadline: null,
+            });
           }
           setOpen(isOpen);
         }}
       >
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
-          >
-            <ClipboardPlus className="h-4 w-4" />
-              Add Task
-          </Button>
-        </DialogTrigger>
-          
+        
+        <DialogTrigger asChild>{trigger}</DialogTrigger>  
         <DialogContent className="sm:max-w-[500px] p-6 font-sans">
           <DialogHeader>
             <DialogTitle className="text-xl font-heading mb-1">
               Create <span className="text-emerald-300">New Task</span>
             </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+                { 'Add a new task to this project.' }
+            </DialogDescription>
           </DialogHeader>
 
           {/* Form for adding task */}
@@ -164,8 +162,8 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = true,
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={field.value || undefined} // Convert null to undefined for the calendar
-                              onSelect={(date) => field.onChange(date || null)} // Convert undefined to null when selecting
+                              selected={taskDeadline || undefined} // Convert null to undefined for the calendar
+                              onSelect={(date) => { field.onChange(date || null) }} // Convert undefined to null when selecting
                               initialFocus
                               disabled={(date) => date < new Date()}
                             />
@@ -193,7 +191,7 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = true,
                   isLoading={isLoading || form.formState.isSubmitting}
                   loadingText="Creating..."
                   defaultText="Create task"
-                  disabled={isLoading}
+                  //disabled={!isLoading}
                   tooltipText={ 'Create new task'}
                   tooltipSide="top"
                 />
