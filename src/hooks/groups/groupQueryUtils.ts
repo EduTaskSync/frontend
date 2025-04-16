@@ -12,6 +12,7 @@ import {
   AddGroupMemberObj,
   SearchEmailObj,
   GroupDetailsResponse,
+  EditUserGroup,
 } from './groupInterfaces';
 import { ApiEndPoints } from '@/constants/apiEndpoints';
 
@@ -137,7 +138,7 @@ export const getGroupMembers = async (groupId: string) => {
 
 export const editGroupDetails = async (updatedGroup: UpdatedGroup) => {
   try {
-    const response = await axiosConfig.post(ApiEndPoints.UPDATE_GROUP, updatedGroup);
+    const response = await axiosConfig.put(ApiEndPoints.UPDATE_GROUP, updatedGroup);
     return response.data;
   } catch (error) {
     console.log('Error updating group details:', error);
@@ -254,5 +255,17 @@ export const searchUserByEmail = async (searchEmail: SearchEmailObj) => {
 
     // handle unknown errors
     throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const editGroupUser = async (editUserGroup: EditUserGroup) => {
+  try {
+    const response = await axiosConfig.patch(ApiEndPoints.EDIT_USER_GROUP, editUserGroup);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new CustomError(error.message, 'Error updating user group');
+    }
+    throw new CustomError('An unknown error occurred', 'Unknown Error');
   }
 };

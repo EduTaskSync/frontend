@@ -15,6 +15,7 @@ export enum ApiEndPoints {
   GET_GROUP_DETAILS = '/groups/get_group_details',
   GET_GROUP_PROJECTS_SUMMARY = '/groups/get_group_projects',
   UPDATE_GROUP = '/groups/update_group',
+  EDIT_USER_GROUP = '/groups/patch_user_group',
   //? projects
   CREATE_PROJECT = '/projects/create',
   DELETE_PROJECT = '/projects/delete_project',

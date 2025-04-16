@@ -4,6 +4,10 @@ export interface GroupsObj {
   groupId: string;
   groupName: string;
   imgUrl: string;
+  groupIsHidden: boolean;
+  projectCount: number;
+  isRequestUserAdmin: boolean;
+  createdAt: Date;
 }
 
 // wrapper for the shape of the overall response object
@@ -47,6 +51,7 @@ export interface UpdatedGroup {
   groupName: string;
   imgUrl: string;
   groupDetails: string;
+  groupIsHidden: boolean;
 }
 
 export interface AddGroupMemberObj {
@@ -66,4 +71,9 @@ export interface GroupDetailsResponse {
   groupCreationDate: string;
   groupDescription: string;
   imgUrl: string;
+}
+
+export interface EditUserGroup {
+  groupId: string;
+  groupIsHidden: boolean;
 }
