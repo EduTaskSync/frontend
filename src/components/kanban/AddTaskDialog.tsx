@@ -1,9 +1,7 @@
 // UI components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -24,9 +22,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { taskFormSchema, taskFormValues } from '@/utils/taskSchema';
-import { nullable } from 'zod';
-import { Id, Column, TaskData } from './KanbanBoard';
+import { Id, TaskData } from './KanbanBoard';
 import { CreateTaskSchema } from '@/hooks/tasks/taskInterfaces.ts';
 
 // task data for POST request
@@ -44,19 +40,18 @@ interface AddTaskDialogProps {
   isLoading?: boolean;
 }
 
-interface AddTaskDialogProps {
-  columnId: Id;
-  onAddTask?: (task: TaskData) => void;
-}
+//interface AddTaskDialogProps {
+//  columnId: Id;
+//  onAddTask?: (task: TaskData) => void;
+//}
 
 export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
 }: AddTaskDialogProps) => 
 {
   const [open, setOpen] = useState(false);
 
-  const [taskInput, setTaskInput] = useState('');
-  const [taskDeadline, setTaskDeadline] = useState<Date | null>(null);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  //const [taskDeadline, setTaskDeadline] = useState<Date | null>(null);
+  //const [calendarOpen, setCalendarOpen] = useState(false);
 
   // initialize form with react-hook-form
   const form = useForm<z.infer<typeof CreateTaskSchema>>({
@@ -159,11 +154,16 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
                               {field.value ? format(field.value, 'PPP') : <span>Select deadline date</span>}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent 
+                            className="flex justify-center items-center p-4" 
+                            align="center" side="top" sideOffset={-100} portal={false}>
                             <Calendar
                               mode="single"
-                              selected={taskDeadline || undefined} // Convert null to undefined for the calendar
-                              onSelect={(date) => { field.onChange(date || null) }} // Convert undefined to null when selecting
+                              selected={field.value || undefined} // Convert null to undefined for the calendar
+                              onSelect={(date) => {
+                                field.onChange(date || null);
+                                field.onBlur();
+                              }} // Convert undefined to null when selecting
                               initialFocus
                               disabled={(date) => date < new Date()}
                             />
@@ -176,7 +176,7 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
                   </FormItem>
                 )}
               />
-          
+           
               <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="button"
@@ -194,6 +194,7 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
                   //disabled={!isLoading}
                   tooltipText={ 'Create new task'}
                   tooltipSide="top"
+                  onClick={() => setOpen(false)}
                 />
               </DialogFooter>
             </form>

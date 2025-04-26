@@ -116,21 +116,20 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           'flex flex-col items-center border-t bg-gradient-to-b p-4 gap-4'
         )}
       >
-
         <AddTaskDialog
           trigger={
             <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
+              variant="ghost"
+              size="sm"
+              className="p-2 font-heading justify-start text-muted-foreground hover:text-foreground gap-2"
             >
               <ClipboardPlus className="h-4 w-4" />
                 Add Task
             </Button>
           }
-          onSubmit={handleCreateTask}
-          columnId ={column.id || ''}
-          isLoading={false}
+            onSubmit={handleCreateTask}
+            columnId ={column.id || ''}
+            isLoading={false}
         />
 
         <div>
