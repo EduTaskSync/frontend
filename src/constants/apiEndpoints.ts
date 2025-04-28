@@ -19,6 +19,7 @@ export enum ApiEndPoints {
   //? projects
   CREATE_PROJECT = '/projects/create',
   DELETE_PROJECT = '/projects/delete_project',
+
   //? kanban endpoints
   KANBAN_CREATE_COLUMN = '/projects/create_column',
   KANBAN_GET_COLUMNS = '/projects/get_project_columns',
@@ -32,4 +33,6 @@ export enum ApiEndPoints {
 
   KANBAN_MOVE_TASK = '/projects/move_task',
   KANBAN_GET_COLUMN_TASKS = '/projects/get_column_tasks',
+
+  GET_ASIGNED_TASKS = '/projects/get_user_assigned_tasks',
 }

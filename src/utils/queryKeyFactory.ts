@@ -1,3 +1,5 @@
+import { TasksQueryParams } from '@/hooks/dashboard/dashboardQueryUtils';
+
 export const queryKeys = {
   // for group related data queries
   groups: ['groups'] as const,
@@ -22,5 +24,21 @@ export const queryKeys = {
     columnId,
     'tasks',
   ],
+
+  //for dashboard related queries
+  dashboard: {
+    all: ['dashboard'] as const,
+    tasks: () => [...queryKeys.dashboard.all, 'tasks'] as const,
+    assignedTasks: (params?: TasksQueryParams) => ['dashboard', 'assignedTasks', params],
+    tasksByStatus: (status: string) => [...queryKeys.dashboard.tasks(), 'status', status] as const,
+    overdueTasks: () => [...queryKeys.dashboard.tasks(), 'overdue'] as const,
+    tasksByDueDate: (dateRange: string) => [...queryKeys.dashboard.tasks(), 'dueDate', dateRange] as const,
+    groupTasks: (groupId: string) => [...queryKeys.dashboard.tasks(), 'group', groupId] as const,
+
+    // For pagination
+    paginatedTasks: (page: number, limit: number) =>
+      [...queryKeys.dashboard.tasks(), 'paginated', { page, limit }] as const,
+  },
+
   // for calendar related queries
 };
