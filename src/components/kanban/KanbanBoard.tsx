@@ -4,6 +4,16 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import { KanbanColumn } from './KanbanColumn';
+import { z } from 'zod';
+import { AddColumnDialog } from './AddColumnDialog';
+import { useColumns } from '@/hooks/columns/useColumns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CreateColumnSchema } from '@/hooks/columns/columnInterfaces.ts';
 
 export type Id = string | number;
 
@@ -22,13 +32,47 @@ export interface TaskData {
   //projectName: string;
 }
 
+// Column data
+export interface ColumnData {
+  columnName: string;
+  columnIndex: number;
+  //projectId: string;
+  //columnId: string;
+  
+}
+
+interface AddColumnDialogProps {
+  trigger: React.ReactNode;
+  onSubmit: (values: z.infer<typeof CreateColumnSchema>) => void;
+  projectId: Id;
+  isLoading?: boolean;
+}
+
 export const KanbanBoard = () => {
   const [columns, setColumns] = useState<Column[]>([]);
+  
+  const { createColumnResponse } = useColumns();
 
-  const handleAddColumn = () => {
-    const columnToAdd: Column = { id: nanoid(), title: `Column ${columns.length + 1}`, tasks: [] };
-    setColumns([...columns, columnToAdd]);
-    console.log(columns);
+  const handleCreateColumn = (data: ColumnData) => {
+      //if (!Id) return;
+  
+      createColumnResponse.mutate({
+  
+        columnName: data.columnName,
+        columnIndex: data.columnIndex,
+        
+      });
+      
+  };
+
+  const handleAddColumn = (data: string) => {
+      const columnToAdd: Column = { id: nanoid(), title: data, tasks: [] };
+      setColumns([...columns, columnToAdd]);
+      console.log(columns);
+      handleCreateColumn({
+        columnName: data,
+        columnIndex: Number(nanoid()),
+      });
   };
 
   // delete a column
@@ -55,20 +99,37 @@ export const KanbanBoard = () => {
 
   return (
     <ScrollArea>
-      <div className="flex">
-        <Button className="font-heading cursor-pointer" onClick={handleAddColumn}>
-          <ListPlus />
+      <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="flex font-heading cursor-pointer">
           Add Column
         </Button>
-      </div>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent className="w-48">
+        <DropdownMenuItem onClick={() => handleAddColumn("todo")}>
+          📝 To Do
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleAddColumn("in-progress")}>
+          🔄 In Progress
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleAddColumn("done")}>
+          ✅ Done
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleAddColumn("blocked")}>
+          ⛔ Blocked
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleAddColumn("default")}>
+          ➕ Other
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
 
       <div className="flex mt-8 gap-x-10">
         {columns.map((col) => {
-          return <KanbanColumn column={col} colType="default" deleteCol={() => handleDeleteCol(col.id)} />;
+          return <KanbanColumn column={col} colType={col.title} deleteCol={() => handleDeleteCol(col.id)} />;
         })}
       </div>
-
-
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
   );

@@ -6,10 +6,11 @@ import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Id } from './KanbanBoard';
 import { AddTaskDialog } from './AddTaskDialog';
-import { useState } from 'react';
-import { ButtonWithTooltip } from '@/components/ButtonWithToolTip';
+import { useState, useRef } from 'react';
 import { useTasks } from '@/hooks/tasks/useTasks';
 import { TaskList } from '@/components/kanban/TaskList';
+import { toast } from 'sonner';
+import { CountdownTimer } from '../CountdownTimer';
 
 interface KanbanColumnProps {
   column: Column;
@@ -56,8 +57,11 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
   
   const { borderClass, gradientClass, headerClass } = getColumnStyle(colType);
   const [localColumn, setLocalColumn] = useState<Column>(column);
-
-  const { createTaskResponse } = useTasks();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  const { createTaskResponse, deleteTaskResponse } = useTasks();
+  // Use useRef to track the timeout for deletion
+  const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCreateTask = (data: TaskData) => {
     //if (!Id) return;
@@ -69,6 +73,58 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
       columnId: localColumn.id.toString(),
       taskDeadline: data.taskDeadline,
       //projectName: data.taskName,
+    });
+    handleAddTask(data);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to project page
+    e.stopPropagation(); // Prevent event bubbling
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = (task: TaskData) => {
+    //if (!isAdmin) {
+    //  toast.error('You do not have permission to delete this task');
+    //  return;
+    //}
+    setShowDeleteDialog(false);
+
+    // Cancel any existing timeout first
+    if (deleteTimeoutRef.current) {
+      clearTimeout(deleteTimeoutRef.current);
+    }
+
+    // Create a timeout that will execute the delete after the toast duration
+    const timeoutId = setTimeout(() => {
+      deleteTaskResponse.mutate(task.taskName);
+      // Clear the reference after executing
+      deleteTimeoutRef.current = null;
+    }, 4000); // Match sonner's default 4 second duration
+
+    // Store the timeout ID in the ref
+    deleteTimeoutRef.current = timeoutId;
+
+    // Show toast with undo button
+    toast.warning(`Deleting ${task.taskName}`, {
+      description: (
+        <div>
+          <p>This task will be deleted in a few seconds</p>
+          <CountdownTimer duration={4000} />
+        </div>
+      ),
+      duration: 4000,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          // Clear the timeout if user clicks undo
+          if (deleteTimeoutRef.current) {
+            clearTimeout(deleteTimeoutRef.current);
+            deleteTimeoutRef.current = null;
+            toast.info(`Deletion of ${task.taskName} canceled`);
+          }
+        },
+      },
     });
   };
 

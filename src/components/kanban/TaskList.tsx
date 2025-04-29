@@ -6,7 +6,6 @@ import { CustomError } from '@/utils/ErrorClasses';
 import { useParams } from 'react-router';
 import { TaskSummaryListResponse } from '@/hooks/tasks/taskInterfaces';
 import { Spinner } from '../ui/spinner';
-import { Id } from './KanbanBoard';
 
 export const TaskList = () => {
   const { groupId, columnId } = useParams<{ groupId: string; projectId: string; columnId: string }>();
