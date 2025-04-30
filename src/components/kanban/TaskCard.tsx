@@ -153,7 +153,7 @@ export const TaskCard = ({ task, groupId }: TaskCardProps) => {
         <AlertDialogContent className="max-w-md shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-heading text-xl">
-              <span className="text-emerald-300">Delete</span> Project
+              <span className="text-emerald-300">Delete Task</span>
             </AlertDialogTitle>
             <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
             <AlertDialogDescription className="font-sans text-base">
@@ -164,7 +164,7 @@ export const TaskCard = ({ task, groupId }: TaskCardProps) => {
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-md">
                 <div className="flex items-start gap-2 mt-1">
                   <span className="text-destructive mt-0.5">•</span>
-                  All tasks and resources will be permanently removed
+                    This task and resources will be permanently removed
                 </div>
                 <div className="flex items-start gap-2 mt-1">
                   <span className="text-destructive mt-0.5">•</span>

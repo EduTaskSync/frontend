@@ -194,7 +194,7 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
                   //disabled={!isLoading}
                   tooltipText={ 'Create new task'}
                   tooltipSide="top"
-                  onClick={() => setOpen(false)}
+                  //onClick={() => setOpen(false)}
                 />
               </DialogFooter>
             </form>

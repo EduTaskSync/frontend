@@ -1,16 +1,27 @@
-import { Column, TaskData } from './KanbanBoard';
+import { Column, ColumnData, TaskData } from './KanbanBoard';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { ClipboardPlus, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Id } from './KanbanBoard';
+import { TaskCard } from './TaskCard';
 import { AddTaskDialog } from './AddTaskDialog';
 import { useState, useRef } from 'react';
 import { useTasks } from '@/hooks/tasks/useTasks';
 import { TaskList } from '@/components/kanban/TaskList';
 import { toast } from 'sonner';
 import { CountdownTimer } from '../CountdownTimer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface KanbanColumnProps {
   column: Column;
@@ -83,12 +94,13 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = (task: TaskData) => {
+  const confirmDelete = () => {
     //if (!isAdmin) {
     //  toast.error('You do not have permission to delete this task');
     //  return;
     //}
     setShowDeleteDialog(false);
+    deleteCol(column.title)
 
     // Cancel any existing timeout first
     if (deleteTimeoutRef.current) {
@@ -97,7 +109,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
 
     // Create a timeout that will execute the delete after the toast duration
     const timeoutId = setTimeout(() => {
-      deleteTaskResponse.mutate(task.taskName);
+      deleteTaskResponse.mutate(column.title);
       // Clear the reference after executing
       deleteTimeoutRef.current = null;
     }, 4000); // Match sonner's default 4 second duration
@@ -106,7 +118,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
     deleteTimeoutRef.current = timeoutId;
 
     // Show toast with undo button
-    toast.warning(`Deleting ${task.taskName}`, {
+    toast.warning(`Deleting ${column.title}`, {
       description: (
         <div>
           <p>This task will be deleted in a few seconds</p>
@@ -121,7 +133,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           if (deleteTimeoutRef.current) {
             clearTimeout(deleteTimeoutRef.current);
             deleteTimeoutRef.current = null;
-            toast.info(`Deletion of ${task.taskName} canceled`);
+            toast.info(`Deletion of ${column.title} canceled`);
           }
         },
       },
@@ -158,7 +170,8 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           4
         </Badge>
         <CardTitle className=" font-heading text-xl">{column.title}</CardTitle>
-        <Trash2 color="white" onClick={() => deleteCol(column.id)} />
+        <Trash2 color="white" onClick={handleDeleteClick} />
+        <span className="sr-only">Delete Task</span>
       </CardHeader>
 
       <CardContent>
@@ -187,6 +200,43 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
             columnId ={column.id || ''}
             isLoading={false}
         />
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent className="max-w-md shadow-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-heading text-xl">
+                <span className="text-emerald-300">Delete Column</span>
+              </AlertDialogTitle>
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-destructive/20 to-transparent"></div>
+              <AlertDialogDescription className="font-sans text-base">
+                <div className="mb-3">
+                  Are you sure you want to delete{' '}
+                  <span className="font-semibold text-foreground">"{column.title}"</span>?
+                </div>
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-md">
+                  <div className="flex items-start gap-2 mt-1">
+                    <span className="text-destructive mt-0.5">•</span>
+                      All tasks and resources will be permanently removed
+                  </div>
+                  <div className="flex items-start gap-2 mt-1">
+                    <span className="text-destructive mt-0.5">•</span>
+                      You can undo this action for a few seconds after confirmation
+                  </div>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="font-heading mt-4 space-x-3">
+              <AlertDialogCancel className="hover:bg-background/80 transition-colors">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer shadow transition-all duration-200 hover:shadow-md"
+              >
+                Delete Column
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <div>
           <TaskList />

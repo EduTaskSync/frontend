@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import { KanbanColumn } from './KanbanColumn';
 import { z } from 'zod';
-import { AddColumnDialog } from './AddColumnDialog';
 import { useColumns } from '@/hooks/columns/useColumns';
 import {
   DropdownMenu,
@@ -39,13 +38,6 @@ export interface ColumnData {
   //projectId: string;
   //columnId: string;
   
-}
-
-interface AddColumnDialogProps {
-  trigger: React.ReactNode;
-  onSubmit: (values: z.infer<typeof CreateColumnSchema>) => void;
-  projectId: Id;
-  isLoading?: boolean;
 }
 
 export const KanbanBoard = () => {
