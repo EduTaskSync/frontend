@@ -1,4 +1,4 @@
-import { Column, ColumnData, TaskData } from './KanbanBoard';
+import { Column, TaskData } from './KanbanBoard';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
@@ -22,6 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { nanoid } from 'nanoid';
+//import { useParams } from 'react-router';
 
 interface KanbanColumnProps {
   column: Column;
@@ -69,7 +71,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
   const { borderClass, gradientClass, headerClass } = getColumnStyle(colType);
   const [localColumn, setLocalColumn] = useState<Column>(column);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
+  //const { groupId, projectId, columnId } = useParams<{ groupId: string; projectId: string; columnId: string }>();
   const { createTaskResponse, deleteTaskResponse } = useTasks();
   // Use useRef to track the timeout for deletion
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -80,10 +82,11 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
     createTaskResponse.mutate({
 
       taskName: data.taskName,
-      //projectId: data.projectId,
+      //projectId: projectId,
       columnId: localColumn.id.toString(),
       taskDeadline: data.taskDeadline,
       //projectName: data.taskName,
+      taskIndex: Number(nanoid()),
     });
     handleAddTask(data);
   };
@@ -171,7 +174,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
         </Badge>
         <CardTitle className=" font-heading text-xl">{column.title}</CardTitle>
         <Trash2 color="white" onClick={handleDeleteClick} />
-        <span className="sr-only">Delete Task</span>
+        <span className="sr-only">Delete Column</span>
       </CardHeader>
 
       <CardContent>
@@ -200,7 +203,7 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
             columnId ={column.id || ''}
             isLoading={false}
         />
-
+        
         {/* Delete confirmation dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent className="max-w-md shadow-lg">
@@ -238,6 +241,11 @@ export const KanbanColumn = ({ column, colType, deleteCol }: KanbanColumnProps) 
           </AlertDialogContent>
         </AlertDialog>
 
+        <div className="flex mt-8 gap-x-10">
+          {column.tasks.map((tasks) => {
+              return <TaskCard task={tasks} groupId={"title"} projectId={''} />;
+          })}
+        </div>  
         <div>
           <TaskList />
         </div>

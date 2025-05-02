@@ -8,7 +8,7 @@ import { TaskSummaryListResponse } from '@/hooks/tasks/taskInterfaces';
 import { Spinner } from '../ui/spinner';
 
 export const TaskList = () => {
-  const { groupId, columnId } = useParams<{ groupId: string; projectId: string; columnId: string }>();
+  const { groupId, projectId, columnId } = useParams<{ groupId: string; projectId: string; columnId: string }>();
 
   const { fetchTasksSummaryResponse } = useTasks(columnId);
   const { data, isLoading, isError, error } = fetchTasksSummaryResponse as {
@@ -60,7 +60,7 @@ export const TaskList = () => {
         <div className="flex flex-col space-y-4">
           {tasks.map((task) => (
             <div key={task.taskName} className="w-full">
-              <TaskCard task={task} groupId={groupId || ''} />
+              <TaskCard task={task} groupId={groupId || ''} projectId={projectId || ''}/>
             </div>
           ))}
         </div>

@@ -18,16 +18,18 @@ import { CountdownTimer } from '../CountdownTimer';
 import { TaskSummaryResponse } from '@/hooks/tasks/taskInterfaces';
 import { useTasks } from '@/hooks/tasks/useTasks';
 import { ButtonWithTooltip } from '../ButtonWithToolTip';
+import { TaskData } from './KanbanBoard';
 
 // Shape of the task object sent to the TaskCard component
 interface TaskCardProps {
-  task: TaskSummaryResponse;
+  task: TaskData;  //TaskSummaryResponse;
   groupId: string;
+  projectId: string;
 }
 
-export const TaskCard = ({ task, groupId }: TaskCardProps) => {
+export const TaskCard = ({ task, groupId, projectId }: TaskCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { deleteTaskResponse } = useTasks(task.columnId);
+  const { deleteTaskResponse } = useTasks(task.taskName);
   
   // Use useRef to track the timeout for deletion
   const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -90,7 +92,7 @@ export const TaskCard = ({ task, groupId }: TaskCardProps) => {
   return (
     <div className="w-full p-[2px] rounded-xl bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 shadow-[0_2px_10px_0px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0px_20px_5px_rgba(56,189,248,0.25)] hover:from-blue-500 hover:via-cyan-400 hover:to-teal-500 group/wrapper">
       <Link
-        to={`/app/groups/${groupId}/projects/get_user_tasks`}
+        to={`/app/groups/${groupId}/projects/${projectId}/get_project_tasks`}
         state={{
           taskDetails: task,
         }}
@@ -103,7 +105,7 @@ export const TaskCard = ({ task, groupId }: TaskCardProps) => {
             className="h-9 w-9 rounded-full p-0 bg-destructive shadow-lg border-2 border-white/20 backdrop-blur-md hover:bg-destructive/90 hover:scale-105 transition-transform duration-150 cursor-pointer"
             onClick={handleDeleteClick}
             //disabled={!isAdmin}
-            tooltipText={'Delete project'}
+            tooltipText={'Delete task'}
           >
             <Trash2 className="h-5 w-5 text-white" />
             <span className="sr-only">Delete Task</span>

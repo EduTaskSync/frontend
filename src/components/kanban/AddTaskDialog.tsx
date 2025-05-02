@@ -40,10 +40,6 @@ interface AddTaskDialogProps {
   isLoading?: boolean;
 }
 
-//interface AddTaskDialogProps {
-//  columnId: Id;
-//  onAddTask?: (task: TaskData) => void;
-//}
 
 export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
 }: AddTaskDialogProps) => 
@@ -61,8 +57,6 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
         taskDeadline: null,
       },
   });
-
-  
 
   // Handle form submission
   const handleFormSubmit = (values: z.infer<typeof CreateTaskSchema>) => {
@@ -194,7 +188,7 @@ export const AddTaskDialog = ({trigger, onSubmit, isLoading = false,
                   //disabled={!isLoading}
                   tooltipText={ 'Create new task'}
                   tooltipSide="top"
-                  //onClick={() => setOpen(false)}
+                  onClick={() => setOpen(false)}
                 />
               </DialogFooter>
             </form>
