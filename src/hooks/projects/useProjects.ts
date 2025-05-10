@@ -61,6 +61,7 @@ export const useProjects = (groupId?: string) => {
         deadline: newProject.deadline,
         creation_time: new Date(),
         progress: 0,
+        groupId: newProject.groupId,
       };
 
       // Update cache with optimistic data - make sure we're using ProjectSummaryListResponse
@@ -117,6 +118,7 @@ export const useProjects = (groupId?: string) => {
             deadline: data.deadline,
             creation_time: data.creation_time,
             progress: 0,
+            groupId: data.groupId,
           };
 
           return {

@@ -22,14 +22,18 @@ const GroupDetailPage = () => {
   const isAdmin =
     membersData?.users.some((member) => member.userId === user?.userId && member.role === GroupRole.ADMIN) || false;
   const { createProjectResponse } = useProjects(groupId);
-
+  console.log('group id', groupId);
   const handleCreateProject = (data: { projectName: string; deadline: Date | null }) => {
-    if (!groupId) return;
+    if (!groupId) {
+      console.error('Group ID is required to create a project');
+      return;
+    }
 
     createProjectResponse.mutate({
       projectName: data.projectName,
       deadline: data.deadline,
       creation_time: new Date(),
+      groupId: groupId,
     });
   };
 
@@ -106,7 +110,7 @@ const GroupDetailPage = () => {
             }
             onSubmit={handleCreateProject}
             groupId={groupId || ''}
-            isLoading={false}
+            isLoading={createProjectResponse.isPending}
             isAdmin={isAdmin}
           />
         </div>

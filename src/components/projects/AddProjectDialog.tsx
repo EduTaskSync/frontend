@@ -15,7 +15,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useState } from 'react';
-import { LoadingButton } from '@/components/LoadingButton';
 import { FolderKanban } from 'lucide-react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -160,13 +159,15 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false, isAdmin
               >
                 Cancel
               </Button>
-              <LoadingButton
-                isLoading={isLoading || form.formState.isSubmitting}
-                loadingText="Creating..."
-                defaultText="Create Project"
-                disabled={!isAdmin}
-                title={isAdmin ? 'Create new project' : 'Only group admins can create projects.'}
-              />
+
+              <Button
+                type="submit"
+                disabled={isLoading || !isAdmin}
+                onClick={() => handleFormSubmit(form.getValues())}
+                className="cursor-pointer"
+              >
+                Create Project
+              </Button>
             </DialogFooter>
           </form>
         </Form>
