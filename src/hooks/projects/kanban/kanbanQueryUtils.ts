@@ -305,3 +305,57 @@ export const updateKanbanTask = async (updatedTaskData: UpdatedTaskData) => {
     throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
   }
 };
+
+export const assignKanbanTask = async (taskId: string, assigneeId: string) => {
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.KANBAN_ASSIGN_TASK, { taskId, assigneeId });
+    return response.data;
+  } catch (error) {
+    console.log('Error assigning task:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Please check your data and try again', 'Something went wrong');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have access to this project', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Please try again later', 'Task details not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later', 'Internal Server Error');
+      }
+    }
+
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};
+
+export const unassignKanbanTask = async (taskId: string, assigneeId: string) => {
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.KANBAN_UNASSIGN_TASK, { taskId, assigneeId });
+    return response.data;
+  } catch (error) {
+    console.log('Error unassigning task:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      if (status === 400) {
+        throw new CustomError('Please check your data and try again', 'Something went wrong');
+      } else if (status === 401) {
+        throw new CustomError('Please log in again', 'Authentication error');
+      } else if (status === 403) {
+        throw new CustomError('You do not have access to this project', 'Permission denied');
+      } else if (status === 404) {
+        throw new CustomError('Please try again later', 'Task details not found');
+      } else if (status === 500) {
+        throw new CustomError('Please try again later', 'Internal Server Error');
+      }
+    }
+
+    throw new CustomError(error instanceof Error ? error.message : 'Please try again later', 'Unknown Error');
+  }
+};

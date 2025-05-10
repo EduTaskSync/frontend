@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarClock, Clock, Trash2, Pencil } from 'lucide-react';
+import { CalendarClock, Clock, Trash2, Pencil, UserPlus, UserMinus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarGroup } from '@/components/ui/avatar-group';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +13,14 @@ import { Button } from '@/components/ui/button';
 import { DeleteKanbanTaskDialog } from './DeleteKanbanTaskDialog';
 import { KanbanTaskDetailsDialog } from './KanbanTaskDetailsDialog';
 import { useParams } from 'react-router';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useGroups } from '@/hooks/groups/useGroups';
+import { useKanbanTasks } from '@/hooks/projects/kanban/useKanban';
 
 interface TaskCardProps {
   task: Task;
@@ -24,10 +32,18 @@ interface TaskCardProps {
 
 export const TaskCard = React.memo(
   ({ task, onDeleteTask, onEditTask, isDeletePending = false, isEditPending = false }: TaskCardProps) => {
-    const { projectId: assertedProjectId } = useParams<{ projectId: string }>();
-    if (!assertedProjectId) {
-      throw new Error('Project ID is required for TaskCard');
+    const { projectId: assertedProjectId, groupId: assertedGroupId } = useParams<{
+      projectId: string;
+      groupId: string;
+    }>();
+    if (!assertedProjectId || !assertedGroupId) {
+      throw new Error('Project ID and Group ID are required for TaskCard');
     }
+
+    const { assignTaskResponse, unassignTaskResponse } = useKanbanTasks(assertedProjectId, task.columnId);
+    const { getGroupMembersResponse } = useGroups(assertedGroupId);
+    console.log(getGroupMembersResponse);
+    const { data: groupMembers } = getGroupMembersResponse;
 
     const { setNodeRef, listeners, transform, transition, attributes, isDragging } = useSortable({
       id: task.taskId,
@@ -47,6 +63,22 @@ export const TaskCard = React.memo(
     const formattedCreationDate = useMemo(() => new Date(task.taskCreationTime), [task.taskCreationTime]);
     const formattedDeadline = useMemo(() => new Date(task.taskDeadline), [task.taskDeadline]);
     const isPastDeadline = useMemo(() => new Date() > formattedDeadline, [formattedDeadline]);
+
+    // Filter out already assigned members
+    const availableMembers = useMemo(() => {
+      if (!groupMembers?.users) return [];
+      return groupMembers.users.filter(
+        (member) => !task.taskAssignees.some((assignee) => assignee.userId === member.userId)
+      );
+    }, [groupMembers?.users, task.taskAssignees]);
+
+    const handleAssignTask = (assigneeId: string) => {
+      assignTaskResponse.mutate({ taskId: task.taskId, assigneeId });
+    };
+
+    const handleUnassignTask = (assigneeId: string) => {
+      unassignTaskResponse.mutate({ taskId: task.taskId, assigneeId });
+    };
 
     //? drop preview
     if (isDragging) {
@@ -134,25 +166,78 @@ export const TaskCard = React.memo(
             </div>
 
             {/* Assignees section */}
-            {task.taskAssignees?.length > 0 && (
-              <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                <span className="text-[10px] text-muted-foreground font-medium truncate">
-                  {task.taskAssignees.length === 1 ? 'Assignee' : 'Assignees'}
-                </span>
+            <div className="flex items-center justify-between pt-2 border-t border-border/30">
+              <span className="text-[10px] text-muted-foreground font-medium truncate">
+                {task.taskAssignees.length === 1 ? 'Assignee' : 'Assignees'}
+              </span>
 
+              <div className="flex items-center gap-2">
                 <AvatarGroup limit={3} className="justify-end -space-x-2 flex-shrink-0">
                   {task.taskAssignees.map((assignee) => (
-                    <Avatar key={assignee.userId} className="h-6 w-6 border-2 border-background ring-0">
-                      <AvatarImage src={assignee.profilePicture} alt={`${assignee.firstName} ${assignee.lastName}`} />
-                      <AvatarFallback className="text-[9px] bg-primary/5 text-primary border-primary/20">
-                        {assignee.firstName[0]}
-                        {assignee.lastName[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <DropdownMenu key={assignee.userId}>
+                      <DropdownMenuTrigger asChild>
+                        <Avatar className="h-6 w-6 border-2 border-background ring-0 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
+                          <AvatarImage
+                            src={assignee.profilePicture}
+                            alt={`${assignee.firstName} ${assignee.lastName}`}
+                          />
+                          <AvatarFallback className="text-[9px] bg-primary/5 text-primary border-primary/20">
+                            {assignee.firstName[0]}
+                            {assignee.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                          onClick={() => handleUnassignTask(assignee.userId)}
+                        >
+                          <UserMinus className="h-4 w-4 mr-2" />
+                          Remove assignee
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   ))}
                 </AvatarGroup>
+
+                {availableMembers.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 rounded-full bg-background/70 border shadow-sm
+                               hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                      >
+                        <UserPlus className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {availableMembers.map((member) => (
+                        <DropdownMenuItem
+                          key={member.userId}
+                          className="cursor-pointer"
+                          onClick={() => handleAssignTask(member.userId)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={member.profilePicture} alt={`${member.firstName} ${member.lastName}`} />
+                              <AvatarFallback className="text-[9px]">
+                                {member.firstName[0]}
+                                {member.lastName[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm">
+                              {member.firstName} {member.lastName}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>

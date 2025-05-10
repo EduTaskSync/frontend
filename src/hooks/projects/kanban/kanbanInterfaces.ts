@@ -69,7 +69,7 @@ export interface MoveTaskData {
   sourceColumnId: string;
 }
 
-interface TaskAssignee {
+export interface TaskAssignee {
   userId: string;
   firstName: string;
   lastName: string;
