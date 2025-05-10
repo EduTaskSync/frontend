@@ -1,14 +1,17 @@
 import { MainContent } from '@/components/MainContent';
 import { Button } from '@/components/ui/button';
-import { CircleArrowLeft, Users, Calendar, KanbanSquare } from 'lucide-react';
+import { CircleArrowLeft, Calendar, KanbanSquare } from 'lucide-react';
 import { Link, useParams, useLocation } from 'react-router';
-import { Separator } from '@/components/ui/separator';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
+import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
 
 export const ProjectDetailsPage = () => {
   const { groupId, projectId } = useParams<{ groupId: string; projectId: string }>();
   const { state } = useLocation();
-  const projectDetails = state?.projectDetails || {};
+  const projectDetails = state?.projectDetails as ProjectSummaryResponse;
+  if (!projectDetails) {
+    return <div>Project not found</div>;
+  }
 
   return (
     <MainContent>
@@ -25,32 +28,16 @@ export const ProjectDetailsPage = () => {
       {/* Project Header */}
       <div className="w-full mb-8">
         <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg group border border-border">
-          {/* Background image with overlay */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${projectDetails.image || '/project-default.jpg'})` }}
-          />
           <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-background/80 to-background/95"></div>
 
           {/* Content */}
           <div className="relative p-5 sm:p-6">
             {/* Top row with image and main info */}
             <div className="flex items-start gap-5">
-              {/* Project preview image with gradient border */}
-              <div className="p-[2px] rounded-lg bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 shadow-sm flex-shrink-0">
-                <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-[calc(0.5rem-1px)] overflow-hidden">
-                  <img
-                    src={projectDetails.image || '/project-default.jpg'}
-                    alt={projectDetails.name || 'Project image'}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
               <div className="flex-1 min-w-0 flex flex-col justify-start">
                 {/* Project name */}
                 <h1 className="text-2xl sm:text-4xl text-white font-heading font-extrabold truncate">
-                  {projectDetails.name || 'Project Name'}
+                  {projectDetails.projectName || 'Project Name'}
                 </h1>
 
                 {/* Progress indicator */}
@@ -70,31 +57,26 @@ export const ProjectDetailsPage = () => {
                   <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-background border border-border text-sm backdrop-blur-md">
                     <Calendar className="h-4 w-4 text-blue-400" />
                     <span className="font-medium">
-                      Due:{' '}
-                      {new Date(projectDetails.dueDate || Date.now()).toLocaleDateString('en-US', {
+                      Created on:{' '}
+                      {new Date(projectDetails.creation_time || Date.now()).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
                       })}
                     </span>
                   </div>
-
-                  <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-background border border-border text-sm backdrop-blur-sm">
-                    <Users className="h-4 w-4 text-blue-400" />
+                  <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-background border border-border text-sm backdrop-blur-md">
+                    <Calendar className="h-4 w-4 text-blue-400" />
                     <span className="font-medium">
-                      {projectDetails.memberCount || 0} {(projectDetails.memberCount || 0) !== 1 ? 'members' : 'member'}
+                      Due:{' '}
+                      {new Date(projectDetails.deadline || Date.now()).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
                     </span>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Bottom row with description */}
-            <div className="bg-card/90 rounded-lg p-4 border border-border mt-5">
-              <p className="text-md font-heading font-medium mb-2 text-blue-400">Project description</p>
-              <Separator className="mb-3" />
-              <div className="min-h-[80px] italic bg-transparent p-2 text-base leading-relaxed text-foreground">
-                {projectDetails.description || "This project doesn't have a description yet."}
               </div>
             </div>
           </div>

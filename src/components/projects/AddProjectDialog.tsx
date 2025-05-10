@@ -165,8 +165,7 @@ export const AddProjectDialog = ({ trigger, onSubmit, isLoading = false, isAdmin
                 loadingText="Creating..."
                 defaultText="Create Project"
                 disabled={!isAdmin}
-                tooltipText={isAdmin ? 'Create new project' : 'Only group admins can create projects.'}
-                tooltipSide="top"
+                title={isAdmin ? 'Create new project' : 'Only group admins can create projects.'}
               />
             </DialogFooter>
           </form>

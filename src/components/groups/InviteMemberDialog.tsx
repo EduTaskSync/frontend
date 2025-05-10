@@ -158,7 +158,7 @@ export const InviteMemberDialog = ({
                 loadingText="Sending..."
                 defaultText="Send Invitation"
                 disabled={!isAdmin || form.formState.isSubmitting}
-                tooltipText={isAdmin ? 'Invite new member' : 'Only group admins can invite members.'}
+                title={isAdmin ? 'Invite new member' : 'Only group admins can invite members.'}
               />
             </DialogFooter>
           </form>

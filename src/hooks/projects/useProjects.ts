@@ -59,6 +59,7 @@ export const useProjects = (groupId?: string) => {
         projectId: `temp-${Date.now()}`,
         projectName: newProject.projectName,
         deadline: newProject.deadline,
+        creation_time: new Date(),
         progress: 0,
       };
 
@@ -114,6 +115,7 @@ export const useProjects = (groupId?: string) => {
             projectId: data.projectId,
             projectName: data.projectName,
             deadline: data.deadline,
+            creation_time: data.creation_time,
             progress: 0,
           };
 
