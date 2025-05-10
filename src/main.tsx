@@ -19,6 +19,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { ProjectDetailsPage } from './routes/ProjectDetailsPage.tsx';
 import { ProjectLayout } from './routes/ProjectLayout.tsx';
 import { KanbanColumnsLoader } from './hooks/projects/kanban/kanbanColumnsLoader.ts';
+import ProfilePage from './routes/ProfilePage.tsx';
 
 // Create the router configuration
 const router = createBrowserRouter([
@@ -38,7 +39,7 @@ const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           { path: 'signup', element: <ProgressiveSignup /> },
-          { path: 'profile', element: <div>Profile</div> },
+          { path: 'profile', element: <ProfilePage /> },
           { path: 'dashboard', element: <DashboardPage /> },
           {
             path: 'groups',
