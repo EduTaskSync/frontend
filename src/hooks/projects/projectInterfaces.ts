@@ -5,6 +5,7 @@ export const ProjectBaseSchema = z.object({
   projectName: z.string().min(1, { message: 'Project name is required' }),
   deadline: z.date().nullable(),
   creation_time: z.date().nullable(),
+  groupId: z.string().uuid(),
 });
 export type ProjectBaseResponse = z.infer<typeof ProjectBaseSchema>;
 

@@ -1,16 +1,36 @@
 import { MainContent } from '@/components/MainContent';
 import { Button } from '@/components/ui/button';
 import { CircleArrowLeft, Calendar, KanbanSquare } from 'lucide-react';
-import { Link, useParams, useLocation } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
-import { ProjectSummaryResponse } from '@/hooks/projects/projectInterfaces';
+import { useProjects } from '@/hooks/projects/useProjects';
+import { Spinner } from '@/components/ui/spinner';
 
 export const ProjectDetailsPage = () => {
   const { groupId, projectId } = useParams<{ groupId: string; projectId: string }>();
-  const { state } = useLocation();
-  const projectDetails = state?.projectDetails as ProjectSummaryResponse;
+  const { fetchProjectsSummaryResponse } = useProjects(groupId);
+  const { data: projectsData, isLoading } = fetchProjectsSummaryResponse;
+
+  // Find project details from the fetched data
+  const projectDetails = projectsData?.projects.find((p) => p.projectId === projectId);
+
+  if (isLoading) {
+    return (
+      <MainContent>
+        <div className="flex items-center justify-center h-[50vh]">
+          <Spinner className="h-8 w-8" />
+          <span className="ml-2">Loading project details...</span>
+        </div>
+      </MainContent>
+    );
+  }
+
   if (!projectDetails) {
-    return <div>Project not found</div>;
+    return (
+      <MainContent>
+        <div className="text-center p-8 text-destructive">Project not found. Please check the URL or try again.</div>
+      </MainContent>
+    );
   }
 
   return (
@@ -37,7 +57,7 @@ export const ProjectDetailsPage = () => {
               <div className="flex-1 min-w-0 flex flex-col justify-start">
                 {/* Project name */}
                 <h1 className="text-2xl sm:text-4xl text-white font-heading font-extrabold truncate">
-                  {projectDetails.projectName || 'Project Name'}
+                  {projectDetails.projectName}
                 </h1>
 
                 {/* Progress indicator */}

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/pagination';
 import { useDashboard, TaskStatus, DateFilter, SortOrder } from '@/hooks/dashboard/useDashboard';
 import { TaskCard } from './TaskCard';
+import { useNavigate } from 'react-router';
 
 export interface TaskListProps {
   searchQuery?: string;
@@ -48,8 +49,8 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
     isError,
     isDueToday,
     isOverdue,
-  } = useDashboard({ initialPage, limit });
-
+  } = useDashboard({ initialPage, limit, searchQuery });
+  const navigate = useNavigate();
   // Generate pagination numbers
   const paginationItems = () => {
     const items = [];
@@ -127,8 +128,12 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
 
   // Handle task click
   const handleTaskClick = (taskId: string) => {
-    console.log('Task clicked:', taskId);
-    // You can add navigation or modal opening logic here
+    const taskInfo = tasks.find((task) => task.taskId === taskId);
+    if (taskInfo) {
+      navigate(`/app/groups/${taskInfo.groupId}/projects/${taskInfo.projectId}`, {
+        state: { taskInfo },
+      });
+    }
   };
 
   return (

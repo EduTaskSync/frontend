@@ -64,7 +64,7 @@ export function TaskCard({ task, onClick, isOverdue, isDueToday }: TaskCardProps
   return (
     <div
       className={cn(
-        'flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border transition-colors',
+        'flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border transition-colors cursor-pointer',
         getTaskCardStyle()
       )}
       onClick={() => onClick?.(task.taskId)}
