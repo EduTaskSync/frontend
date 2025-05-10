@@ -8,6 +8,7 @@ import { CustomError } from '@/utils/ErrorClasses';
 import { useParams } from 'react-router';
 import { useUserContext } from '@/contexts/UserContext';
 import { useMemo } from 'react';
+import { GroupRole } from '@/constants/general';
 
 export const GroupMemberList = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -16,6 +17,12 @@ export const GroupMemberList = () => {
   // groupId needed as a parameter for get members request
   const { getGroupMembersResponse } = useGroups(groupId);
   const { data, isLoading, isError, error } = getGroupMembersResponse;
+
+  // Check if current user is admin
+  const isAdmin = useMemo(() => {
+    if (!data?.users || !user) return false;
+    return data.users.some((member) => member.userId === user.userId && member.role === GroupRole.ADMIN);
+  }, [data?.users, user]);
 
   // Sort members to put current user first
   const sortedMembers = useMemo(() => {
@@ -66,7 +73,12 @@ export const GroupMemberList = () => {
           <CardSkeleton variant="member" count={5} horizontal={true} />
         ) : (
           sortedMembers.map((member) => (
-            <GroupMemberCard key={member.userId} groupMember={member} isCurrentUser={user?.userId === member.userId} />
+            <GroupMemberCard
+              key={member.userId}
+              groupMember={member}
+              isCurrentUser={user?.userId === member.userId}
+              isAdmin={isAdmin}
+            />
           ))
         )}
       </div>

@@ -269,3 +269,33 @@ export const editGroupUser = async (editUserGroup: EditUserGroup) => {
     throw new CustomError('An unknown error occurred', 'Unknown Error');
   }
 };
+
+export const promoteGroupMember = async (groupId: string, userId: string) => {
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.PROMOTE_GROUP_MEMBER, {
+      groupId,
+      userId,
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new CustomError(error.message, 'Error promoting group member');
+    }
+    throw new CustomError('An unknown error occurred', 'Unknown Error');
+  }
+};
+
+export const removeGroupMember = async (groupId: string, userId: string) => {
+  try {
+    const response = await axiosConfig.post(ApiEndPoints.REMOVE_GROUP_MEMBER, {
+      groupId,
+      userId,
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new CustomError(error.message, 'Error removing group member');
+    }
+    throw new CustomError('An unknown error occurred', 'Unknown Error');
+  }
+};

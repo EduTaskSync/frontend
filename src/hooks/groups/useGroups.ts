@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
 import { EditUserGroup, GroupListResponse, GroupsObj } from './groupInterfaces';
 import {
@@ -10,13 +10,21 @@ import {
   addGroupMember,
   getGroupDetails,
   editGroupUser,
+  promoteGroupMember,
+  removeGroupMember,
 } from './groupQueryUtils';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
-import { queryClient } from '@/main';
+
+interface PromoteMemberParams {
+  groupId: string;
+  userId: string;
+}
 
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = (groupId?: string) => {
+  const queryClient = useQueryClient();
+
   // fetch user's allocated groups
   const fetchGroupsResponse = useQuery({
     queryKey: queryKeys.groupList(),
@@ -428,6 +436,23 @@ export const useGroups = (groupId?: string) => {
     },
   });
 
+  const promoteGroupMemberResponse = useMutation({
+    mutationFn: (params: PromoteMemberParams) => promoteGroupMember(params.groupId, params.userId),
+    onSuccess: () => {
+      if (groupId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.getMembers(groupId) });
+      }
+    },
+  });
+  const removeGroupMemberResponse = useMutation({
+    mutationFn: (params: PromoteMemberParams) => removeGroupMember(params.groupId, params.userId),
+    onSuccess: () => {
+      if (groupId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.getMembers(groupId) });
+      }
+    },
+  });
+
   return {
     fetchGroupsResponse,
     createGroupResponse,
@@ -437,5 +462,7 @@ export const useGroups = (groupId?: string) => {
     editGroupDetailsResponse,
     inviteGroupMemberResponse,
     updateGroupVisibilityResponse,
+    promoteGroupMemberResponse,
+    removeGroupMemberResponse,
   };
 };
