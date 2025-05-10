@@ -1,10 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 import { getProjectsSummary, createProject, deleteProject } from '@/hooks/projects/projectQueryUtils';
 import { CreateProjectDto, ProjectSummaryListResponse, ProjectSummaryResponse } from './projectInterfaces';
+import { queryClient } from '@/main';
 
-// Define query keys for projects
+// define query keys for projects
 export const projectQueryKeys = {
   all: ['projects'] as const,
   lists: () => [...projectQueryKeys.all, 'list'] as const,
@@ -14,8 +15,6 @@ export const projectQueryKeys = {
 
 // Main hook for projects
 export const useProjects = (groupId?: string) => {
-  const queryClient = useQueryClient();
-
   // Fetch projects for a specific group
   const fetchProjectsSummaryResponse = useQuery({
     queryKey: projectQueryKeys.groupProjects(groupId as string),

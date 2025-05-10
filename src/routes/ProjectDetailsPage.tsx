@@ -1,13 +1,12 @@
 import { MainContent } from '@/components/MainContent';
 import { Button } from '@/components/ui/button';
-import { CircleArrowLeft, Users, Calendar, KanbanSquare, ListTodo } from 'lucide-react';
+import { CircleArrowLeft, Users, Calendar, KanbanSquare } from 'lucide-react';
 import { Link, useParams, useLocation } from 'react-router';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 
 export const ProjectDetailsPage = () => {
-  const { groupId } = useParams<{ groupId: string; projectId: string }>();
+  const { groupId, projectId } = useParams<{ groupId: string; projectId: string }>();
   const { state } = useLocation();
   const projectDetails = state?.projectDetails || {};
 
@@ -102,29 +101,6 @@ export const ProjectDetailsPage = () => {
         </div>
       </div>
 
-      {/* Team Members Section - Horizontal Scrollable */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-400" />
-            <h3 className="font-heading font-semibold text-lg">Team Members</h3>
-          </div>
-          <Button size="sm" className="gap-1 font-heading text-sm hover:cursor-pointer">
-            <span>Add Member</span>
-          </Button>
-        </div>
-
-        {/* Member list will go here - similar to GroupMemberList */}
-        <ScrollArea className="w-full whitespace-nowrap pb-4">
-          <div className="flex space-x-4 min-h-[100px]">
-            <div className="flex items-center justify-center w-full rounded-lg border-2 border-dashed border-border/50 text-muted-foreground">
-              No team members assigned yet.
-            </div>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </div>
-
       {/* Main content area - Kanban Board */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-4">
@@ -132,17 +108,12 @@ export const ProjectDetailsPage = () => {
             <KanbanSquare className="h-5 w-5 text-teal-500" />
             <h3 className="font-heading font-semibold text-lg">Kanban Board</h3>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-1 font-heading text-sm">
-              <ListTodo className="h-4 w-4" />
-              <span>Add Task</span>
-            </Button>
-          </div>
+          <div className="flex gap-2"></div>
         </div>
 
         {/* Kanban board area */}
         <div className="w-full min-h-[500px] border border-border rounded-xl bg-card/50 p-4">
-          <KanbanBoard />
+          <KanbanBoard projectId={projectId as string} />
         </div>
       </div>
     </MainContent>

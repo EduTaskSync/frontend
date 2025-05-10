@@ -13,7 +13,7 @@ export const MainContent = ({ children }: MainContentProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
     >
-      <div className="w-full min-w-[300px] max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl bg-card text-card-foreground border border-border rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md p-4 sm:p-6">
+      <div className="w-full min-w-[1420px] max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl bg-card text-card-foreground border-1 border-purple-400 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md p-4 sm:p-6">
         {children || (
           <div className="flex flex-col gap-6">
             <h2 className="text-xl sm:text-2xl font-heading font-semibold">Content Area</h2>

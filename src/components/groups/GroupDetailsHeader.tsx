@@ -1,6 +1,6 @@
 import { Users, Calendar, Clock, PencilIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDate, cn } from '@/lib/utils';
+import { formatDate, cn, getImageUrl } from '@/lib/utils';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { GroupData, GroupDetailsDialog } from './GroupDetailsDialog';
 import { GroupDetailsResponse, UpdatedGroup } from '@/hooks/groups/groupInterfaces';
@@ -14,6 +14,8 @@ export const GroupDetailsHeader = () => {
   const { groupId } = useParams();
   const { editGroupDetailsResponse, getGroupDetailsResponse } = useGroups(groupId);
   const { data, isError, error, isLoading, refetch } = getGroupDetailsResponse;
+
+  console.log('header img url from backend', data?.imgUrl);
 
   // ahndle loading state
   if (isLoading) {
@@ -90,12 +92,13 @@ export const GroupDetailsHeader = () => {
     groupDescription,
     groupMembers: size,
     groupName,
-    groupImage,
+    imgUrl,
   } = data as GroupDetailsResponse;
   const formattedDate = formatDate(groupCreationDate);
 
   // handler for group edit submission
   const handleEditGroup = (formattedData: GroupData | UpdatedGroup) => {
+    console.log('Submit data for edit:', formattedData);
     editGroupDetailsResponse.mutate(formattedData as UpdatedGroup);
   };
 
@@ -103,7 +106,7 @@ export const GroupDetailsHeader = () => {
     groupId: id,
     groupName,
     groupDetails: groupDescription,
-    imgUrl: groupImage,
+    imgUrl,
   };
 
   return (
@@ -132,7 +135,7 @@ export const GroupDetailsHeader = () => {
         {/* background image with overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${groupImage || '/group-icon-1.jpg'})` }}
+          style={{ backgroundImage: `url(${getImageUrl(imgUrl)})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/50 via-background/80 to-background/95"></div>
 
@@ -143,11 +146,7 @@ export const GroupDetailsHeader = () => {
             {/* enlarged rectangular image preview with gradient border */}
             <div className="p-[2px] rounded-lg bg-gradient-to-br from-purple-400 via-pink-300 to-indigo-400 shadow-sm flex-shrink-0">
               <div className="h-24 w-32 sm:h-32 sm:w-44 rounded-[calc(0.5rem-1px)] overflow-hidden">
-                <img
-                  src={groupImage || '/group-icon-1.jpg'}
-                  alt={'Group image'}
-                  className="w-full h-full object-cover"
-                />
+                <img src={getImageUrl(imgUrl)} alt={'Group image'} className="w-full h-full object-cover" />
               </div>
             </div>
 

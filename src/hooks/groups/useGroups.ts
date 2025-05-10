@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/utils/queryKeyFactory';
-import { GroupListResponse, GroupsObj } from './groupInterfaces';
+import { EditUserGroup, GroupListResponse, GroupsObj } from './groupInterfaces';
 import {
   getGroups,
   createNewGroup,
@@ -9,13 +9,20 @@ import {
   editGroupDetails,
   addGroupMember,
   getGroupDetails,
+  editGroupUser,
+  promoteGroupMember,
+  removeGroupMember,
 } from './groupQueryUtils';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
 
+interface PromoteMemberParams {
+  groupId: string;
+  userId: string;
+}
+
 // Custom hook that encapsulates all group-related API operations
 export const useGroups = (groupId?: string) => {
-  // needed for making certain cached data stale so that they are updated after mutations by targeting their query key
   const queryClient = useQueryClient();
 
   // fetch user's allocated groups
@@ -47,6 +54,10 @@ export const useGroups = (groupId?: string) => {
         groupName: newGroup.groupName,
         groupMembers: 1,
         imgUrl: newGroup.imgUrl,
+        groupIsHidden: false,
+        projectCount: 0,
+        isRequestUserAdmin: true,
+        createdAt: new Date(),
       };
 
       // immediately update cached group list
@@ -206,6 +217,7 @@ export const useGroups = (groupId?: string) => {
           groupName: updatedGroup.groupName,
           groupDescription: updatedGroup.groupDetails,
           groupImage: updatedGroup.imgUrl,
+          groupIsHidden: updatedGroup.groupIsHidden,
         };
       });
 
@@ -338,6 +350,109 @@ export const useGroups = (groupId?: string) => {
     },
   });
 
+  const updateGroupVisibilityResponse = useMutation({
+    mutationFn: editGroupUser,
+
+    onMutate: async ({ groupId, groupIsHidden }: EditUserGroup) => {
+      if (!groupId) {
+        throw new Error('Group ID is required to update visibility');
+      }
+
+      // Target query keys for both details and list views
+      const detailsQueryKey = queryKeys.getGroupDetails(groupId);
+      const listQueryKey = queryKeys.groupList();
+
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: detailsQueryKey });
+      await queryClient.cancelQueries({ queryKey: listQueryKey });
+
+      // Snapshot previous values
+      const previousDetails = queryClient.getQueryData(detailsQueryKey);
+      const previousGroups = queryClient.getQueryData<GroupListResponse>(listQueryKey);
+
+      // Optimistically update the group in the list view
+      queryClient.setQueryData<GroupListResponse>(listQueryKey, (oldData) => {
+        if (!oldData) return { groups: [] };
+
+        return {
+          groups: oldData.groups.map((group) => {
+            if (group.groupId === groupId) {
+              return {
+                ...group,
+                groupIsHidden: groupIsHidden,
+              };
+            }
+            return group;
+          }),
+        };
+      });
+
+      // Return previous values for rollback
+      return { previousDetails, previousGroups };
+    },
+
+    onError: (err, variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousDetails) {
+        queryClient.setQueryData(queryKeys.getGroupDetails(variables.groupId), context.previousDetails);
+      }
+
+      if (context?.previousGroups) {
+        queryClient.setQueryData(queryKeys.groupList(), context.previousGroups);
+      }
+
+      console.error('Failed to update group visibility:', err);
+
+      let errorMessage = 'Please try again later.';
+      let title = 'Error';
+
+      if (err instanceof CustomError) {
+        errorMessage = err.message;
+        title = err.title || 'Failed to update group visibility';
+      }
+
+      toast.error(title, {
+        description: errorMessage,
+      });
+    },
+
+    onSuccess: (_, variables) => {
+      // Show success toast
+      toast.success(variables.groupIsHidden ? 'Group hidden successfully' : 'Group visibility restored', {
+        description: variables.groupIsHidden
+          ? 'The group is now hidden from dashboard view'
+          : 'The group is now visible on the dashboard',
+      });
+    },
+
+    onSettled: (_, __, variables) => {
+      // Invalidate all related queries to ensure consistent state
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getGroupDetails(variables.groupId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.groupList(),
+      });
+    },
+  });
+
+  const promoteGroupMemberResponse = useMutation({
+    mutationFn: (params: PromoteMemberParams) => promoteGroupMember(params.groupId, params.userId),
+    onSuccess: () => {
+      if (groupId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.getMembers(groupId) });
+      }
+    },
+  });
+  const removeGroupMemberResponse = useMutation({
+    mutationFn: (params: PromoteMemberParams) => removeGroupMember(params.groupId, params.userId),
+    onSuccess: () => {
+      if (groupId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.getMembers(groupId) });
+      }
+    },
+  });
+
   return {
     fetchGroupsResponse,
     createGroupResponse,
@@ -346,5 +461,8 @@ export const useGroups = (groupId?: string) => {
     getGroupMembersResponse,
     editGroupDetailsResponse,
     inviteGroupMemberResponse,
+    updateGroupVisibilityResponse,
+    promoteGroupMemberResponse,
+    removeGroupMemberResponse,
   };
 };
