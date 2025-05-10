@@ -31,11 +31,14 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
         <header className="flex flex-row h-12 sm:h-14 items-center w-full min-w-[320px] mx-auto px-3 sm:px-6 bg-card/70 text-card-foreground border border-white/10 rounded-xl sm:rounded-2xl shadow-md backdrop-blur-md transition-all duration-200 relative z-10">
           <div className="w-20 sm:w-1/3 min-w-[70px]">
             <Link to={routes.dashboard}>
-              <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
-                <span className="hidden sm:inline">EduTask</span>
-                <span className="sm:hidden">ET</span>
-                <ColourfulText text="Sync" />
-              </h1>
+              <div className="flex items-center gap-2">
+                <img src="/logo.svg" alt="EduTaskSync Logo" className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
+                  <span className="hidden sm:inline">EduTask</span>
+                  <span className="sm:hidden">ET</span>
+                  <ColourfulText text="Sync" />
+                </h1>
+              </div>
             </Link>
           </div>
 
