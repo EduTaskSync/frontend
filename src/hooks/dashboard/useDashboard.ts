@@ -15,6 +15,7 @@ interface UseDashboardOptions {
   initialDateFilter?: DateFilter;
   initialGroupId?: string | null;
   initialSortOrder?: SortOrder;
+  searchQuery?: string;
 }
 
 export const useDashboard = (options: UseDashboardOptions = {}) => {
@@ -23,9 +24,10 @@ export const useDashboard = (options: UseDashboardOptions = {}) => {
     initialPage = 0,
     limit = 10,
     initialStatus = 'All',
-    initialDateFilter = 'all', // Changed from 'upcoming' to 'all'
+    initialDateFilter = 'all',
     initialGroupId = null,
     initialSortOrder = 'asc',
+    searchQuery = '',
   } = options;
 
   // State for filters and pagination
@@ -103,6 +105,12 @@ export const useDashboard = (options: UseDashboardOptions = {}) => {
     // Start with all tasks from API
     let filtered = [...rawTasks];
 
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((task) => task.taskName.toLowerCase().includes(query));
+    }
+
     // Apply status filter
     if (status !== 'All') {
       filtered = filtered.filter((task) => task.status === status);
@@ -155,7 +163,7 @@ export const useDashboard = (options: UseDashboardOptions = {}) => {
         return dateB - dateA;
       }
     });
-  }, [rawTasks, status, dateFilter, sortOrder]);
+  }, [rawTasks, status, dateFilter, sortOrder, searchQuery]);
 
   // Pagination metadata based on filtered tasks
   const totalItems = filteredTasks.length;
@@ -172,7 +180,7 @@ export const useDashboard = (options: UseDashboardOptions = {}) => {
   // Reset to page 0 when filters change
   useEffect(() => {
     setPage(0);
-  }, [status, dateFilter, sortOrder]);
+  }, [status, dateFilter, sortOrder, searchQuery]);
 
   // Statistics for dashboard
   const taskStats = useMemo(() => {

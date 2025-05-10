@@ -32,6 +32,8 @@ export enum ApiEndPoints {
   KANBAN_CREATE_TASK = '/projects/create_task',
   KANBAN_DELETE_TASK = '/projects/delete_task',
   KANBAN_UPDATE_TASK = '/projects/modify_task',
+  KANBAN_ASSIGN_TASK = '/projects/assign_task',
+  KANBAN_UNASSIGN_TASK = '/projects/unassign_task',
 
   KANBAN_MOVE_TASK = '/projects/move_task',
   KANBAN_GET_COLUMN_TASKS = '/projects/get_column_tasks',

@@ -21,8 +21,8 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
         visible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      {/* Use a fixed-width container to prevent shifting */}
-      <div className="w-full max-w-4xl px-4 py-2 mx-auto relative bg-transparent">
+      {/* Match the main content's container width configuration */}
+      <div className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-[1920px] px-4 mx-auto relative bg-transparent">
         {/* Outer soft blurred border glow */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-full w-full mx-auto opacity-70 pointer-events-none">
           <div className="absolute inset-x-0 mx-auto top-1/2 -translate-y-1/2 w-[99%] h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-400/20 via-pink-400/20 to-indigo-400/20 blur-[30px]"></div>

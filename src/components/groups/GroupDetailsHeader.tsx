@@ -107,6 +107,7 @@ export const GroupDetailsHeader = () => {
     groupName,
     groupDetails: groupDescription,
     imgUrl,
+    groupIsHidden: false,
   };
 
   return (

@@ -11,6 +11,8 @@ import {
   createKanbanTask,
   moveKanbanTask,
   updateKanbanTask,
+  assignKanbanTask,
+  unassignKanbanTask,
 } from './kanbanQueryUtils';
 import {
   ColumnTasksResponse,
@@ -20,6 +22,7 @@ import {
   UpdatedColumnData,
   NewTaskData,
   MoveTaskData,
+  TaskAssignee,
 } from './kanbanInterfaces';
 import { toast } from 'sonner';
 import { CustomError } from '@/utils/ErrorClasses';
@@ -392,11 +395,116 @@ export const useKanbanTasks = (projectId: string, columnId: string) => {
     },
   });
 
+  const assignTaskResponse = useMutation({
+    mutationFn: ({ taskId, assigneeId }: { taskId: string; assigneeId: string }) =>
+      assignKanbanTask(taskId, assigneeId),
+    onMutate: async ({ taskId, assigneeId }) => {
+      const targetQueryKey = queryKeys.getKanbanColumnTasks(projectId, columnId);
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      const previousTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
+
+      // Optimistically update the task with the new assignee
+      const updatedTasks = previousTasks?.tasks.map((task) => {
+        if (task.taskId === taskId) {
+          // Create a temporary assignee object with just the ID
+          const tempAssignee: TaskAssignee = {
+            userId: assigneeId,
+            firstName: '', // These will be populated by the server
+            lastName: '', // These will be populated by the server
+            profilePicture: '', // These will be populated by the server
+          };
+          return {
+            ...task,
+            taskAssignees: [...task.taskAssignees, tempAssignee],
+          };
+        }
+        return task;
+      });
+
+      queryClient.setQueryData<ColumnTasksResponse>(targetQueryKey, {
+        tasks: updatedTasks || [],
+      });
+
+      return { previousTasks };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(projectId, columnId), context.previousTasks);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Failed to assign task. Please try again later.';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to assign task';
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getKanbanColumnTasks(projectId, columnId),
+      });
+    },
+  });
+
+  const unassignTaskResponse = useMutation({
+    mutationFn: ({ taskId, assigneeId }: { taskId: string; assigneeId: string }) =>
+      unassignKanbanTask(taskId, assigneeId),
+    onMutate: async ({ taskId, assigneeId }) => {
+      const targetQueryKey = queryKeys.getKanbanColumnTasks(projectId, columnId);
+      await queryClient.cancelQueries({ queryKey: targetQueryKey });
+
+      const previousTasks = queryClient.getQueryData<ColumnTasksResponse>(targetQueryKey);
+
+      // Optimistically update the task by removing the assignee
+      const updatedTasks = previousTasks?.tasks.map((task) => {
+        if (task.taskId === taskId) {
+          return {
+            ...task,
+            taskAssignees: task.taskAssignees.filter((assignee) => assignee.userId !== assigneeId),
+          };
+        }
+        return task;
+      });
+
+      queryClient.setQueryData<ColumnTasksResponse>(targetQueryKey, {
+        tasks: updatedTasks || [],
+      });
+
+      return { previousTasks };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(queryKeys.getKanbanColumnTasks(projectId, columnId), context.previousTasks);
+      }
+
+      let title = 'Error';
+      let errorMessage = 'Failed to unassign task. Please try again later.';
+
+      if (error instanceof CustomError) {
+        title = error.title || 'Failed to unassign task';
+        errorMessage = error.message;
+      }
+
+      toast.error(title, { description: errorMessage });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.getKanbanColumnTasks(projectId, columnId),
+      });
+    },
+  });
+
   return {
     getKanbanTasksResponse,
     createKanbanTaskResponse,
     deleteKanbanTaskResponse,
     updateKanbanTaskResponse,
+    assignTaskResponse,
+    unassignTaskResponse,
   };
 };
 

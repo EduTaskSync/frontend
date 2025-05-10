@@ -29,6 +29,7 @@ const GroupDetailPage = () => {
     createProjectResponse.mutate({
       projectName: data.projectName,
       deadline: data.deadline,
+      creation_time: new Date(),
     });
   };
 
