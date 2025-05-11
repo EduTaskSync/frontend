@@ -4,6 +4,7 @@ import { useUserContext } from '@/contexts/UserContext';
 import { useScrollContext } from '@/contexts/ScrollContext';
 import { Link } from 'react-router';
 import { routes } from '@/constants/routes';
+import { ModeToggle } from './ModeToggle';
 
 interface AuthHeaderProps {
   tabName: string;
@@ -17,7 +18,7 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
 
   return (
     <div
-      className={`sticky top-0 z-50 w-full flex justify-center transition-transform duration-300 ${
+      className={`sticky top-3 z-50 w-full flex justify-center transition-transform duration-300 ${
         visible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
@@ -29,26 +30,26 @@ export const AuthHeader = ({ tabName }: AuthHeaderProps) => {
         </div>
 
         <header className="flex flex-row h-12 sm:h-14 items-center w-full min-w-[320px] mx-auto px-3 sm:px-6 bg-card/70 text-card-foreground border border-white/10 rounded-xl sm:rounded-2xl shadow-md backdrop-blur-md transition-all duration-200 relative z-10">
-          <div className="w-20 sm:w-1/3 min-w-[70px]">
-            <Link to={routes.dashboard}>
-              <div className="flex items-center gap-2">
-                <img src="/logo.svg" alt="EduTaskSync Logo" className="h-5 w-5 sm:h-6 sm:w-6" />
-                <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
-                  <span className="hidden sm:inline">EduTask</span>
-                  <span className="sm:hidden">ET</span>
-                  <ColourfulText text="Sync" />
-                </h1>
-              </div>
+          {/* Logo Section - Left */}
+          <div className="w-1/4 sm:w-1/3 flex items-center">
+            <Link to={routes.dashboard} className="flex items-center gap-2">
+              <img src="/logo.svg" alt="EduTaskSync Logo" className="h-5 w-5 sm:h-6 sm:w-6" />
+              <h1 className="text-xs sm:text-lg font-heading font-semibold truncate whitespace-nowrap">
+                <span className="hidden sm:inline">EduTask</span>
+                <span className="sm:hidden">ET</span>
+                <ColourfulText text="Sync" />
+              </h1>
             </Link>
           </div>
 
-          {/* Tab Name Section */}
-          <div className="flex-1 flex justify-center min-w-[100px] px-2">
+          {/* Tab Name Section - Center */}
+          <div className="flex-1 flex justify-center px-2">
             <p className="text-sm sm:text-xl font-tab-name text-primary truncate max-w-full">{tabName}</p>
           </div>
 
-          {/* Avatar Section */}
-          <div className="w-20 sm:w-1/3 min-w-[50px] flex justify-end">
+          {/* Controls Section - Right */}
+          <div className="w-1/4 sm:w-1/3 flex justify-end items-center gap-2 sm:gap-3">
+            <ModeToggle />
             <DropdownMenuWithAvatar user={user} />
           </div>
         </header>
