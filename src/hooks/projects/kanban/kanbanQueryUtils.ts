@@ -251,6 +251,7 @@ export const deleteKanbanTask = async (taskId: string) => {
 };
 
 export const moveKanbanTask = async (moveTaskData: MoveTaskData) => {
+  console.log('Moving task:', moveTaskData);
   try {
     const response = await axiosConfig.post(ApiEndPoints.KANBAN_MOVE_TASK, moveTaskData);
     return response.data;

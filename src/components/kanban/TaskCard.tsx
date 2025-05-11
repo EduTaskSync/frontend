@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarClock, Clock, Trash2, Pencil, UserPlus, UserMinus } from 'lucide-react';
+import { CalendarClock, Clock, Trash2, Pencil, UserPlus, UserMinus, CheckCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarGroup } from '@/components/ui/avatar-group';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useGroups } from '@/hooks/groups/useGroups';
 import { useKanbanTasks } from '@/hooks/projects/kanban/useKanban';
+import { useTaskMoveDropdown } from '@/hooks/projects/kanban/useKanban';
 
 interface TaskCardProps {
   task: Task;
@@ -42,7 +43,7 @@ export const TaskCard = React.memo(
 
     const { assignTaskResponse, unassignTaskResponse } = useKanbanTasks(assertedProjectId, task.columnId);
     const { getGroupMembersResponse } = useGroups(assertedGroupId);
-    console.log(getGroupMembersResponse);
+    const { handleMoveTask, columns } = useTaskMoveDropdown(assertedProjectId, task);
     const { data: groupMembers } = getGroupMembersResponse;
 
     const { setNodeRef, listeners, transform, transition, attributes, isDragging } = useSortable({
@@ -62,7 +63,28 @@ export const TaskCard = React.memo(
     // Format dates for display
     const formattedCreationDate = useMemo(() => new Date(task.taskCreationTime), [task.taskCreationTime]);
     const formattedDeadline = useMemo(() => new Date(task.taskDeadline), [task.taskDeadline]);
-    const isPastDeadline = useMemo(() => new Date() > formattedDeadline, [formattedDeadline]);
+
+    // Compare dates by setting both to start of day in local time
+    const isPastDeadline = useMemo(() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const deadline = new Date(task.taskDeadline);
+      deadline.setHours(0, 0, 0, 0);
+
+      return deadline < today;
+    }, [task.taskDeadline]);
+
+    // Check if task is due today
+    const isDueToday = useMemo(() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const deadline = new Date(task.taskDeadline);
+      deadline.setHours(0, 0, 0, 0);
+
+      return deadline.getTime() === today.getTime();
+    }, [task.taskDeadline]);
 
     // Filter out already assigned members
     const availableMembers = useMemo(() => {
@@ -92,7 +114,7 @@ export const TaskCard = React.memo(
     }
 
     return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative w-full">
+      <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative w-full cursor-pointer">
         <Card className="border shadow-sm bg-card/95 group w-full">
           {/* Action buttons - shown on hover */}
           <div
@@ -101,6 +123,33 @@ export const TaskCard = React.memo(
               'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
             )}
           >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-7 w-7 rounded-full bg-background/70 border shadow-sm
+           hover:bg-green-500/20 hover:text-green-500 hover:border-green-500/30"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span className="sr-only">Change Status</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {columns
+                  .filter((col) => col.columnId !== task.columnId)
+                  .map((column) => (
+                    <DropdownMenuItem
+                      key={column.columnId}
+                      className="cursor-pointer"
+                      onClick={() => handleMoveTask(column.columnId)}
+                    >
+                      <span className="text-sm">{column.columnName}</span>
+                    </DropdownMenuItem>
+                  ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <KanbanTaskDetailsDialog
               columnId={task.columnId}
               taskIndex={task.taskIndex}
@@ -157,11 +206,12 @@ export const TaskCard = React.memo(
                 variant={isPastDeadline ? 'destructive' : 'outline'}
                 className={cn(
                   'flex items-center gap-1.5 px-2 py-0.5 h-5 text-[10px] font-medium flex-shrink-0',
-                  !isPastDeadline && 'bg-primary/5 text-primary border-primary/20'
+                  !isPastDeadline && 'bg-primary/5 text-primary border-primary/20',
+                  isDueToday && 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                 )}
               >
                 <CalendarClock className="h-3 w-3 flex-shrink-0" />
-                <span>Due {format(formattedDeadline, 'MMM d')}</span>
+                <span>{isDueToday ? 'Due Today' : `Due ${format(formattedDeadline, 'MMM d')}`}</span>
               </Badge>
             </div>
 

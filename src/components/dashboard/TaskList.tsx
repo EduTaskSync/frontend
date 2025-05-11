@@ -1,4 +1,4 @@
-import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Filter, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
 import { useDashboard, TaskStatus, DateFilter, SortOrder } from '@/hooks/dashboard/useDashboard';
 import { TaskCard } from './TaskCard';
 import { useNavigate } from 'react-router';
+import { cn } from '@/lib/utils';
 
 export interface TaskListProps {
   searchQuery?: string;
@@ -49,6 +50,7 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
     isError,
     isDueToday,
     isOverdue,
+    refetch,
   } = useDashboard({ initialPage, limit, searchQuery });
   const navigate = useNavigate();
   // Generate pagination numbers
@@ -144,14 +146,29 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
         </h2>
 
         <div className="flex items-center gap-2 self-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw className={cn('h-4 w-4 transition-transform', isLoading && 'animate-spin')} />
+            <span>{isLoading ? 'Refreshing...' : 'Refresh'}</span>
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+              >
                 <Filter className="h-4 w-4" />
                 <span>Filter</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-48 ">
               <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem checked={status === 'All'} onCheckedChange={() => setStatus('All')}>
@@ -168,6 +185,9 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={status === 'Done'} onCheckedChange={() => setStatus('Done')}>
                 Done
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={status === 'Other'} onCheckedChange={() => setStatus('Other')}>
+                Other Statuses
               </DropdownMenuCheckboxItem>
 
               <DropdownMenuSeparator />
@@ -197,7 +217,7 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
           <Button
             variant="outline"
             size="sm"
-            className="h-9 gap-1"
+            className="h-9 gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30"
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
           >
             {sortOrder === 'asc' ? (
@@ -232,6 +252,10 @@ export function TaskList({ searchQuery, initialPage = 0, limit = 10 }: TaskListP
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full bg-blue-400"></div>
           <span>In Progress</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-purple-400"></div>
+          <span>Other Statuses</span>
         </div>
       </div>
 

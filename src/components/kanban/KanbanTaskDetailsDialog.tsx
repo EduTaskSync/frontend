@@ -85,11 +85,16 @@ export const KanbanTaskDetailsDialog = ({
   const onSubmit = (data: FormValues) => {
     form.reset();
     setOpen(false);
+
+    // Set the deadline to end of day in local time
+    const deadline = new Date(data.taskDeadline);
+    deadline.setHours(23, 59, 59, 999);
+
     if (prefillData && 'taskId' in prefillData) {
       const updatedTaskDetails: UpdatedTaskData = {
         taskId: prefillData.taskId,
         taskName: data.taskName,
-        taskDeadline: data.taskDeadline.toISOString(),
+        taskDeadline: deadline.toISOString(),
       };
       onSubmitHandler(updatedTaskDetails);
     } else {
@@ -97,7 +102,7 @@ export const KanbanTaskDetailsDialog = ({
         taskName: data.taskName,
         projectId: projectId!,
         columnId,
-        taskDeadline: data.taskDeadline.toISOString(),
+        taskDeadline: deadline.toISOString(),
         taskIndex,
       };
 

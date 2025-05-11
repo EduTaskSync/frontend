@@ -22,6 +22,7 @@ export const getUserAssignedTasks = async (params: TasksQueryParams = {}) => {
       sortOrder: params.sortOrder,
     },
   });
+  console.log(response.data);
 
   if (response.status === 200) {
     return response.data;

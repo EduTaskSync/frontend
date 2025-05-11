@@ -4,7 +4,7 @@ import { getUserAssignedTasks, TasksQueryParams } from './dashboardQueryUtils';
 import { TaskBaseResponse } from './taskInterface';
 import { queryKeys } from '@/utils/queryKeyFactory';
 
-export type TaskStatus = 'To Do' | 'In Progress' | 'Done' | 'All';
+export type TaskStatus = 'To Do' | 'In Progress' | 'Done' | 'All' | 'Other';
 export type SortOrder = 'asc' | 'desc';
 export type DateFilter = 'all' | 'overdue' | 'today' | 'upcoming' | 'done';
 
@@ -113,7 +113,11 @@ export const useDashboard = (options: UseDashboardOptions = {}) => {
 
     // Apply status filter
     if (status !== 'All') {
-      filtered = filtered.filter((task) => task.status === status);
+      if (status === 'Other') {
+        filtered = filtered.filter((task) => !['To Do', 'In Progress', 'Done'].includes(task.status));
+      } else {
+        filtered = filtered.filter((task) => task.status === status);
+      }
     }
 
     // Apply date filter

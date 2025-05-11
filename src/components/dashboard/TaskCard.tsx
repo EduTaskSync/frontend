@@ -12,11 +12,6 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onClick, isOverdue, isDueToday }: TaskCardProps) {
-  // Format date to display
-  const formatDate = (date: Date) => {
-    return format(date, 'MMM dd, yyyy');
-  };
-
   // Get task card styling based on status
   const getTaskCardStyle = () => {
     if (task.status === 'Done') {
@@ -27,14 +22,22 @@ export function TaskCard({ task, onClick, isOverdue, isDueToday }: TaskCardProps
       return 'border-amber-800/40 bg-amber-950/40 backdrop-blur-md';
     } else if (task.status === 'In Progress') {
       return 'border-blue-800/40 bg-blue-950/40 backdrop-blur-md';
-    } else {
+    } else if (task.status === 'To Do') {
       return 'border-border/60 bg-card/40 backdrop-blur-md';
+    } else {
+      // Custom status styling
+      return 'border-purple-800/40 bg-purple-950/40 backdrop-blur-md';
     }
+  };
+
+  // Format date to display
+  const formatDate = (date: Date) => {
+    return format(date, 'MMM dd, yyyy');
   };
 
   // Get task status badge
   const getTaskStatusBadge = () => {
-    if (task.status === 'Completed') {
+    if (task.status === 'Done') {
       return <Badge className="bg-green-900 text-green-100 hover:bg-green-800">Completed</Badge>;
     } else if (isOverdue(task)) {
       return <Badge className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Overdue</Badge>;
@@ -42,13 +45,17 @@ export function TaskCard({ task, onClick, isOverdue, isDueToday }: TaskCardProps
       return <Badge className="bg-amber-900 text-amber-100 hover:bg-amber-800">Due Today</Badge>;
     } else if (task.status === 'In Progress') {
       return <Badge className="bg-blue-900 text-blue-100 hover:bg-blue-800">In Progress</Badge>;
-    } else {
+    } else if (task.status === 'To Do') {
       return <Badge className="bg-secondary text-secondary-foreground">To Do</Badge>;
+    } else {
+      // Custom status badge
+      return <Badge className="bg-purple-900 text-purple-100 hover:bg-purple-800">{task.status}</Badge>;
     }
   };
+
   // Get status icon
   const getStatusIcon = () => {
-    if (task.status === 'Completed') {
+    if (task.status === 'Done') {
       return <CheckCircle2 className="h-3 w-3 text-green-400" />;
     } else if (isOverdue(task)) {
       return <AlertCircle className="h-3 w-3 text-destructive" />;
@@ -56,8 +63,11 @@ export function TaskCard({ task, onClick, isOverdue, isDueToday }: TaskCardProps
       return <Clock className="h-3 w-3 text-amber-400" />;
     } else if (task.status === 'In Progress') {
       return <Timer className="h-3 w-3 text-blue-400" />;
-    } else {
+    } else if (task.status === 'To Do') {
       return <Calendar className="h-3 w-3 text-muted-foreground" />;
+    } else {
+      // Custom status icon
+      return <CheckCircle2 className="h-3 w-3 text-purple-400" />;
     }
   };
 

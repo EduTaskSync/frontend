@@ -20,20 +20,19 @@ export default function DropdownMenuWithAvatar({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="cursor-pointer w-20 sm:w-1/3 min-w-[50px] flex justify-end">
-          <motion.div
-            whileHover={{
-              scale: 1.1,
-              transition: { duration: 0.2 },
-            }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Avatar className="h-7 w-7 sm:h-10 sm:w-10 border border-primary sm:border-2">
-              <AvatarImage src={user.profilePicture || undefined} alt={user.firstName} />
-              <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </motion.div>
-        </div>
+        <motion.div
+          className="cursor-pointer"
+          whileHover={{
+            scale: 1.1,
+            transition: { duration: 0.2 },
+          }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Avatar className="h-7 w-7 sm:h-10 sm:w-10 border border-primary sm:border-2">
+            <AvatarImage src={user.profilePicture || undefined} alt={user.firstName} />
+            <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
+          </Avatar>
+        </motion.div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-[280px] w-auto" align="end" sideOffset={8}>
         <DropdownMenuLabel className="p-0 font-sans">

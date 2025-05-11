@@ -612,3 +612,27 @@ export const useKanbanTaskMove = () => {
 
   return { moveTaskBetweenColumnsResponse };
 };
+
+export const useTaskMoveDropdown = (projectId: string, task: Task) => {
+  const { moveTaskBetweenColumnsResponse } = useKanbanTaskMove();
+  const { getKanbanColumnsResponse } = useKanbanColumns(projectId);
+
+  const handleMoveTask = (targetColumnId: string) => {
+    if (targetColumnId === task.columnId) return;
+
+    const moveData: MoveTaskData = {
+      taskId: task.taskId,
+      targetColumnId,
+      taskIndex: 0, // Will be handled by the backend
+      projectId,
+      sourceColumnId: task.columnId,
+    };
+
+    moveTaskBetweenColumnsResponse.mutate(moveData);
+  };
+
+  return {
+    handleMoveTask,
+    columns: getKanbanColumnsResponse.data?.columns || [],
+  };
+};
