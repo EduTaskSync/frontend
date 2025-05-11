@@ -129,10 +129,38 @@ const LandingPage = () => {
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="font-bold text-primary">JD</span>
+                    <span className="font-bold text-primary">VM</span>
                   </div>
                   <div>
-                    <p className="font-medium">Jamie Davis</p>
+                    <p className="font-medium">Vihanga</p>
+                    <p className="text-sm text-muted-foreground">Computer Science Student</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mb-4 mt-6"></div>
+                <p className="text-lg italic mb-6">
+                  "I love this app! It's so easy to use and I've never missed a deadline since I started using it."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="font-bold text-primary">CO</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Caleb </p>
+                    <p className="text-sm text-muted-foreground">Computer Science Student</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mb-4 mt-6"></div>
+                <p className="text-lg italic mb-6">
+                  "This app is so helpful! I will recommend it to all my group projects in the future."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="font-bold text-primary">JB</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Josh </p>
                     <p className="text-sm text-muted-foreground">Computer Science Student</p>
                   </div>
                 </div>
